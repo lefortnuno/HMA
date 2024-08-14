@@ -10,7 +10,9 @@ const dbConn = mysql.createConnection({
 
 dbConn.connect(function (err) {
   if (err) throw err;
-  console.log(`Connection au base de donnée ..... : ..... reussi. `);
+  console.log(
+    `Connection au base de donnée ..... '${process.env.DB_NAME}' ..... reussi. `
+  );
 });
 
 module.exports = dbConn;

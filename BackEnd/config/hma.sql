@@ -47,6 +47,22 @@ create table hetsika(
 
 -- - CREATION UTILISATEUR ADMIN ------------------
 insert into
-    mpampiasa (nom, prenom, pwd, idPS)
+    mpampiasa (nom, prenom, pwd, idPS, karazana)
 values
-    ('LEFORT', 'Nomenjanahary Nuno', '0000', 'Trofel');
+    (
+        'LEFORT',
+        'Nomenjanahary Nuno',
+        '$2b$10$4WBMGWWIiMbljSTSa99Tfur3Wbg9psmXswKck4x30f/30u7kv.pmy',
+        -- lefort
+        'Trofel',
+        1
+    ),
+    (
+        'TROFEL',
+        'Nomenjanahary Nono',
+        '$2b$10$4WBMGWWIiMbljSTSa99Tfur3Wbg9psmXswKck4x30f/30u7kv.pmy',
+        -- lefort
+        'Lefort',
+        0
+    );
+    
