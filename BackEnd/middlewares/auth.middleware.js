@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
   const authHeader = req.headers.authorization || ""; // Assure qu'on a une chaîne vide si c'est undefined
   const token = authHeader.includes(" ") ? authHeader.split(" ")[1] : "";
-  console.log(token);
 
   if (token) {
     jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {

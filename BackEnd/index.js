@@ -4,6 +4,7 @@ const path = require("path");
 require("dotenv").config({ path: "./config/.env" });
 
 const utilisateurRoute = require("./routes/utilisateur.route");
+const serviceRoute = require("./routes/service.route");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/utilisateur", utilisateurRoute);
+app.use("/api/service", serviceRoute);
 
 app.listen(process.env.PORT || process.env.IP_HOST, () => {
   console.log(`Ecoute au port ${process.env.PORT} .... `);

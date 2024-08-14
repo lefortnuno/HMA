@@ -25,14 +25,15 @@ create table serivisy(
     karazana boolean default 0,
     -- 0 = False = MATERIEL -- 1 = TRUE = ARA-TSAINA
     primary key(id),
-    unique index `id_unique` (`id` desc)
+    unique index `id_unique` (`id` desc),
+    unique index `nom_unique` (`nom`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = latin1;
 
 create table hetsika(
     id int(11) not null auto_increment,
     date date,
     coms varchar(300) default null,
-    Qte float not null,
+    qte float not null,
     karazana boolean default 0,
     -- 0 = False = MIVOKA -- 1 = TRUE = MIDITRA
     idS int(11) not null,
@@ -65,4 +66,3 @@ values
         'Lefort',
         0
     );
-    

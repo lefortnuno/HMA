@@ -4,13 +4,12 @@ const admin = require("../middlewares/admin.middleware");
 const user = require("../middlewares/user.middleware");
 
 router.post("/", UtilisateurController.addUtilisateur);
-
+router.post("/seConnecter", UtilisateurController.loginUtilisateur);
 router.post(
   "/recherche",
   admin.checkUtilisateur,
   UtilisateurController.searchUtilisateur
 );
-router.post("/seConnecter", UtilisateurController.loginUtilisateur);
 
 router.get(
   "/",

@@ -106,7 +106,7 @@ Utilisateur.getIdPSUtilisateur = (idPS, result) => {
   });
 };
 
-Utilisateur.searchUtilisateur = (valeur, result) => { 
+Utilisateur.searchUtilisateur = (valeur, result) => {
   dbConn.query(
     reqSQL +
       `WHERE (nom LIKE '%${valeur.val}%' OR prenom LIKE '%${valeur.val}%')` +
@@ -129,7 +129,7 @@ Utilisateur.updateUtilisateur = (updateUtilisateur, id, result) => {
   Utilisateur.getIdUtilisateur(id, (err, resId) => {
     if (resId[0].idPS == updateUtilisateur.idPS) {
       delete updateUtilisateur.idPS; // j'enleve l'idPS parce qu'il n'a pas ete modifier
-      console.log(updateUtilisateur);
+
       dbConn.query(
         `UPDATE mpampiasa SET ? WHERE id = ${id}`,
         updateUtilisateur,
@@ -158,7 +158,7 @@ Utilisateur.updateUtilisateur = (updateUtilisateur, id, result) => {
         } else {
           result(null, {
             success: false,
-            message: `Modification non autorisé! Utilisateur existant !`,
+            message: `Echec de la modification! Utilisateur existant !`,
           });
         }
       });
