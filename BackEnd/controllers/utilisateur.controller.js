@@ -34,15 +34,15 @@ module.exports.loginUtilisateur = (req, res) => {
 
         if (validePwd) {
           const token = createToken(resp);
-          res.send({ success: true, token, user: resp });
+          res.send({ success: true, token, user: resp, message: "Connecté à HMA!" });
         } else {
-          res.send({ success: false });
+          res.send({ success: false, message : "Mot de passe incorrect!" });
         }
       } else {
-        res.send({ success: false });
+        res.send({ success: false, message:"Identifiant incorrect!" });
       }
     } else {
-      res.send(err);
+      res.send({success: false, message: err});
     }
   });
 };
