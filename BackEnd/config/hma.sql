@@ -66,3 +66,32 @@ values
         'Lefort',
         0
     );
+
+SELECT
+    hetsika.id as idh,
+    hetsika.karazana as hk,
+    serivisy.nom as snom,
+    serivisy.karazana as sk,
+    mpampiasa.nom as mnom,
+    date,
+    prenom,
+    prix,
+    fandrefesana,
+    coms,
+    qte,
+    idS,
+    idM
+FROM
+    hetsika,
+    mpampiasa,
+    serivisy
+WHERE
+    (
+        mpampiasa.id = hetsika.idM
+        AND serivisy.id = hetsika.idS
+    )
+    AND idM = 1
+    AND date between '2024-08-14'
+    and '2024-08-17'
+ORDER BY
+    idh DESC;

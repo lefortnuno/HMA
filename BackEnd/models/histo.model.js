@@ -1,20 +1,29 @@
 let dbConn = require("../config/db");
 
-let Hetsika = function (hetsika) {
-  this.id = hetsika.id;
-  this.date = hetsika.date;
-  this.coms = hetsika.coms;
-  this.qte = hetsika.qte;
-  this.karazana = hetsika.karazana;
-  this.idS = hetsika.idS;
-  this.idM = hetsika.idM;
+let Histo = function (histo) {
+  this.id = histo.id;
+  this.date = histo.date;
+  this.coms = histo.coms;
+  this.qte = histo.qte;
+  this.karazana = histo.karazana;
+  this.idS = histo.idS;
+  this.idM = histo.idM;
 };
 
-const reqSQL = `SELECT * FROM hetsika `;
-const ordre = ` ORDER BY id DESC `;
+const reqSQL = `SELECT 
+                hetsika.id as idh,
+                hetsika.karazana as hk,
+                serivisy.nom as snom,
+                serivisy.karazana as sk,
+                mpampiasa.nom as mnom,
+                date, prenom, prix, fandrefesana, coms, qte, idS, idM
+                FROM hetsika, mpampiasa, serivisy 
+                WHERE (mpampiasa.id = hetsika.idM AND serivisy.id = hetsika.idS)`;
+const myReq = ` AND idM = ? `;
+const ordre = ` ORDER BY idh DESC `;
 
-Hetsika.addHetsika = (newHetsika, result) => {
-  dbConn.query("INSERT INTO hetsika SET ?", newHetsika, (err, res) => {
+Histo.addHisto = (newHisto, result) => {
+  dbConn.query("INSERT INTO hetsika SET ?", newHisto, (err, res) => {
     if (!err) {
       result(null, { success: true, message: "Ajout reussi !" });
     } else {
@@ -23,30 +32,18 @@ Hetsika.addHetsika = (newHetsika, result) => {
   });
 };
 
-Hetsika.deleteHetsika = (ids, result) => {
-  Hetsika.getIdHetsikaIdM(ids.id, (err, resId) => {
-    if (resId.length != 0) {
-      dbConn.query(
-        `DELETE FROM hetsika WHERE id = ${ids.id} AND idM = ${ids.idM}`,
-        function (err, res) {
-          if (err) {
-            result(err, null);
-          } else {
-            result(null, { success: true });
-          }
-        }
-      );
+Histo.getAllMyHisto = (valeur, result) => {
+  dbConn.query(reqSQL + myReq + ordre, [valeur.idM], (err, res) => {
+    if (err) {
+      result(err, null);
     } else {
-      result(null, {
-        success: false,
-        message: `Echec de suppression! Historique non existant !`,
-      });
+      result(null, res);
     }
   });
 };
 
-Hetsika.getAllHetsikaIdM = (idM, result) => {
-  dbConn.query(reqSQL + ` WHERE idM = ?`, idM, (err, res) => {
+Histo.getIdHisto = (id, result) => {
+  dbConn.query(reqSQL + ` AND hetsika.id = ? `, id, (err, res) => {
     if (err) {
       result(err, null);
     } else {
@@ -59,29 +56,10 @@ Hetsika.getAllHetsikaIdM = (idM, result) => {
   });
 };
 
-Hetsika.getIdHetsikaIdM = (ids, result) => {
+Histo.searchSomeHisto = (valeur, result) => {
   dbConn.query(
-    reqSQL + ` WHERE id = ? AND idM = ?`,
-    [ids.id, ids.idM],
-    (err, res) => {
-      if (err) {
-        result(err, null);
-      } else {
-        if (res.length !== 0) {
-          result(null, res);
-        } else {
-          result(null, res);
-        }
-      }
-    }
-  );
-};
-
-Hetsika.searchAllHetsikaIdM = (valeur, result) => {
-  dbConn.query(
-    reqSQL +
-      `WHERE idM = ${valeur.idM} AND (nom LIKE '%${valeur.val}%' OR prenom LIKE '%${valeur.val}%')` +
-      ordre,
+    reqSQL + myReq + `AND serivisy.nom LIKE '%${valeur.val}%'` + ordre,
+    [valeur.idM],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -96,12 +74,12 @@ Hetsika.searchAllHetsikaIdM = (valeur, result) => {
   );
 };
 
-Hetsika.updateHetsikaIdM = (updateHetsika, ids, result) => {
-  Hetsika.getIdHetsikaIdM(ids.id, (err, resId) => {
+Histo.updateMyHisto = (updateHisto, id, result) => {
+  Histo.getIdHisto(id, (err, resId) => {
     if (resId.length != 0) {
       dbConn.query(
-        `UPDATE hetsika SET ? WHERE id = ${ids.id} AND idM = ${ids.idM}`,
-        updateHetsika,
+        `UPDATE hetsika SET ? WHERE id = ${id}`,
+        updateHisto,
         function (err, res) {
           if (err) {
             result(err, null);
@@ -119,4 +97,43 @@ Hetsika.updateHetsikaIdM = (updateHetsika, ids, result) => {
   });
 };
 
-module.exports = Hetsika;
+Histo.deleteMyHisto = (id, result) => {
+  Histo.getIdHisto(id, (err, resId) => {
+    if (resId.length != 0) {
+      dbConn.query(
+        `DELETE FROM hetsika WHERE hetsika.id = ${id}`,
+        function (err, res) {
+          if (err) {
+            result(err, null);
+          } else {
+            result(null, { success: true });
+          }
+        }
+      );
+    } else {
+      result(null, {
+        success: false,
+        message: `Echec de suppression! Historique non existant !`,
+      });
+    }
+  });
+};
+
+Histo.filtreHisto = (valeur, result) => {
+  dbConn.query(
+    reqSQL +
+      myReq +
+      ` AND date between '${valeur.date1}' AND '${valeur.date2})' ` +
+      ordre,
+    [valeur.idM],
+    (err, res) => {
+      if (err) {
+        result(err, null);
+      } else {
+        result(null, res);
+      }
+    }
+  );
+};
+
+module.exports = Histo;
