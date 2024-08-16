@@ -183,25 +183,35 @@ export default function LoginForm() {
 
   //#region // FONCTION DU BOUTTON ENREGISTRER
   const onSubmit = () => {
-    axios.post(URL_DE_BASE, inputs).then(function (response) {
-      if (response.status === 200) {
-        if (response.data.success) {
-          toast.success(response.data.message);
-          navigate("/home/"); // Redirection après connexion réussie
+    axios
+      .post(URL_DE_BASE, inputs)
+      .then(function (response) {
+        if (response.status === 200) {
+          if (response.data.success) {
+            toast.success(response.data.message);
+            navigate("/home/"); // Redirection après connexion réussie
 
-          localStorage.setItem("token", response.data.token);
-          const utilisateur = response.data.user[0];
+            localStorage.setItem("token", response.data.token);
+            const utilisateur = response.data.user[0];
 
-          for (const u in utilisateur) {
-            if (u != "pwd") localStorage.setItem(u, utilisateur[u]);  
+            for (const u in utilisateur) {
+              if (u != "pwd") localStorage.setItem(u, utilisateur[u]);
+            }
+          } else {
+            toast.error(response.data.message);
           }
         } else {
-          toast.error(response.data.message);
+          toast.error("Échec de la connexion!");
         }
-      } else {
-        toast.error("Échec de la connexion!");
-      }
-    });
+      })
+      .catch((error) => {
+        setErreurs((values) => ({ ...values, messageErreur: true }));
+        setMessages((values) => ({
+          ...values,
+          messageErreur:
+            "Veuillez vous connecter au serveur!",
+        }));
+      });
   };
   //#endregion
 
@@ -273,6 +283,11 @@ export default function LoginForm() {
   return (
     <>
       <form>
+        <span>
+          {erreurs.messageErreur ? (
+            <p className="text-danger d-block">{messages.messageErreur}</p>
+          ) : null}
+        </span>
         <div>
           <label>Identifiant :</label>
           <input

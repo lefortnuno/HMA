@@ -2,8 +2,12 @@ const UtilisateurModel = require("../models/utilisateur.model");
 const jwt = require("jsonwebtoken");
 
 module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
+  const token = req.headers.authorization; 
+  /*
+  // pour PostMan
   const authHeader = req.headers.authorization || ""; // Assure qu'on a une chaîne vide si c'est undefined
-  const token = authHeader.includes(" ") ? authHeader.split(" ")[1] : "";
+  const token = authHeader.includes(" ") ? authHeader.split(" ")[1] : ""; 
+  */
 
   if (token) {
     jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {

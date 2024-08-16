@@ -11,6 +11,9 @@ import LogIn from "./pages/login/login";
 import SignIn from "./pages/signin/signin";
 
 import Home from "./pages/home/home";
+import About from "./pages/about/about";
+import Service from "./pages/services/service";
+import AddService from "./pages/services/add.service";
 
 function App() {
   return (
@@ -23,6 +26,9 @@ function App() {
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
           <Route path="newUser/" element={<SignIn />} />
           <Route path="home/" element={<SignInProtection Cmp={Home}/>} />
+          <Route path="about/" element={<SignInProtection Cmp={About}/>} />
+          <Route path="service/" element={<SignInProtection Cmp={Service}/>} />
+          <Route path="newService/" element={<SignInProtection Cmp={AddService}/>} />
         </Routes>
       </BrowserRouter>
     </div>

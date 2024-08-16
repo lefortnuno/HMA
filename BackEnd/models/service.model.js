@@ -53,7 +53,7 @@ Service.deleteService = (id, result) => {
 };
 
 Service.getAllServices = (result) => {
-  dbConn.query(reqSQL + ordre, (err, res) => {
+  dbConn.query(reqSQL + ordre, (err, res) => { 
     if (err) {
       result(err, null);
     } else {

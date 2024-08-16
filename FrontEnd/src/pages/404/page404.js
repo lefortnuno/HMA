@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function PageNotFound() {
   const navigate = useNavigate();
   const redirectedToHome = () => {
-    navigate("/accueil");
+    navigate("/home/");
   };
 
   return (
