@@ -1,5 +1,6 @@
 import GetUserData from "../../contexts/api/udata";
 import { Link } from "react-router-dom";
+import './sidebar.css'; 
 
 export default function Sidebar() {
   const u_info = GetUserData();

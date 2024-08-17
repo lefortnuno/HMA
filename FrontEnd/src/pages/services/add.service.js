@@ -194,11 +194,11 @@ export default function AddService() {
               </small>
             </div>
             <div>
-              <button onClick={onClose} type="button">
-                <span>Annuler</span>
+              <button className="btn btn-danger" onClick={onClose} type="button">
+                 Annuler 
               </button>
-              <button onClick={validation} type="submit">
-                <span>Ajouter</span>
+              <button className="btn btn-success" onClick={validation} type="submit">
+                Ajouter
               </button>
             </div>
           </form>

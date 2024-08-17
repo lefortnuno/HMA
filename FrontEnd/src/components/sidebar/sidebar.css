@@ -1,0 +1,37 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+  
+  .sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar-list li {
+    padding: 10px 15px;
+  }
+  
+  .sidebar-list li a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .sidebar-list li a:hover {
+    color: #007bff;
+  }
+  
+  /* Style for small screens (less than 350px) */
+  @media (max-width: 350px) {
+    .sidebar {
+      display: none;
+    }
+  }
+  

@@ -72,8 +72,7 @@ Histo.getAllMyOutGoingHisto = (id, result) => {
   );
 };
 
-Histo.getIdHisto = (id, result) => {
-  console.log(id);
+Histo.getIdHisto = (id, result) => { 
   dbConn.query(reqSQL + ` AND hetsika.id = ? `, id, (err, res) => {
     if (err) {
       result(err, null);

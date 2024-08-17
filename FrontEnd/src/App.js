@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import SignInProtection from "./contexts/ptotections/signin.protection";
 import LogOutProtection from "./contexts/ptotections/logout.protection";

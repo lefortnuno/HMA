@@ -1,5 +1,6 @@
 import GetUserData from "../../contexts/api/udata";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; 
+import './header.css'
 
 export default function Header(props) {
   const u_info = GetUserData();
@@ -13,7 +14,7 @@ export default function Header(props) {
   return (
     <>
       {u_info.u_token ? (
-        <>
+        <div className="header">
           <div>
             <span>logo</span>
             <p>Bonjour {u_info.u_nom}</p>
@@ -31,7 +32,7 @@ export default function Header(props) {
               Se déconnecter
             </button>
           </div>
-        </>
+        </div>
       ) : null}
     </>
   );
