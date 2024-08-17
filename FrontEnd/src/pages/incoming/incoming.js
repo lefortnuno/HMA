@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import DeleteModal from "../../components/modals/delete";
 import EditModal from "../../components/modals/edit";
-import { Link } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
+import DetailModal from "./detail.modal.incoming";
 
 const url_req = `histo/incoming/`;
 const histoPerPage = 5; // Nombre de histo à afficher par page
@@ -20,6 +21,8 @@ export default function InComing() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
   const histoFieldsToEdit = ["qte", "coms", "hk"];
+  const navigate = useNavigate();
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     getHisto();
@@ -67,6 +70,17 @@ export default function InComing() {
     getHisto(); // Recharger les histo après modification
   };
 
+  const handleDetailClick = (entity) => {
+    setSelectedEntity(entity);
+
+    if (window.innerWidth > 720) {
+      // Si la largeur de l'écran est supérieure à 720px, redirige vers la page de détails
+      navigate(`/aboutIncoming/${entity.id}`, { state: { entity } });
+    } else {
+      // Sinon, ouvre le modal
+      setShowDetailModal(true);
+    }
+  };
   return (
     <Template>
       <h3>Historique d'entree d'argent</h3>
@@ -107,7 +121,12 @@ export default function InComing() {
                   >
                     del
                   </span>
-                  <span>details</span>
+                  <span
+                    style={{ color: "green", cursor: "pointer" }}
+                    onClick={() => handleDetailClick(s)}
+                  >
+                    details
+                  </span>
                 </td>
               </tr>
             ))
@@ -142,6 +161,13 @@ export default function InComing() {
           entityName="histo"
           auth={u_info.opts}
           fieldsToEdit={histoFieldsToEdit}
+        />
+      )}
+      {selectedEntity && (
+        <DetailModal
+          show={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
+          entity={selectedEntity}
         />
       )}
     </Template>

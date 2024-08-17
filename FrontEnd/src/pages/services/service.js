@@ -5,7 +5,8 @@ import Pagination from "../../components/pagination/pagination";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import DeleteModal from "../../components/modals/delete";
-import EditModal from "../../components/modals/edit";
+import EditModal from "../../components/modals/edit"; 
+import AddServiceModal from "./add.service.modal";
 import { Link } from "react-router-dom";
 
 const url_req = `service/`;
@@ -19,10 +20,20 @@ export default function Service() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
-  const serviceFieldsToEdit = ['nom', 'prix', 'fandrefesana', 'karazana'];
+  const serviceFieldsToEdit = ["nom", "prix", "fandrefesana", "karazana"];
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth > 720);
 
   useEffect(() => {
     getServices();
+
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth > 720);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   function getServices() {
@@ -73,7 +84,16 @@ export default function Service() {
   return (
     <Template>
       <h3>Service</h3>
-      <Link to={"/newService/"}> <span>Ajout</span></Link>
+      {isLargeScreen ? (
+        <Link to={"/newService/"}>
+          {" "}
+          <span>Ajout</span>
+        </Link>
+      ) : (
+        <button onClick={() => setShowEditModal(true)}>
+          Ajouter un service
+        </button>
+      )}
       <table>
         <thead>
           <tr>
@@ -142,7 +162,12 @@ export default function Service() {
           auth={u_info.opts}
           fieldsToEdit={serviceFieldsToEdit}
         />
-        
+      )}
+      {!isLargeScreen && (
+        <AddServiceModal
+          show={showEditModal}
+          onClose={() => setShowEditModal(false)}
+        />
       )}
     </Template>
   );
