@@ -38,7 +38,7 @@ export default function DeleteModal({
       </Modal.Header>
       <Modal.Body>
         Êtes-vous sûr de vouloir supprimer {entityName}{" "}
-        <strong>{entity.nom}</strong> ?
+        <strong>#°{entity.id}</strong> ?
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onClose}>

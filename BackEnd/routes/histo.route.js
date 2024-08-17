@@ -10,7 +10,17 @@ router.post(
   HistoController.searchSomeHisto
 );
 
-router.get("/", user.checkUtilisateur, HistoController.getAllMyHisto);
+router.get("/histo/:id", user.checkUtilisateur, HistoController.getAllMyHisto);
+router.get(
+  "/incoming/:id",
+  user.checkUtilisateur,
+  HistoController.getAllMyInComingHisto
+);
+router.get(
+  "/outgoing/:id",
+  user.checkUtilisateur,
+  HistoController.getAllMyOutGoingHisto
+);
 router.get("/:id", user.checkUtilisateur, HistoController.getIdHisto);
 
 router.put("/:id", user.checkUtilisateur, HistoController.updateMyHisto);

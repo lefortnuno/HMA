@@ -17,7 +17,7 @@ export default function Sidebar() {
           </Link>
         </li>
         <li>
-          <Link to="/outcoming/">
+          <Link to="/outgoing/">
             <p>Depense</p>
           </Link>
         </li>

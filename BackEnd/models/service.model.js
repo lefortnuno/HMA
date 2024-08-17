@@ -93,6 +93,25 @@ Service.getNomService = (nom, result) => {
 Service.searchService = (valeur, result) => {
   dbConn.query(
     reqSQL +
+      `WHERE nom LIKE '${valeur.query}%'` +
+      ordre,
+    (err, res) => { 
+      if (err) {
+        result({ err, message: "erreur !", success: false }, null);
+      } else {
+        if (res.length !== 0) {
+          result(null, { res, message: "trouvé !", success: true });
+        } else {
+          result(null, { res, message: "Introuvable !", success: false });
+        }
+      }
+    }
+  );
+};
+
+Service.advancedSearchService = (valeur, result) => {
+  dbConn.query(
+    reqSQL +
       `WHERE (nom LIKE '%${valeur.val}%' OR prix LIKE '%${valeur.val}%')` +
       ordre,
     (err, res) => {

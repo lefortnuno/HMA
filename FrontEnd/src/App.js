@@ -12,8 +12,12 @@ import SignIn from "./pages/signin/signin";
 
 import Home from "./pages/home/home";
 import About from "./pages/about/about";
+
 import Service from "./pages/services/service";
 import AddService from "./pages/services/add.service";
+
+import InComing from "./pages/incoming/incoming";
+import AddInComing from "./pages/incoming/add.incoming";
 
 function App() {
   return (
@@ -29,6 +33,8 @@ function App() {
           <Route path="about/" element={<SignInProtection Cmp={About}/>} />
           <Route path="service/" element={<SignInProtection Cmp={Service}/>} />
           <Route path="newService/" element={<SignInProtection Cmp={AddService}/>} />
+          <Route path="incoming/" element={<SignInProtection Cmp={InComing}/>} />
+          <Route path="newIncoming/" element={<SignInProtection Cmp={AddInComing}/>} />
         </Routes>
       </BrowserRouter>
     </div>

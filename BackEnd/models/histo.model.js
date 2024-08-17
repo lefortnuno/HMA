@@ -11,16 +11,18 @@ let Histo = function (histo) {
 };
 
 const reqSQL = `SELECT 
-                hetsika.id as idh,
+                hetsika.id as id,
                 hetsika.karazana as hk,
                 serivisy.nom as snom,
                 serivisy.karazana as sk,
                 mpampiasa.nom as mnom,
-                date, prenom, prix, fandrefesana, coms, qte, idS, idM
+                ROUND(prix * qte, 2) as montant,
+                DATE_FORMAT(date, '%d/%m/%Y') as date,
+                prenom, prix, fandrefesana, coms, qte, idS, idM
                 FROM hetsika, mpampiasa, serivisy 
                 WHERE (mpampiasa.id = hetsika.idM AND serivisy.id = hetsika.idS)`;
 const myReq = ` AND idM = ? `;
-const ordre = ` ORDER BY idh DESC `;
+const ordre = ` ORDER BY id DESC `;
 
 Histo.addHisto = (newHisto, result) => {
   dbConn.query("INSERT INTO hetsika SET ?", newHisto, (err, res) => {
@@ -32,14 +34,42 @@ Histo.addHisto = (newHisto, result) => {
   });
 };
 
-Histo.getAllMyHisto = (valeur, result) => {
-  dbConn.query(reqSQL + myReq + ordre, [valeur.idM], (err, res) => {
+Histo.getAllMyHisto = (id, result) => {
+  dbConn.query(reqSQL + myReq + ordre, id, (err, res) => {
     if (err) {
       result(err, null);
     } else {
       result(null, res);
     }
   });
+};
+
+Histo.getAllMyInComingHisto = (id, result) => {
+  dbConn.query(
+    reqSQL + myReq + ` AND hetsika.karazana = 1 ` + ordre,
+    id,
+    (err, res) => {
+      if (err) {
+        result(err, null);
+      } else {
+        result(null, res);
+      }
+    }
+  );
+};
+
+Histo.getAllMyOutGoingHisto = (id, result) => {
+  dbConn.query(
+    reqSQL + myReq + ` AND hetsika.karazana = 0 ` + ordre,
+    id,
+    (err, res) => {
+      if (err) {
+        result(err, null);
+      } else {
+        result(null, res);
+      }
+    }
+  );
 };
 
 Histo.getIdHisto = (id, result) => {

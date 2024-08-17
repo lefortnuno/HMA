@@ -15,10 +15,28 @@ module.exports.addHisto = (req, res) => {
   });
 };
 
-module.exports.getAllMyHisto = (req, res) => {
-  const { idM } = req.body;
+module.exports.getAllMyHisto = (req, res) => { 
+  Histo.getAllMyHisto(req.params.id, (err, resp) => {
+    if (!err) {
+      res.send(resp);
+    } else {
+      res.send(err);
+    }
+  });
+};
 
-  Histo.getAllMyHisto({ idM }, (err, resp) => {
+module.exports.getAllMyInComingHisto = (req, res) => { 
+  Histo.getAllMyInComingHisto(req.params.id, (err, resp) => {
+    if (!err) {
+      res.send(resp);
+    } else {
+      res.send(err);
+    }
+  });
+};
+
+module.exports.getAllMyOutGoingHisto = (req, res) => { 
+  Histo.getAllMyOutGoingHisto(req.params.id, (err, resp) => {
     if (!err) {
       res.send(resp);
     } else {
