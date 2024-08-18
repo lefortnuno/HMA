@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
 const URL_DE_BASE = `utilisateur/`;
+let isInfoCompleteAndValid;
 
 export default function SignInForm() {
   //#region // FONC
@@ -42,11 +43,13 @@ export default function SignInForm() {
     pwd2: true,
     pwd3: true,
   });
+  const [showSave, setShowSave] = useState(false);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
     const inputValue = type === "checkbox" ? checked : value;
 
+    handleDoubt();
     setInputs((values) => ({ ...values, [name]: inputValue }));
     setErreurs((values) => ({ ...values, [name]: false }));
     setMessages((values) => ({ ...values, [name]: "" }));
@@ -95,13 +98,7 @@ export default function SignInForm() {
       }
     }
     if (name === "prenom") {
-      if (value.length === 0) {
-        setErreurs((values) => ({ ...values, [name]: true }));
-        setMessages((values) => ({
-          ...values,
-          [name]: "Prénom obligatoire!",
-        }));
-      } else if (value.length < 2) {
+      if (value.length < 2) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
@@ -172,6 +169,48 @@ export default function SignInForm() {
     }
   };
 
+  const preValidation = (event) => {
+    event.preventDefault();
+
+    const inputsObligatoire = ["nom", "idPS"];
+    let formIsValid = true;
+
+    inputsObligatoire.forEach((element) => {
+      if (!inputs[element]) {
+        formIsValid = false;
+        setErreurs((values) => ({ ...values, [element]: true }));
+        switch (element) {
+          case "idPS":
+            setMessages((values) => ({
+              ...values,
+              [element]: "Identifiant obligatoire!",
+            }));
+            break;
+          case "nom":
+            setMessages((values) => ({
+              ...values,
+              [element]: "Nom obligatoire!",
+            }));
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    if (formIsValid) {
+      isInfoCompleteAndValid =
+        inputs.nom && inputs.idPS && !erreurs.nom && !erreurs.idPS;
+
+      if (isInfoCompleteAndValid) {
+        setShowSave(true);
+        setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
+      } else {
+        handleDoubt();
+      }
+    }
+  };
+
   const validation = (event) => {
     event.preventDefault();
 
@@ -201,7 +240,7 @@ export default function SignInForm() {
               ...values,
               [element]: "Nom obligatoire!",
             }));
-            break; 
+            break;
           default:
             // Optionnel : gérer les cas non spécifiés si nécessaire
             break;
@@ -256,6 +295,26 @@ export default function SignInForm() {
     navigate("/");
   }
 
+  function handleDoubt() {
+    setShowSave(false);
+    isInfoCompleteAndValid = false;
+    setDisabledInputs((prevState) => ({
+      ...prevState,
+      pwd0: true,
+      pwd1: true,
+      pwd2: true,
+      pwd3: true,
+    }));
+    setInputs((prevState) => ({
+      ...prevState,
+      pwd: "",
+      pwd0: "",
+      pwd1: "",
+      pwd2: "",
+      pwd3: "",
+    }));
+  }
+
   useEffect(() => {
     pwdRefs.forEach((ref, index) => {
       if (!disabledInputs[`pwd${index}`] && ref.current) {
@@ -263,31 +322,6 @@ export default function SignInForm() {
       }
     });
   }, [disabledInputs]);
-
-  const isInfoCompleteAndValid =
-    inputs.nom && inputs.idPS && !erreurs.nom && !erreurs.idPS;
-
-  useEffect(() => {
-    if (isInfoCompleteAndValid) {
-      setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
-    } else {
-      setDisabledInputs((prevState) => ({
-        ...prevState,
-        pwd0: true,
-        pwd1: true,
-        pwd2: true,
-        pwd3: true,
-      }));
-      setInputs((prevState) => ({
-        ...prevState,
-        pwd: "",
-        pwd0: "",
-        pwd1: "",
-        pwd2: "",
-        pwd3: "",
-      }));
-    }
-  }, [isInfoCompleteAndValid]);
 
   const isPwdCompleteAndValid =
     inputs.pwd0 && inputs.pwd1 && inputs.pwd2 && inputs.pwd3;
@@ -361,7 +395,7 @@ export default function SignInForm() {
             <div className="groupPwdPlace">
               <div className="groupPwd">
                 {pwdRefs.map((ref, index) => (
-                  <div className="inputPwd">
+                  <div className="inputPwd" key={index}>
                     <input
                       key={index}
                       type="password"
@@ -387,8 +421,8 @@ export default function SignInForm() {
           <div className="inputFP">
             <span>Besoin d'assistance? </span>
           </div>
-          <button onClick={validation} type="submit">
-            <span> Enregistrer</span>
+          <button onClick={showSave ? validation : preValidation} type="submit">
+            <span>{showSave ? "Enregistrer" : "Continuer"}</span>
           </button>
         </div>
       </form>
