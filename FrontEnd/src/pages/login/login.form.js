@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
 const URL_DE_BASE = `utilisateur/seConnecter/`;
-let isValidate = false;
+let isValidate = false; 
 
 export default function LoginForm() {
   //#region // VARIABLES
@@ -31,6 +31,7 @@ export default function LoginForm() {
 
   const pwdRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const idPSRef = useRef(null);
+  const timeoutRef = useRef(null);
   const [incorrect, setIncorrect] = useState(false);
   const [showMe, setShowMe] = useState(false);
 
@@ -266,16 +267,24 @@ export default function LoginForm() {
     });
   }, [disabledInputs]);
 
-  const isIdPSCompleteAndValid = inputs.idPS && !erreurs.idPS; 
+  const isIdPSCompleteAndValid = inputs.idPS && !erreurs.idPS;
 
   useEffect(() => {
     if (isIdPSCompleteAndValid) {
-      setTimeout(() => {
-        setShowMe(true)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current); // Annule le timeout précédent
+      }
+
+      // Démarrer un nouveau timer
+      timeoutRef.current = setTimeout(() => {
+        setShowMe(true);
         setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
-      }, 3000);
+      }, 4000);
     } else {
-      setShowMe(false)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      setShowMe(false);
       setDisabledInputs((prevState) => ({
         ...prevState,
         pwd0: true,
@@ -291,14 +300,19 @@ export default function LoginForm() {
         pwd2: "",
         pwd3: "",
       }));
-    }
+    } // Nettoyage lors du démontage du composant
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [isIdPSCompleteAndValid]);
 
   const isPwdCompleteAndValid =
     inputs.pwd0 && inputs.pwd1 && inputs.pwd2 && inputs.pwd3;
 
   useEffect(() => {
-    if (isPwdCompleteAndValid) { 
+    if (isPwdCompleteAndValid) {
       const newPwd = `${inputs.pwd0}${inputs.pwd1}${inputs.pwd2}${inputs.pwd3}`;
       setInputs((prevState) => ({ ...prevState, pwd: newPwd }));
     } else {
@@ -332,7 +346,7 @@ export default function LoginForm() {
             {erreurs.idPS ? messages.idPS : null}
           </small>
         </div>
-        {(isIdPSCompleteAndValid && showMe) &&(
+        {isIdPSCompleteAndValid && showMe && (
           <div className="labelInput">
             <label>Veuillez saisir votre code HMA : </label>
             <div className="groupPwdPlace">

@@ -53,16 +53,16 @@ values
     (
         'LEFORT',
         'Nomenjanahary Nuno',
-        '$2b$10$4WBMGWWIiMbljSTSa99Tfur3Wbg9psmXswKck4x30f/30u7kv.pmy',
-        -- lefort
+        '$2b$10$8zSCozIrTJsiAVYxBTAL7OkITjn3XwNnns.0.btbkV6e4PMvz/oqu',
+        -- 7590 
         'Trofel',
         1
     ),
     (
         'TROFEL',
         'Nomenjanahary Nono',
-        '$2b$10$4WBMGWWIiMbljSTSa99Tfur3Wbg9psmXswKck4x30f/30u7kv.pmy',
-        -- lefort
+        '$2b$10$8zSCozIrTJsiAVYxBTAL7OkITjn3XwNnns.0.btbkV6e4PMvz/oqu',
+        -- 7590 
         'Lefort',
         0
     );

@@ -1,0 +1,130 @@
+:root {
+    --primary-color: #2015ea;
+    --primary-color-light: #6861f1;
+    --secondary-color: #c0dbea;
+    --text-dark: #020617;
+    --text-light: #8995a7;
+    --white: #ffffff;
+    --max-width: 1200px;
+  }
+  body{
+    background-color: rgb(224, 224, 224);
+  }
+  .header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    background-color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  .header div {
+    display: flex;
+    align-items: center;
+  }
+  
+  .header span, .header p, .header input, .header button {
+    margin-right: 15px;
+  }
+  
+  .header p {
+    margin: 0;
+  }
+  
+  .contenu {
+    margin-top: 60px;
+    margin-left: 20%;
+    padding: 20px;
+    width: 80%;
+    background-color:  var(--white);
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: calc(100% - 60px);
+    width: 20%;
+    background-color: var(--white);
+    color: var(--text-dark);
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar ul li {
+    margin-bottom: 10px;
+  }
+  
+  .sidebar ul li a {
+    color: var(--text-dark);
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Footer */
+  .footer {
+    background-color: var(--white);
+    padding: 10px;
+    text-align: center;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  /* Responsive Sidebar */
+  @media (width < 750px) {
+    .sidebar {
+      width: 0;
+      overflow: hidden;
+      transition: width 0.3s ease;
+    }
+  
+    .sidebar.open {
+      width: 80%;
+    }
+  
+    .contenu {
+      margin-left: 0;
+    }
+  
+    .hamburger {
+      display: block;
+      position: fixed;
+      top: 60px;
+      left: 20px;
+      z-index: 1100;
+      cursor: pointer;
+    }
+  
+    .hamburger span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      margin: 5px;
+      background-color: black;
+    }
+  
+    .hamburger.open .hamburger-icon {
+      /* background: url('x-icon.png') no-repeat center center; */
+    }
+  
+    .hamburger:not(.open) .hamburger-icon {
+      /* background: url('hamburger-icon.png') no-repeat center center; */
+    }
+  }
+  

@@ -5,7 +5,7 @@ import './sidebar.css';
 export default function Sidebar() {
   const u_info = GetUserData();
   return (
-    <>
+    <div className="sidebar">
       <ul>
         <li>
           <Link to="/home/">
@@ -43,6 +43,6 @@ export default function Sidebar() {
           </Link>
         </li>
       </ul>
-    </>
+    </div>
   );
 }
