@@ -37,10 +37,9 @@ export default function LoginForm() {
     pwd2: true,
     pwd3: true,
   });
-
   //#endregion
 
-  //#region // HANDLE  
+  //#region // HANDLE
   const handleChange = (event) => {
     isValidate = true;
     const target = event.target;
@@ -55,7 +54,7 @@ export default function LoginForm() {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Champ obligatoire!",
+          [name]: "Identifiant obligatoire!",
         }));
       } else if (value.length < 4) {
         isValidate = false;
@@ -143,7 +142,7 @@ export default function LoginForm() {
   };
   //#endregion
 
-  //#region // VALIDATION 
+  //#region // VALIDATION
   const validation = (event) => {
     event.preventDefault();
 
@@ -290,7 +289,7 @@ export default function LoginForm() {
           ) : null}
         </span>
         <div className="labelInput">
-          <label className="text-left">Identifiant :</label>
+          <label>Identifiant :</label>
           <div className="inputRow">
             <input
               type="text"

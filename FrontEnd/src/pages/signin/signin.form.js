@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 const URL_DE_BASE = `utilisateur/`;
 
 export default function SignInForm() {
+  //#region // FONC
   const navigate = useNavigate();
 
   const initialInputs = {
@@ -55,41 +56,62 @@ export default function SignInForm() {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Champ obligatoire!",
+          [name]: "Identifiant obligatoire!",
         }));
       } else if (value.length < 4) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Valeur champ trop court",
+          [name]: "Identifiant trop court!",
         }));
       } else if (value.length > 12) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Valeur champ trop long",
+          [name]: "Identifiant trop long!",
         }));
       }
     }
 
-    if (name === "nom" || name === "prenom") {
+    if (name === "nom") {
       if (value.length === 0) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Champ obligatoire!",
+          [name]: "Nom obligatoire!",
         }));
       } else if (value.length < 2) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Valeur champ trop court",
+          [name]: "Nom trop court!",
         }));
-      } else if (value.length > 150) {
+      } else if (value.length > 25) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Valeur champ trop long",
+          [name]: "Nom trop long!",
+        }));
+      }
+    }
+    if (name === "prenom") {
+      if (value.length === 0) {
+        setErreurs((values) => ({ ...values, [name]: true }));
+        setMessages((values) => ({
+          ...values,
+          [name]: "Prénom obligatoire!",
+        }));
+      } else if (value.length < 2) {
+        setErreurs((values) => ({ ...values, [name]: true }));
+        setMessages((values) => ({
+          ...values,
+          [name]: "Prénom trop court!",
+        }));
+      } else if (value.length > 50) {
+        setErreurs((values) => ({ ...values, [name]: true }));
+        setMessages((values) => ({
+          ...values,
+          [name]: "Prénom trop long!",
         }));
       }
     }
@@ -126,7 +148,7 @@ export default function SignInForm() {
       setErreurs((values) => ({ ...values, pwd: true }));
       setMessages((values) => ({
         ...values,
-        pwd: "Valeur valide [0-9]",
+        pwd: "Valeur valide [0-9]!",
       }));
 
       switch (name) {
@@ -159,12 +181,37 @@ export default function SignInForm() {
 
     inputsObligatoire.forEach((element) => {
       if (!inputs[element]) {
-        setErreurs((values) => ({ ...values, [element]: true }));
-        setMessages((values) => ({
-          ...values,
-          [element]: "Champ obligatoire!",
-        }));
         formIsValid = false;
+        setErreurs((values) => ({ ...values, [element]: true }));
+        switch (element) {
+          case "idPS":
+            setMessages((values) => ({
+              ...values,
+              [element]: "Identifiant obligatoire!",
+            }));
+            break;
+          case "pwd":
+            setMessages((values) => ({
+              ...values,
+              [element]: "Code secret obligatoire!",
+            }));
+            break;
+          case "nom":
+            setMessages((values) => ({
+              ...values,
+              [element]: "Nom obligatoire!",
+            }));
+            break;
+          case "prenom":
+            setMessages((values) => ({
+              ...values,
+              [element]: "Prénom obligatoire!",
+            }));
+            break;
+          default:
+            // Optionnel : gérer les cas non spécifiés si nécessaire
+            break;
+        }
       }
     });
 
@@ -174,18 +221,27 @@ export default function SignInForm() {
   };
 
   const onSubmit = () => {
-    axios.post(URL_DE_BASE, inputs).then((response) => {
-      if (response.status === 200) {
-        if (response.data.success) {
-          toast.success(response.data.message);
-          onClose();
+    axios
+      .post(URL_DE_BASE, inputs)
+      .then((response) => {
+        if (response.status === 200) {
+          if (response.data.success) {
+            toast.success(response.data.message);
+            onClose();
+          } else {
+            toast.error(response.data.message);
+          }
         } else {
-          toast.error(response.data.message);
+          toast.error("Échec de l'ajout!");
         }
-      } else {
-        toast.error("Échec de l'ajout!");
-      }
-    });
+      })
+      .catch((error) => {
+        setErreurs((values) => ({ ...values, messageErreur: true }));
+        setMessages((values) => ({
+          ...values,
+          messageErreur: "Veuillez vous connecter au serveur!",
+        }));
+      });
   };
 
   function onClose() {
@@ -201,7 +257,7 @@ export default function SignInForm() {
       pwd1: true,
       pwd2: true,
       pwd3: true,
-    }); 
+    });
 
     navigate("/");
   }
@@ -253,80 +309,102 @@ export default function SignInForm() {
       setInputs((prevState) => ({ ...prevState, pwd: newPwd }));
     }
   }, [isPwdCompleteAndValid]);
+  //#endregion
 
   return (
     <>
       <form>
-        <div>
-          <label>Nom :</label>
-          <input
-            type="text"
-            name="nom"
-            onChange={handleChange}
-            autoComplete="off"
-            placeholder="Entrez votre Nom"
-          />
-          <small className="text-danger d-block">
-            {erreurs.nom ? messages.nom : null}
-          </small>
+        <span>
+          {erreurs.messageErreur ? (
+            <p className="text-danger d-block">{messages.messageErreur}</p>
+          ) : null}
+        </span>
+        <div className="idAndName">
+          <div className="labelInput">
+            <label>Identifiant :</label>
+            <div className="inputRow">
+              <input
+                type="text"
+                name="idPS"
+                onChange={handleChange}
+                autoComplete="off"
+                placeholder="Créez votre Identifiant"
+              />
+            </div>
+            <small className="text-danger d-block text-center">
+              {erreurs.idPS ? messages.idPS : null}
+            </small>
+          </div>
+          <div className="labelInput">
+            <label>Nom :</label>
+            <div className="inputRow">
+              <input
+                type="text"
+                name="nom"
+                onChange={handleChange}
+                autoComplete="off"
+                placeholder="Entrez votre Nom"
+              />
+            </div>
+            <small className="text-danger d-block text-center">
+              {erreurs.nom ? messages.nom : null}
+            </small>
+          </div>
         </div>
-        <div>
+        <div className="labelInput">
           <label>Prénom :</label>
-          <input
-            type="text"
-            name="prenom"
-            onChange={handleChange}
-            autoComplete="off"
-            placeholder="Entrez votre Prénom"
-          />
-          <small className="text-danger d-block">
+          <div className="inputRow">
+            <input
+              type="text"
+              name="prenom"
+              onChange={handleChange}
+              autoComplete="off"
+              placeholder="Entrez votre Prénom"
+            />
+          </div>
+          <small className="text-danger d-block text-center">
             {erreurs.prenom ? messages.prenom : null}
           </small>
         </div>
-        <div>
-          <label>Identifiant :</label>
-          <input
-            type="text"
-            name="idPS"
-            onChange={handleChange}
-            autoComplete="off"
-            placeholder="Entrez votre identifiant"
-          />
-          <small className="text-danger d-block">
-            {erreurs.idPS ? messages.idPS : null}
-          </small>
-        </div>
         {isInfoCompleteAndValid && (
-          <div>
-            <label>Mot de passe :</label>
-            {pwdRefs.map((ref, index) => (
-              <input
-                key={index}
-                type="password"
-                name={`pwd${index}`}
-                onChange={handleChangePwd}
-                autoComplete="off"
-                ref={ref}
-                maxLength={1}
-                value={inputs[`pwd${index}`]}
-                disabled={disabledInputs[`pwd${index}`]}
-              />
-            ))}
-            <small className="text-danger d-block">
+          <div className="labelInput">
+            <label>Veuillez créer votre code HMA : </label>
+            <div className="groupPwdPlace">
+              <div className="groupPwd">
+                {pwdRefs.map((ref, index) => (
+                  <div className="inputPwd">
+                    <input
+                      key={index}
+                      type="password"
+                      name={`pwd${index}`}
+                      onChange={handleChangePwd}
+                      autoComplete="off"
+                      ref={ref}
+                      maxLength={1}
+                      value={inputs[`pwd${index}`]}
+                      disabled={disabledInputs[`pwd${index}`]}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <small className="text-danger d-block text-center">
               {erreurs.pwd ? messages.pwd : null}
             </small>
           </div>
         )}
         <div>
-          <button onClick={onClose} type="button">
-            <span> Annuler</span>
-          </button>
-
+          <div className="inputFP">
+            <span>Besoin d'assistance? </span>
+          </div>
           <button onClick={validation} type="submit">
             <span> Enregistrer</span>
           </button>
         </div>
       </form>
+      <p>
+        Vous avez déjà un compte? <span onClick={onClose}>Se connecter</span>
+      </p>
     </>
   );
 }
