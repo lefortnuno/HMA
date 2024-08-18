@@ -61,6 +61,12 @@
   color: var(--primary-color);
   background-color: transparent;
 }
+
+.containerContent input[type="password"] {
+  font-family: 'password', monospace;  
+  -webkit-text-security: disc; /* Masque le texte */
+  ime-mode: disabled; /* Désactive les méthodes d'entrée */
+}
 .containerContent input::placeholder {
   color: var (--text-dark);
 }

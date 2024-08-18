@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 const URL_DE_BASE = `utilisateur/`;
 
 export default function SignInForm() {
-  //#region // FONC
   const navigate = useNavigate();
 
   const initialInputs = {
@@ -34,6 +33,7 @@ export default function SignInForm() {
     pwd: "",
   });
 
+  const [showSave, setShowSave] = useState(false);
   const pwdRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
   const [disabledInputs, setDisabledInputs] = useState({
@@ -51,6 +51,7 @@ export default function SignInForm() {
     setErreurs((values) => ({ ...values, [name]: false }));
     setMessages((values) => ({ ...values, [name]: "" }));
 
+    // Validation spécifique aux champs idPS et nom
     if (name === "idPS") {
       if (value.length === 0) {
         setErreurs((values) => ({ ...values, [name]: true }));
@@ -94,6 +95,7 @@ export default function SignInForm() {
         }));
       }
     }
+
     if (name === "prenom") {
       if (value.length === 0) {
         setErreurs((values) => ({ ...values, [name]: true }));
@@ -172,11 +174,10 @@ export default function SignInForm() {
     }
   };
 
-  const validation = (event) => {
+  const preValidation = (event) => {
     event.preventDefault();
 
-    const inputsObligatoire = ["nom", "idPS", "pwd"];
-
+    const inputsObligatoire = ["nom", "idPS"];
     let formIsValid = true;
 
     inputsObligatoire.forEach((element) => {
@@ -190,56 +191,66 @@ export default function SignInForm() {
               [element]: "Identifiant obligatoire!",
             }));
             break;
-          case "pwd":
-            setMessages((values) => ({
-              ...values,
-              [element]: "Code secret obligatoire!",
-            }));
-            break;
           case "nom":
             setMessages((values) => ({
               ...values,
               [element]: "Nom obligatoire!",
             }));
-            break; 
+            break;
           default:
-            // Optionnel : gérer les cas non spécifiés si nécessaire
             break;
         }
       }
     });
 
     if (formIsValid) {
-      onSubmit();
+      setShowSave(true);
     }
   };
 
-  const onSubmit = () => {
-    axios
-      .post(URL_DE_BASE, inputs)
-      .then((response) => {
-        if (response.status === 200) {
-          if (response.data.success) {
-            toast.success(response.data.message);
-            onClose();
-          } else {
-            toast.error(response.data.message);
-          }
-        } else {
-          toast.error("Échec de l'ajout!");
-        }
-      })
-      .catch((error) => {
-        setErreurs((values) => ({ ...values, messageErreur: true }));
+  const validation = (event) => {
+    event.preventDefault();
+
+    const inputsObligatoire = ["pwd"];
+    let formIsValid = true;
+
+    inputsObligatoire.forEach((element) => {
+      if (!inputs[element]) {
+        formIsValid = false;
+        setErreurs((values) => ({ ...values, [element]: true }));
         setMessages((values) => ({
           ...values,
-          messageErreur: "Veuillez vous connecter au serveur!",
+          [element]: "Mot de passe obligatoire!",
         }));
-      });
+      }
+    });
+
+    if (formIsValid) {
+      axios
+        .post(URL_DE_BASE + "signIn", inputs)
+        .then((response) => {
+          if (response.status === 201) {
+            toast.success("Utilisateur ajouté!");
+            navigate("/");
+          } else {
+            toast.error("Échec de l'ajout!");
+          }
+        })
+        .catch((error) => {
+          setErreurs((values) => ({ ...values, messageErreur: true }));
+          setMessages((values) => ({
+            ...values,
+            messageErreur: "Veuillez vous connecter au serveur!",
+          }));
+        });
+    } else {
+      toast.error("Échec de l'ajout!");
+    }
   };
 
   function onClose() {
     setInputs(initialInputs);
+    setShowSave(false);
     setErreurs({
       nom: false,
       prenom: false,
@@ -267,28 +278,6 @@ export default function SignInForm() {
   const isInfoCompleteAndValid =
     inputs.nom && inputs.idPS && !erreurs.nom && !erreurs.idPS;
 
-  useEffect(() => {
-    if (isInfoCompleteAndValid) {
-      setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
-    } else {
-      setDisabledInputs((prevState) => ({
-        ...prevState,
-        pwd0: true,
-        pwd1: true,
-        pwd2: true,
-        pwd3: true,
-      }));
-      setInputs((prevState) => ({
-        ...prevState,
-        pwd: "",
-        pwd0: "",
-        pwd1: "",
-        pwd2: "",
-        pwd3: "",
-      }));
-    }
-  }, [isInfoCompleteAndValid]);
-
   const isPwdCompleteAndValid =
     inputs.pwd0 && inputs.pwd1 && inputs.pwd2 && inputs.pwd3;
 
@@ -298,7 +287,6 @@ export default function SignInForm() {
       setInputs((prevState) => ({ ...prevState, pwd: newPwd }));
     }
   }, [isPwdCompleteAndValid]);
-  //#endregion
 
   return (
     <>
@@ -355,15 +343,14 @@ export default function SignInForm() {
             {erreurs.prenom ? messages.prenom : null}
           </small>
         </div>
-        {isInfoCompleteAndValid && (
+        {showSave && (
           <div className="labelInput">
             <label>Veuillez créer votre code HMA : </label>
             <div className="groupPwdPlace">
               <div className="groupPwd">
                 {pwdRefs.map((ref, index) => (
-                  <div className="inputPwd">
+                  <div className="inputPwd" key={index}>
                     <input
-                      key={index}
                       type="password"
                       name={`pwd${index}`}
                       onChange={handleChangePwd}
@@ -387,8 +374,8 @@ export default function SignInForm() {
           <div className="inputFP">
             <span>Besoin d'assistance? </span>
           </div>
-          <button onClick={validation} type="submit">
-            <span> Enregistrer</span>
+          <button onClick={showSave ? validation : preValidation} type="submit">
+            <span>{showSave ? "Enregistrer" : "Continuer"}</span>
           </button>
         </div>
       </form>

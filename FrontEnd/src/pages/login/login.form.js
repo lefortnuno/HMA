@@ -319,7 +319,8 @@ export default function LoginForm() {
                       ref={ref}
                       maxLength={1}
                       value={inputs[`pwd${index}`]}
-                      disabled={disabledInputs[`pwd${index}`]}
+                      disabled={disabledInputs[`pwd${index}`]} 
+                      inputMode="numeric"
                     />
                   </div>
                 ))}
