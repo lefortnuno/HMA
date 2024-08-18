@@ -30,6 +30,9 @@ export default function LoginForm() {
   });
 
   const pwdRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  const idPSRef = useRef(null);
+  const [incorrect, setIncorrect] = useState(false);
+  const [showMe, setShowMe] = useState(false);
 
   const [disabledInputs, setDisabledInputs] = useState({
     pwd0: true,
@@ -197,7 +200,13 @@ export default function LoginForm() {
               if (u != "pwd") localStorage.setItem(u, utilisateur[u]);
             }
           } else {
+            setErreurs((values) => ({ ...values, messageErreur: true }));
+            setMessages((values) => ({
+              ...values,
+              messageErreur: response.data.message,
+            }));
             toast.error(response.data.message);
+            setIncorrect(true);
           }
         } else {
           toast.error("Échec de la connexion!");
@@ -237,6 +246,19 @@ export default function LoginForm() {
 
   //#region // USE EFFECT
   useEffect(() => {
+    if (incorrect) {
+      setInputs((prevState) => ({
+        ...prevState,
+        idPS: "",
+      }));
+      setIncorrect(false);
+      if (idPSRef.current) {
+        idPSRef.current.focus(); // Force le focus après réinitialisation
+      }
+    }
+  }, [incorrect]);
+
+  useEffect(() => {
     pwdRefs.forEach((ref, index) => {
       if (!disabledInputs[`pwd${index}`] && ref.current) {
         ref.current.focus();
@@ -244,12 +266,16 @@ export default function LoginForm() {
     });
   }, [disabledInputs]);
 
-  const isIdPSCompleteAndValid = inputs.idPS && !erreurs.idPS;
+  const isIdPSCompleteAndValid = inputs.idPS && !erreurs.idPS; 
 
   useEffect(() => {
     if (isIdPSCompleteAndValid) {
-      setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
+      setTimeout(() => {
+        setShowMe(true)
+        setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
+      }, 3000);
     } else {
+      setShowMe(false)
       setDisabledInputs((prevState) => ({
         ...prevState,
         pwd0: true,
@@ -272,10 +298,11 @@ export default function LoginForm() {
     inputs.pwd0 && inputs.pwd1 && inputs.pwd2 && inputs.pwd3;
 
   useEffect(() => {
-    if (isPwdCompleteAndValid) {
-      // Met à jour la valeur du mot de passe complet
+    if (isPwdCompleteAndValid) { 
       const newPwd = `${inputs.pwd0}${inputs.pwd1}${inputs.pwd2}${inputs.pwd3}`;
       setInputs((prevState) => ({ ...prevState, pwd: newPwd }));
+    } else {
+      setInputs((prevState) => ({ ...prevState, pwd: "" }));
     }
   }, [isPwdCompleteAndValid]);
   //#endregion
@@ -297,19 +324,21 @@ export default function LoginForm() {
               onChange={handleChange}
               autoComplete="off"
               placeholder="Entrez votre identifiant"
+              value={inputs.idPS} // Liaison de la valeur
+              ref={idPSRef} // Référence à l'input
             />
           </div>
           <small className="text-danger d-block text-center">
             {erreurs.idPS ? messages.idPS : null}
           </small>
         </div>
-        {isIdPSCompleteAndValid && (
+        {(isIdPSCompleteAndValid && showMe) &&(
           <div className="labelInput">
             <label>Veuillez saisir votre code HMA : </label>
             <div className="groupPwdPlace">
               <div className="groupPwd">
                 {pwdRefs.map((ref, index) => (
-                  <div className="inputPwd">
+                  <div className="inputPwd" key={index}>
                     <input
                       key={index}
                       type="password"
@@ -319,7 +348,7 @@ export default function LoginForm() {
                       ref={ref}
                       maxLength={1}
                       value={inputs[`pwd${index}`]}
-                      disabled={disabledInputs[`pwd${index}`]} 
+                      disabled={disabledInputs[`pwd${index}`]}
                       inputMode="numeric"
                     />
                   </div>
