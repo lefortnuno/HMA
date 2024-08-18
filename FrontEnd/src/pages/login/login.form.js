@@ -7,7 +7,7 @@ const URL_DE_BASE = `utilisateur/seConnecter/`;
 let isValidate = false;
 
 export default function LoginForm() {
-  //#region // MES VARIABLES
+  //#region // VARIABLES
   const navigate = useNavigate();
 
   const mesInputs = {
@@ -40,7 +40,7 @@ export default function LoginForm() {
 
   //#endregion
 
-  //#region // HANDLE CHANGE FONCTION
+  //#region // HANDLE  
   const handleChange = (event) => {
     isValidate = true;
     const target = event.target;
@@ -62,14 +62,14 @@ export default function LoginForm() {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Valeur champ trop court",
+          [name]: "Identifiant trop court!",
         }));
       } else if (value.length > 12) {
         isValidate = false;
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
-          [name]: "Valeur champ trop long",
+          [name]: "Identifiant trop long!",
         }));
       } else {
         isValidate = true;
@@ -80,7 +80,7 @@ export default function LoginForm() {
   };
   //#endregion
 
-  //#region // HANDLE CHANGE FONCTION FOR PWD
+  //#region // HANDLE PWD
   const handleChangePwd = (event) => {
     const target = event.target;
     const value = target.value;
@@ -137,13 +137,13 @@ export default function LoginForm() {
       setErreurs((values) => ({ ...values, pwd: true }));
       setMessages((values) => ({
         ...values,
-        pwd: "Valeur valide [0-9]",
+        pwd: "Valeur valide [0-9]!",
       }));
     }
   };
   //#endregion
 
-  //#region //VALIDATION FORMULAIRE
+  //#region // VALIDATION 
   const validation = (event) => {
     event.preventDefault();
 
@@ -154,7 +154,7 @@ export default function LoginForm() {
       setErreurs((values) => ({ ...values, idPS: true }));
       setMessages((values) => ({
         ...values,
-        idPS: "Champ obligatoire!",
+        idPS: "Identifiant obligatoire!",
       }));
       formIsValid = false;
     } else {
@@ -167,7 +167,7 @@ export default function LoginForm() {
       setErreurs((values) => ({ ...values, pwd: true }));
       setMessages((values) => ({
         ...values,
-        pwd: "Champ obligatoire!",
+        pwd: "Code secret obligatoire!",
       }));
       formIsValid = false;
     } else {
@@ -181,7 +181,7 @@ export default function LoginForm() {
   };
   //#endregion
 
-  //#region // FONCTION DU BOUTTON ENREGISTRER
+  //#region // SUBMIT
   const onSubmit = () => {
     axios
       .post(URL_DE_BASE, inputs)
@@ -208,14 +208,13 @@ export default function LoginForm() {
         setErreurs((values) => ({ ...values, messageErreur: true }));
         setMessages((values) => ({
           ...values,
-          messageErreur:
-            "Veuillez vous connecter au serveur!",
+          messageErreur: "Veuillez vous connecter au serveur!",
         }));
       });
   };
   //#endregion
 
-  //#region // QUAND JE FERME , CETTE FONCTIO EST APPELLER
+  //#region // FERMETURE
   function onClose() {
     setInputs(mesInputs);
     setErreurs({
@@ -237,6 +236,7 @@ export default function LoginForm() {
   }
   //#endregion
 
+  //#region // USE EFFECT
   useEffect(() => {
     pwdRefs.forEach((ref, index) => {
       if (!disabledInputs[`pwd${index}`] && ref.current) {
@@ -279,6 +279,7 @@ export default function LoginForm() {
       setInputs((prevState) => ({ ...prevState, pwd: newPwd }));
     }
   }, [isPwdCompleteAndValid]);
+  //#endregion
 
   return (
     <>
@@ -288,49 +289,61 @@ export default function LoginForm() {
             <p className="text-danger d-block">{messages.messageErreur}</p>
           ) : null}
         </span>
-        <div>
-          <label>Identifiant :</label>
-          <input
-            type="text"
-            name="idPS"
-            onChange={handleChange}
-            autoComplete="off"
-            placeholder="Entrez votre identifiant"
-          />
-          <small className="text-danger d-block">
+        <div className="labelInput">
+          <label className="text-left">Identifiant :</label>
+          <div className="inputRow">
+            <input
+              type="text"
+              name="idPS"
+              onChange={handleChange}
+              autoComplete="off"
+              placeholder="Entrez votre identifiant"
+            />
+          </div>
+          <small className="text-danger d-block text-center">
             {erreurs.idPS ? messages.idPS : null}
           </small>
         </div>
         {isIdPSCompleteAndValid && (
-          <div>
-            <label>Mot de passe : </label>
-            {pwdRefs.map((ref, index) => (
-              <input
-                key={index}
-                type="password"
-                name={`pwd${index}`}
-                onChange={handleChangePwd}
-                autoComplete="off"
-                ref={ref}
-                maxLength={1}
-                value={inputs[`pwd${index}`]}
-                disabled={disabledInputs[`pwd${index}`]}
-              />
-            ))}
-            <small className="text-danger d-block">
+          <div className="labelInput">
+            <label>Veuillez saisir votre code HMA : </label>
+            <div className="groupPwdPlace">
+              <div className="groupPwd">
+                {pwdRefs.map((ref, index) => (
+                  <div className="inputPwd">
+                    <input
+                      key={index}
+                      type="password"
+                      name={`pwd${index}`}
+                      onChange={handleChangePwd}
+                      autoComplete="off"
+                      ref={ref}
+                      maxLength={1}
+                      value={inputs[`pwd${index}`]}
+                      disabled={disabledInputs[`pwd${index}`]}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <small className="text-danger d-block text-center">
               {erreurs.pwd ? messages.pwd : null}
             </small>
           </div>
         )}
         <div>
+          <div className="inputFP">
+            <span>Mot de passe oublié? </span>
+          </div>
           <button onClick={validation}>
             <span> Se Connecter</span>
           </button>
-          <button onClick={onClose}>
-            <span> NEW </span>
-          </button>
         </div>
       </form>
+      <p>
+        Vous n'avez pas encore de compte?{" "}
+        <span onClick={onClose}>S'inscrire</span>
+      </p>
     </>
   );
 }
