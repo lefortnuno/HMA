@@ -142,6 +142,7 @@ export default function SignInForm() {
       }
     } else {
       setInputs((values) => ({ ...values, [name]: "" }));
+      setInputs((values) => ({ ...values, pwd: "" }));
       setErreurs((values) => ({ ...values, pwd: true }));
       setMessages((values) => ({
         ...values,
