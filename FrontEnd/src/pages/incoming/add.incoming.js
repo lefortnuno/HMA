@@ -91,6 +91,8 @@ export default function AddInComing() {
     }));
     setFilteredServices([]);
     setIsServiceSelected(true);
+    setErreurs((values) => ({ ...values, nomS: false }));
+    setMessages((values) => ({ ...values, nomS: "" }));
   };
 
   const validation = (event) => {

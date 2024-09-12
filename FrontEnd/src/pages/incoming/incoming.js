@@ -5,7 +5,6 @@ import Pagination from "../../components/pagination/pagination";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import DeleteModal from "../../components/modals/delete";
-import EditModal from "../../components/modals/edit";
 import { Link, useNavigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import {
@@ -17,7 +16,7 @@ import {
 import "./incoming.css";
 
 const url_req = `histo/incoming/`;
-const histoPerPage = 5; // Nombre de histo à afficher par page
+const histoPerPage = 5;
 
 export default function InComing() {
   const u_info = GetUserData();
@@ -26,11 +25,8 @@ export default function InComing() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
-  const histoFieldsToEdit = ["qte", "coms", "hk"];
   const navigate = useNavigate();
-  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     getHisto();
@@ -57,9 +53,7 @@ export default function InComing() {
   function getTotaly() {
     axios
       .get(`histo/incomingTtl/${u_info.u_id}`, u_info.opts)
-      .then(function (response) {
-        console.log(response);
-
+      .then(function (response) { 
         if (response.status === 200) {
           const allHisto = response.data[0];
           setTotaly(allHisto);
@@ -90,9 +84,9 @@ export default function InComing() {
 
   const handleEditClick = (entity) => {
     navigate(`/editIncoming/${entity.id}`, { state: { entity } });
-  }; 
+  };
 
-  const handleDetailClick = (entity) => { 
+  const handleDetailClick = (entity) => {
     navigate(`/aboutIncoming/${entity.id}`, { state: { entity } });
   };
   return (
@@ -114,7 +108,13 @@ export default function InComing() {
             </h5>
           </div>
           <h5 className="mb-0 me-2 position-relative d-inline-block">
-            Total : <span className="totaly">{totaly.montantTtl}</span> dhs
+            Total :{" "}
+            <span className="totaly">
+              {totaly.montantTtl !== null && totaly.montantTtl !== undefined
+                ? totaly.montantTtl
+                : "0.0"}
+            </span>{" "}
+            dhs
           </h5>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function InComing() {
               ))
             ) : (
               <tr>
-                <td colSpan="10">Aucun service disponible</td>
+                <td colSpan="10">Aucune donnée disponible</td>
               </tr>
             )}
           </tbody>
@@ -187,7 +187,7 @@ export default function InComing() {
           entityName={"histo"}
           auth={u_info.opts}
         />
-      )} 
+      )}
     </Template>
   );
 }

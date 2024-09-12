@@ -64,8 +64,7 @@ Histo.getAllMyInComingHisto = (id, result) => {
 };
 
 Histo.getMyTotalOfInComing = (id, result) => {
-  dbConn.query(reqMntTtl + ` AND hetsika.karazana = 1 `, id, (err, res) => {
-    console.log(res); 
+  dbConn.query(reqMntTtl + ` AND hetsika.karazana = 1 `, id, (err, res) => { 
     if (err) {
       result(err, null);
     } else {

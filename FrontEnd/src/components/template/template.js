@@ -8,10 +8,8 @@ export default function Template({ children }) {
     <>
       <Sidebar />
       <Header />
-      <div
-        className="container right-content"
-        style={{ width: "100%", marginTop: "5%" }}
-      >
+      {/* il faut coder le css du class container */}
+      <div className="container">
         <div className="contenu">{children}</div>
       </div>
       <Footer />
