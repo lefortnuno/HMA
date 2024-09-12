@@ -6,9 +6,12 @@ import "../../assets/styles/template.css";
 export default function Template({ children }) {
   return (
     <>
-      <Header />
       <Sidebar />
-      <div className="container" style={{width:"100%", marginTop:"5%"}}>
+      <Header />
+      <div
+        className="container right-content"
+        style={{ width: "100%", marginTop: "5%" }}
+      >
         <div className="contenu">{children}</div>
       </div>
       <Footer />

@@ -10,7 +10,7 @@
 
 .header {
   position: fixed;
-  top: 0;
+  top: 0%;
   width: 100%;
   height: 60px;
   background-color: var(--white);
@@ -18,9 +18,26 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+} 
+
+.header div {
+  display: flex;
+  align-items: center;
 }
+
+.header span,
+.header p,
+.header input,
+.header button {
+  margin-right: 15px;
+}
+
+.header p {
+  margin: 0;
+}
+
 .drop_item {
   display: flex;
   flex-direction: row;
@@ -36,9 +53,6 @@
   transform: translateY(0);
   z-index: 3;
   min-width: 200px;
-}
-.logo {
-  border: 2px solid var(--secondary-color);
 }
 .inputRecherche {
   position: relative;
@@ -79,5 +93,4 @@
     display: flex;
     flex-direction: column;
   }
- 
 }

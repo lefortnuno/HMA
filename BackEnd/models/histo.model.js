@@ -16,13 +16,18 @@ const reqSQL = `SELECT
                 serivisy.nom as snom,
                 serivisy.karazana as sk,
                 mpampiasa.nom as mnom,
-                ROUND(prix * qte, 2) as montant,
+                ROUND(prix * qte, 2) as montant, 
                 DATE_FORMAT(date, '%d/%m/%Y') as date,
                 prenom, prix, fandrefesana, coms, qte, idS, idM
                 FROM hetsika, mpampiasa, serivisy 
                 WHERE (mpampiasa.id = hetsika.idM AND serivisy.id = hetsika.idS)`;
 const myReq = ` AND idM = ? `;
 const ordre = ` ORDER BY id DESC `;
+const reqMntTtl = ` SELECT SUM(ROUND(prix * qte, 2)) AS montantTtl FROM 
+                    hetsika
+                    JOIN mpampiasa ON mpampiasa.id = hetsika.idM
+                    JOIN serivisy ON serivisy.id = hetsika.idS
+                    WHERE idM = ? `;
 
 Histo.addHisto = (newHisto, result) => {
   dbConn.query("INSERT INTO hetsika SET ?", newHisto, (err, res) => {
@@ -48,7 +53,7 @@ Histo.getAllMyInComingHisto = (id, result) => {
   dbConn.query(
     reqSQL + myReq + ` AND hetsika.karazana = 1 ` + ordre,
     id,
-    (err, res) => {
+    (err, res) => {  
       if (err) {
         result(err, null);
       } else {
@@ -56,6 +61,17 @@ Histo.getAllMyInComingHisto = (id, result) => {
       }
     }
   );
+};
+
+Histo.getMyTotalOfInComing = (id, result) => {
+  dbConn.query(reqMntTtl + ` AND hetsika.karazana = 1 `, id, (err, res) => {
+    console.log(res); 
+    if (err) {
+      result(err, null);
+    } else {
+      result(null, res);
+    }
+  });
 };
 
 Histo.getAllMyOutGoingHisto = (id, result) => {
@@ -72,7 +88,7 @@ Histo.getAllMyOutGoingHisto = (id, result) => {
   );
 };
 
-Histo.getIdHisto = (id, result) => { 
+Histo.getIdHisto = (id, result) => {
   dbConn.query(reqSQL + ` AND hetsika.id = ? `, id, (err, res) => {
     if (err) {
       result(err, null);
@@ -114,7 +130,7 @@ Histo.updateMyHisto = (updateHisto, id, result) => {
           if (err) {
             result(err, null);
           } else {
-            result(null, { success: true, message: "Reussi" });
+            result(null, { success: true, message: "Modification reussi !" });
           }
         }
       );

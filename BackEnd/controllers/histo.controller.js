@@ -5,7 +5,7 @@ module.exports.addHisto = (req, res) => {
   let { coms, qte, karazana, idS, idM } = req.body;
   const date = new Date();
   const newHisto = { date, coms, qte, karazana, idS, idM };
-  console.log(date);
+
   Histo.addHisto(newHisto, (err, resp) => {
     if (err) {
       res.send(err);
@@ -15,7 +15,7 @@ module.exports.addHisto = (req, res) => {
   });
 };
 
-module.exports.getAllMyHisto = (req, res) => { 
+module.exports.getAllMyHisto = (req, res) => {
   Histo.getAllMyHisto(req.params.id, (err, resp) => {
     if (!err) {
       res.send(resp);
@@ -25,7 +25,7 @@ module.exports.getAllMyHisto = (req, res) => {
   });
 };
 
-module.exports.getAllMyInComingHisto = (req, res) => { 
+module.exports.getAllMyInComingHisto = (req, res) => {
   Histo.getAllMyInComingHisto(req.params.id, (err, resp) => {
     if (!err) {
       res.send(resp);
@@ -35,7 +35,17 @@ module.exports.getAllMyInComingHisto = (req, res) => {
   });
 };
 
-module.exports.getAllMyOutGoingHisto = (req, res) => { 
+module.exports.getMyTotalOfInComing = (req, res) => {
+  Histo.getMyTotalOfInComing(req.params.id, (err, resp) => {
+    if (!err) {
+      res.send(resp);
+    } else {
+      res.send(err);
+    }
+  });
+};
+
+module.exports.getAllMyOutGoingHisto = (req, res) => {
   Histo.getAllMyOutGoingHisto(req.params.id, (err, resp) => {
     if (!err) {
       res.send(resp);

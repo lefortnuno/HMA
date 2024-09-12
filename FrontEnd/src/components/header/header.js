@@ -30,15 +30,7 @@ export default function Header(props) {
       {u_info.u_token ? (
         <div className="header d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-            <img
-              src={hma}
-              alt="bg-hma"
-              className="img-fluid logo rounded-circle me-2"
-              style={{ width: "50px" }}
-            />
-            <div className="drop_item">
-              <p className="text-muted">Bonjour!</p> <b>{u_info.u_nom}</b>
-            </div>
+             
           </div>
 
           <div className="d-flex align-items-center">

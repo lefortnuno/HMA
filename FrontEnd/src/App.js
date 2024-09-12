@@ -20,6 +20,7 @@ import AddService from "./pages/services/add.service";
 import InComing from "./pages/incoming/incoming";
 import AddInComing from "./pages/incoming/add.incoming";
 import InComingDetails from "./pages/incoming/detail.incoming";
+import EditInComing from "./pages/incoming/edit.incoming";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="incoming/" element={<SignInProtection Cmp={InComing}/>} />
           <Route path="newIncoming/" element={<SignInProtection Cmp={AddInComing}/>} />
           <Route path="aboutIncoming/:id" element={<SignInProtection Cmp={InComingDetails}/>} />
+          <Route path="editIncoming/:id" element={<SignInProtection Cmp={EditInComing}/>} />
         </Routes>
       </BrowserRouter>
     </div>

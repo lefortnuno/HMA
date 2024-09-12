@@ -11,7 +11,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center; 
-}
+  background-color: var(--white);
+  padding: 10px;
+  text-align: center;
+  position: relative;
+  bottom: 0;
+  margin-top: 2%;
+  width: 100%;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, .2); /* Slightly darker shadow for depth */
+} 
 
 .footer-left {
   margin-left: 23%; 

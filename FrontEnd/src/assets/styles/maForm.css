@@ -1,0 +1,229 @@
+:root {
+  --primary-color: #2015ea;
+  --primary-color-light: #6861f1;
+  --secondary-color: #c0dbea;
+  --text-dark: #020617;
+  --text-light: #8995a7;
+  --white: #ffffff;
+  --max-width: 1200px;
+}
+
+.monContainer {
+  position: relative;
+  padding: 0% 1%;
+  text-align: left;
+}
+
+.monContainer header {
+  position: relative;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.monContainer header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  height: 3px;
+  width: 39px;
+  border-radius: 8px;
+  background-color: var(--primary-color);
+}
+.monContainer form {
+  position: relative;
+  margin-top: 16px;
+  min-height: 250px;
+  overflow: hidden;
+  overflow-y: scroll;
+}
+.monContainer form::-webkit-scrollbar {
+  display: none;
+}
+.monContainer form .form {
+  position: absolute;
+  width: 100%;
+  transition: 0.3s ease;
+}
+form.secActive .form.first {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-100%);
+}
+.monContainer form .fields {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+form .fields .input-field {
+  display: flex;
+  width: calc(100% / 3 - 15px);
+  flex-direction: column;
+  margin: 4px 0;
+}
+.input-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #2e2e2e;
+}
+.input-field input,
+select {
+  outline: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+  padding: 0 15px;
+  height: 42px;
+  margin: 8px 0;
+}
+.input-field input :focus,
+.input-field select:focus {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.13);
+}
+.input-field select {
+  color: #707070;
+}
+.input-field ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  max-height: 150px; /* Adjust this value as needed */
+  overflow-y: auto; /* Enables vertical scrolling */
+  color: #333;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+  background-color: #fff; /* Optional: background color */
+}
+
+.input-field .aucuneUl {
+  border: 1px solid red;
+}
+.input-field .aucuneLi {
+  font-weight: bold;
+}
+
+.input-field li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.input-field li:hover {
+  background-color: #f0f0f0;
+}
+
+.input-field .aucuneLi:hover {
+  background-color: rgb(245, 106, 106);
+  color: #fff;
+}
+
+.monContainer form button,
+.backBtn,
+.nextBtn,
+.retourBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 45px;
+  max-width: 170px;
+  width: 100%;
+  border: none;
+  outline: none;
+  color: #fff;
+  border-radius: 5px;
+  margin: 25px 0;
+  transition: all 0.3s linear;
+  cursor: pointer;
+}
+.backBtn {
+  background-color: rgb(247, 85, 85);
+}
+.nextBtn {
+  background-color: rgb(0, 161, 0);
+}
+.retourBtn {
+  background-color: #4070f4;
+}
+.backBtn:hover{
+	background-color: rgb(247, 27, 27);
+  }
+.nextBtn:hover {
+  background-color: green;
+}
+.retourBtn:hover{
+	background-color: var(--primary-color);
+  }
+
+.monContainer form .btnText {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+form .buttons {
+  display: flex;
+  align-items: center;
+}
+form .buttons button,
+.backBtn {
+  margin-right: 14px;
+}
+
+/*A commenter pour la version build*/
+.monToggleoption {
+  margin-top: 1.5%;
+}
+
+@media (max-width: 750px) {
+  .monContainer form {
+    overflow-y: scroll;
+  }
+  .monContainer form::-webkit-scrollbar {
+    display: none;
+  }
+  form .fields .input-field {
+    width: calc(100% / 2 - 15px);
+  }
+  form .fields .monPhotoPDP {
+    width: calc(100% / 3 - 15px);
+  }
+}
+
+@media (max-width: 550px) {
+  .monContainer {
+    width: 100%;
+    padding: 10px;
+    margin: 0 2px;
+  }
+
+  form .fields .input-field {
+    width: 100%;
+  }
+  form .fields .monPhotoPDP {
+    width: calc(60% - 15px);
+    margin-bottom: 5%;
+  }
+
+  /*Acommenter pour la version build*/
+  .monToggleoption {
+    margin-top: 2%;
+  }
+}
+
+@media (max-width: 400px) {
+  /*Acommenter pour la version build*/
+  .monToggleoption {
+    margin-top: 0%;
+  }
+}
+
+@media (max-width: 350px) {
+  form .fields .input-field {
+    width: 70%;
+  }
+  form .fields .monPhotoPDP {
+    width: calc(100% / 3 - 15px);
+    margin-bottom: 5%;
+  }
+}

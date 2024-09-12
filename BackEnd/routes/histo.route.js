@@ -17,6 +17,11 @@ router.get(
   HistoController.getAllMyInComingHisto
 );
 router.get(
+  "/incomingTtl/:id",
+  user.checkUtilisateur,
+  HistoController.getMyTotalOfInComing
+);
+router.get(
   "/outgoing/:id",
   user.checkUtilisateur,
   HistoController.getAllMyOutGoingHisto

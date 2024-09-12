@@ -14,7 +14,7 @@ export default function InComingDetails() {
   useEffect(() => {
     axios
       .get(`histo/${id}`, u_info.opts)
-      .then((response) => { 
+      .then((response) => {
         if (response.status === 200) {
           setDetails(response.data[0]);
         } else {
@@ -33,13 +33,21 @@ export default function InComingDetails() {
   };
   return (
     <Template>
-      <h3>Détails de l'entrée d'argent</h3>
-      <div>ID: {details.id}</div>
-      <div>Date: {details.date}</div>
-      <div>Nom: {details.snom}</div>
-      <div>Montant: {details.montant}</div>
-      <div>Commentaires: {details.coms}</div>
-      <button onClick={onClose}>Retour</button>
+      <div className="monContainer">
+        <header>Détails de l'entrée d'argent</header>
+
+        <div className="mt-2">
+          <div>ID: {details.id}</div>
+          <div>Date: {details.date}</div>
+          <div>Nom: {details.snom}</div>
+          <div>Montant: {details.montant} dhs</div>
+          <div>Commentaires: {details.coms}</div>
+          <div>qte: {details.qte}</div>
+          <button onClick={onClose} className="retourBtn btn btn-primary">
+            Retour
+          </button>
+        </div>
+      </div>
     </Template>
   );
 }

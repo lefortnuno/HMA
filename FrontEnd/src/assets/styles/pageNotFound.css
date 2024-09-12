@@ -1,0 +1,101 @@
+:root {
+  --primary-color: #2015ea;
+  --primary-color-light: #6861f1;
+  --secondary-color: #c0dbea;
+  --text-dark: #020617;
+  --text-light: #8995a7;
+  --white: #ffffff;
+  --max-width: 1200px;
+}
+.wrapper_404 {
+  margin-top: -5%;
+  overflow: hidden; 
+  background-image: url("../images/page-not-found.svg");
+
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.wrapper_404 .container_404 h1 {
+  font-size: 50px;
+  line-height: 60px;
+  color: #fff;
+  font-weight: bold;
+}
+.wrapper_404 .container_404 {
+  width: 80%;
+  max-width: 1600px;
+  margin: auto;
+}
+.wrapper_404 .container_404 .grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  grid-gap: 50px;
+}
+.wrapper_404 .container_404 .colmun-left {
+  text-align: left;
+}
+.wrapper_404 .container_404 .colmun-right {
+  text-align: right;
+}
+.wrapper_404 .container_404 .px-spc-b-20 {
+  padding-bottom: 20px;
+}
+.wrapper_404 .container_404 button.go-home {
+  padding: 7px 22px;
+  background: var(--primary-color);
+  border: transparent;
+  border-radius: 2px;
+  box-shadow: 0 0 2px rgb(0 0 0 / 30%);
+  cursor: pointer;
+  margin: 20px 0;
+  color: #fff;
+}
+.wrapper_404 .container_404 button.go-home i {
+  color: #fff;
+}
+
+.wrapper_404 .container_404 .button_404:hover {
+  background: #004cff;
+  color: rgb(255, 255, 255);
+}
+.wrapper_404 .container_404 img {
+  display: block;
+  width: 100%;
+}
+@media (width < 650px) { 
+  .wrapper_404 {
+    background-image: none;
+  }
+  .wrapper_404 .container_404 .grid-row {
+    display: block;
+  }
+  .colmun-left img {
+    width: 100%;
+  }
+  .wrapper_404 .container_404 .px-spc-b-20 {
+    padding-bottom: 2%;
+    margin-top: -15%; 
+  }
+  .wrapper_404 .container_404 button.go-home {
+    margin: 0 0;
+  }
+  .wrapper_404 .container_404 h1 {
+    line-height: 100%;
+    color: rgb(255, 0, 0);
+  }
+  .colmun-left {
+    width: 100%;
+  }
+  .colmun-right {
+    display: none;
+    width: 0px;
+    height: 0px;
+  }
+}
+
+@media (width < 280px) { 
+  .wrapper_404 .container_404 h1 {
+    font-size: 20px; 
+  } 
+}

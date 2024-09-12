@@ -5,14 +5,16 @@ import Pagination from "../../components/pagination/pagination";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import DeleteModal from "../../components/modals/delete";
-import EditModal from "../../components/modals/edit"; 
+import EditModal from "../../components/modals/edit";
 import AddServiceModal from "./add.service.modal";
 import { Link } from "react-router-dom";
+import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
 
 const url_req = `service/`;
-const servicesPerPage = 5; // Nombre de services à afficher par page
+const servicesPerPage = 5;
 
 export default function Service() {
+  //#region // FONC
   const u_info = GetUserData();
   const [services, setService] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,24 +68,28 @@ export default function Service() {
     setSelectedEntity(service);
     setShowDeleteModal(true);
   };
+
   const handleDeleteConfirm = () => {
     setShowDeleteModal(false);
     getServices(); // Recharger les services après suppression
   };
 
   const handleEditClick = (service) => {
-    setSelectedEntity(service);
-    setShowEditModal(true);
+    console.log("Editing service: ", service); // Debugging
+    if (service) {
+      setSelectedEntity(service);
+      setShowEditModal(true);
+    }
   };
 
   const handleEditConfirm = () => {
     setShowEditModal(false);
     getServices(); // Recharger les services après modification
   };
+  //#endregion
 
   return (
     <Template>
-      <h3>Service</h3>
       {isLargeScreen ? (
         <Link to={"/newService/"}>
           {" "}
@@ -94,81 +100,101 @@ export default function Service() {
           Ajouter un service
         </button>
       )}
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Nom</th>
-            <th>Prix</th>
-            <th>Unité</th>
-            <th>Type</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentServices.length > 0 ? (
-            currentServices.map((s, key) => (
-              <tr key={key}>
-                <td>{s.id}</td>
-                <td>{s.nom}</td>
-                <td>{s.prix}</td>
-                <td>{s.fandrefesana}</td>
-                <td>{s.karazana}</td>
-                <td>
-                  <span
-                    style={{ color: "blue", cursor: "pointer" }}
-                    onClick={() => handleEditClick(s)}
-                  >
-                    edit
-                  </span>
-                  <span
-                    style={{ color: "red", cursor: "pointer" }}
-                    onClick={() => handleDeleteClick(s)}
-                  >
-                    del
-                  </span>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5">Aucun service disponible</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
-      {selectedEntity && (
-        <DeleteModal
-          show={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDeleteConfirm}
-          entity={selectedEntity}
-          entityName="service"
-          auth={u_info.opts}
-        />
-      )}
-      {selectedEntity && (
-        <EditModal
-          show={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onConfirm={handleEditConfirm}
-          entity={selectedEntity}
-          entityName="service"
-          auth={u_info.opts}
-          fieldsToEdit={serviceFieldsToEdit}
-        />
-      )}
-      {!isLargeScreen && (
-        <AddServiceModal
-          show={showEditModal}
-          onClose={() => setShowEditModal(false)}
-        />
-      )}
+
+      <div className="row">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-header ">
+              <h4 className="card-title">Liste des services</h4>
+            </div>
+            <div className="card-body">
+              <div className="table-responsive text-nowrap">
+                <table className="table table-striped w-12">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Nom</th>
+                      <th>Prix</th>
+                      <th>Unité</th>
+                      <th>Type</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentServices.length > 0 ? (
+                      currentServices.map((s, key) => (
+                        <tr key={key}>
+                          <td>{s.id}</td>
+                          <td>{s.nom}</td>
+                          <td>{s.prix}</td>
+                          <td>{s.fandrefesana}</td>
+                          <td>{s.karazana}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary btn-sm m-1 waves-effect"
+                              variant="default"
+                              style={{ color: "blue", cursor: "pointer" }}
+                              onClick={() => handleEditClick(s)}
+                            >
+                              <BsPencilSquare />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-sm m-1 waves-effect"
+                              variant="default"
+                              style={{ color: "red", cursor: "pointer" }}
+                              onClick={() => handleDeleteClick(s)}
+                            >
+                              <BsFillTrashFill />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5">Aucun service disponible</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+                {selectedEntity && (
+                  <DeleteModal
+                    show={showDeleteModal}
+                    onClose={() => setShowDeleteModal(false)}
+                    onConfirm={handleDeleteConfirm}
+                    entity={selectedEntity}
+                    entityName="service"
+                    auth={u_info.opts}
+                  />
+                )}
+                {selectedEntity && (
+                  <EditModal
+                    show={showEditModal}
+                    onClose={() => setShowEditModal(false)}
+                    onConfirm={handleEditConfirm}
+                    entity={selectedEntity}
+                    entityName="service"
+                    auth={u_info.opts}
+                    fieldsToEdit={serviceFieldsToEdit}
+                  />
+                )}
+                {!isLargeScreen && (
+                  <AddServiceModal
+                    show={showEditModal}
+                    onClose={() => setShowEditModal(false)}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </Template>
   );
 }

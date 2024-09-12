@@ -1,10 +1,11 @@
 import React from "react";
+import '../../assets/styles/pagination.css';
 
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   const pages = [...Array(totalPages).keys()].map((num) => num + 1);
 
   return (
-    <div>
+    <div className="pagination-container">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
