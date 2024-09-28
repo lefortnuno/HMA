@@ -3,6 +3,7 @@ import GetUserData from "../../contexts/api/udata";
 
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
+import More from "../../components/more/more";
 import Template from "../../components/template/template";
 import Pagination from "../../components/pagination/pagination";
 import DeleteModal from "../../components/modals/delete";
@@ -90,10 +91,6 @@ export default function InComing() {
   //#endregion
 
   //#region //-modals
-  const indexOfLastService = currentPage * histoPerPage;
-  const indexOfFirstService = indexOfLastService - histoPerPage;
-  const currentHisto = histo.slice(indexOfFirstService, indexOfLastService);
-
   const handleDeleteClick = (histo) => {
     setSelectedEntity(histo);
     setShowDeleteModal(true);
@@ -114,6 +111,10 @@ export default function InComing() {
   //#endregion
 
   //#region //-search
+  const indexOfLastService = currentPage * histoPerPage;
+  const indexOfFirstService = indexOfLastService - histoPerPage;
+  const currentHisto = histo.slice(indexOfFirstService, indexOfLastService);
+
   const toggleSearch = () => {
     setSearchVisible(!searchVisible);
   };
@@ -145,6 +146,7 @@ export default function InComing() {
   }
   //#endregion
 
+  //#region //-html
   return (
     <Template>
       <Header>
@@ -170,6 +172,7 @@ export default function InComing() {
           <Sidebar />
 
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+            {/* -------------------------- PAGE CONTENT -------------------------- */}
             <div className="pt-3 pb-2 mb-3">
               <div className="text-center my-3 mt-0">
                 <div className="d-flex justify-content-between align-items-center">
@@ -270,36 +273,12 @@ export default function InComing() {
                 />
               )}
             </div>
-
-            <div className="pt-0 pb-2 mb-3">
-              <h2>Responsive Content Area</h2>
-              <p>
-                This is the main content section. On smaller screens, click the
-                menu button to toggle the sidebar.
-              </p>
-
-              <div className="row">
-                <div className="col-md-6">
-                  <div className="card mb-3">
-                    <div className="card-body">
-                      <h5 className="card-title">Card 1</h5>
-                      <p className="card-text">Some example text for card 1.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <div className="card mb-3">
-                    <div className="card-body">
-                      <h5 className="card-title">Card 2</h5>
-                      <p className="card-text">Some example text for card 2.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* -------------------------- FIN -------------------------- */}
+            <More />
           </main>
         </div>
       </div>
     </Template>
   );
+  //#endregion
 }

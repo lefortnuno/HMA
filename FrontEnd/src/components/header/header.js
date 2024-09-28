@@ -1,7 +1,9 @@
 import GetUserData from "../../contexts/api/udata";
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BsGearFill, BsPower } from "react-icons/bs";
+
 import "./header.css";
 import hma from "../../assets/images/hma256.png";
 
@@ -23,6 +25,14 @@ export default function Header({ children }) {
     navigate("/");
   };
 
+  // Fonction pour faire défiler vers le haut lorsque le menu est ouvert
+  const scrollToTop = () => {
+    const sidebar = document.getElementById("sidebarMenu");
+    if (sidebar) {
+      sidebar.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   // Vérifie si l'utilisateur est connecté (u_token) avant d'afficher l'entête
   return (
     <>
@@ -39,6 +49,7 @@ export default function Header({ children }) {
                 aria-controls="sidebarMenu"
                 aria-expanded="false"
                 aria-label="Toggle navigation"
+                onClick={scrollToTop}
               >
                 &#9776; Menu
               </button>

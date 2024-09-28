@@ -27,6 +27,7 @@ import {
 export default function Sidebar() {
   const u_info = GetUserData();
   const location = useLocation();
+console.log(u_info);
 
   return (
     <nav
@@ -90,7 +91,7 @@ export default function Sidebar() {
           </li>
 
           <li></li>
-          {u_info.u_karazana === 1 && (
+          {u_info.u_karazana == 1 && (
             <li className={location.pathname === "/users/" ? "active" : ""}>
               <Link to="/users/">
                 <span>
