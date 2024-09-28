@@ -5,31 +5,24 @@
   --text-dark: #020617;
   --text-light: #8995a7;
   --white: #ffffff;
-  --gray: #f4f4f4;
+  --gray: #efeeee;
   --mena: red;
   --max-width: 1200px;
 }
+
 .sidebar {
-  position: fixed;
-  top: 0%;
-  left: 0;
+  margin-top: 2.3%;
+  min-height: 80vh;
   height: calc(100% - 60px);
-  width: 20%;
   background-color: var(--white);
   color: var(--text-dark);
-  padding: 20px;
+  padding: 0.5%;
   overflow-y: auto;
-  height: 100%;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-  z-index: 3;
-  transition: transform 0.3s ease-in-out; /* Smooth transition for show/hide */
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  z-index: 0;
+  transition: transform 0.3s ease-in-out;
 }
-.sidebar-logo {
+.carte-visite {
   width: 100%;
   height: 20%;
   text-align: center;
@@ -38,12 +31,20 @@
   flex-direction: column;
   justify-content: center;
   border: 2px solid var(--secondary-color);
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 2px 2px 5px var(--secondary-color);
   border-radius: 2%;
 }
 .logo {
   border: 2px solid var(--secondary-color);
   margin-bottom: 2%;
+}
+.carte-visite-name {
+  display: flex;
+  flex-direction: row;
+}
+.carte-visite-name p,
+.carte-visite-name b {
+  padding: 0% 2%;
 }
 
 .sidebar ul {
@@ -51,15 +52,11 @@
   padding: 0;
   margin: 0;
   padding-top: 20px;
-  width: 100%;
+  min-height: 60vh;
 }
-
 .sidebar ul li {
-  margin-bottom: 10px;
-  padding: 0% 1%;
-  /* border-bottom: 1px solid var(--text-light); */
-  background-color: transparent;
-  transition: background-color 0.3s ease-in-out;
+  margin-bottom: 20px;
+  padding: 1% 0%;
 }
 
 .sidebar ul li a {
@@ -70,18 +67,19 @@
   text-decoration: none;
   font-size: 16px;
   transition: color 0.3s ease-in-out;
+  transition: background-color 0.3s ease-in-out;
   font-weight: unset;
-  padding-left: 6%;
+  padding-left: 5%;
   border-left: 6px solid var(--secondary-color);
+  background-color: transparent;
 }
 
 .sidebar ul li a span {
-  margin-right: 10px; /* Espacement entre l'icône et le texte */
+  margin-right: 10px;
 }
 .sidebar ul li a p {
   margin: 0;
   padding: 8%;
-  font-size: 16px;
   display: inline-block;
   vertical-align: middle;
 }
@@ -100,16 +98,14 @@
   background-color: var(--gray);
 }
 
-@media (width < 900px) {
-  .logo {
-    margin-bottom: 0%;
+@media (width < 1150px) {
+  .sidebar {
+    margin-top: 3.3%;
   }
 }
 
-/* @media (width < 650px) {
+@media (width < 900px) {
   .sidebar {
-    display: none;
-    height: calc(100% - 60px);
-    width: 0%; 
+    margin-top: 4.3%;
   }
-} */
+}

@@ -4,11 +4,12 @@ import github from "../../assets/images/github.png";
 import facebook from "../../assets/images/facebook.png";
 import gmail from "../../assets/images/gmail.png";
 import linkedin from "../../assets/images/linkedin.png";
+
 import "./footer.css";
 
 export default function Footer() {
   return (
-    <div className="footer">
+    <footer className="footer py-3 mt-auto">
       <div className="footer-left">
         <div className="fl-text">
           <p>Suivez-moi sur :</p>
@@ -88,6 +89,6 @@ export default function Footer() {
           />
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

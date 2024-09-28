@@ -7,6 +7,9 @@
   --white: #ffffff;
   --max-width: 1200px;
 }
+.main {
+  margin-top: 2.3%;
+} 
 .green-underline {
   display: block;
   width: 12%;
@@ -23,7 +26,7 @@
   transition: color 0.3s ease;
 }
 .totaly {
-  color: var(--primary-color); 
+  color: var(--primary-color);
 }
 .add-icon:hover {
   color: #28a745;
@@ -62,4 +65,16 @@
 
 .d-inline-block {
   display: inline-block;
+}
+
+@media (width < 1150px) {
+  .main {
+    margin-top: 3.3%;
+  }
+}
+
+@media (width < 900px) {
+  .main {
+    margin-top: 4.3%;
+  }
 }

@@ -5,14 +5,13 @@ import "../../assets/styles/template.css";
 
 export default function Template({ children }) {
   return (
-    <>
-      <Sidebar />
-      <Header />
-      {/* il faut coder le css du class container */}
-      <div className="container">
-        <div className="contenu">{children}</div>
-      </div>
+    <div className="d-flex flex-column min-vh-100">
+      
+      {children}
+
       <Footer />
-    </>
+
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    </div>
   );
 }

@@ -9,26 +9,4 @@
 }
 body {
   background-color: rgb(224, 224, 224);
-}
-.container {
-  /* background-color: aqua; */
-  margin-left: 4%;
-  width: 100%;
-  margin-top: 5%;
-  min-height: 70vh;
-}
-.contenu {
-  margin-top: 7%;
-  margin-left: 20%;
-  padding: 2%;
-  width: 85%;
-  background-color: var(--white);
-}
-
-@media (width < 800px) {
-  .container {
-    background-color: var(--primary-color-light);
-    width: 100%;
-    margin-top: 10%;
-  }
-}
+}  

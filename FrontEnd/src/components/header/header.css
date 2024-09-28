@@ -11,17 +11,12 @@
 .header {
   position: fixed;
   top: 0%;
-  width: 100%;
   height: 60px;
-  background-color: var(--white);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 0 20px;
+  background-color: var(--white);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1;
 } 
-
 .header div {
   display: flex;
   align-items: center;
@@ -37,15 +32,6 @@
 .header p {
   margin: 0;
 }
-
-.drop_item {
-  display: flex;
-  flex-direction: row;
-}
-.drop_item p,
-.drop_item b {
-  padding: 0% 2%;
-}
 .dropdown-menu {
   position: absolute;
   top: 180%;
@@ -53,12 +39,15 @@
   transform: translateY(0);
   z-index: 3;
   min-width: 200px;
+  border: 1px solid var(--primary-color-light);
+  box-shadow: 0px 2px 4px var(--primary-color-light);
+  /* box-shadow: 0px 1px 4px rgba(233, 4, 4, 0.911); */
 }
 .inputRecherche {
   position: relative;
 }
 .searchIcon {
-  display: block; /* Show search icon by default */
+  display: block;
   cursor: pointer;
 }
 .profile-pic {
@@ -75,22 +64,4 @@
   display: flex;
   flex-direction: column;
 }
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  padding: 0% 3%;
-  margin: 0% 1%;
-  cursor: pointer;
-}
-
-.dropdown-item span {
-  padding: 0% 3%;
-}
-
-@media (width < 550px) {
-  .drop_item {
-    display: flex;
-    flex-direction: column;
-  }
-}
+ 

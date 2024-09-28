@@ -1,13 +1,16 @@
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
+
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import Footer from "../../components/footer/footer";
+import Template from "../../components/template/template";
 import Pagination from "../../components/pagination/pagination";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
 import DeleteModal from "../../components/modals/delete";
+
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import { FaPlus } from "react-icons/fa";
 import {
   BsFillTrashFill,
@@ -16,6 +19,7 @@ import {
   BsPersonPlusFill,
   BsSearch,
 } from "react-icons/bs";
+
 import "./incoming.css";
 
 const url_req = `histo/incoming/`;
@@ -37,8 +41,8 @@ export default function InComing() {
   useEffect(() => {
     if (searchVisible && searchInputRef.current) {
       searchInputRef.current.focus(); // Met l'auto-focus sur l'input quand il est visible
-      setCurrentPage(1); 
-    }else{
+      setCurrentPage(1);
+    } else {
       getHisto();
     }
   }, [searchVisible]);
@@ -113,7 +117,7 @@ export default function InComing() {
   const toggleSearch = () => {
     setSearchVisible(!searchVisible);
   };
-  const [contenuTab, setContenuTab] = useState(false); 
+  const [contenuTab, setContenuTab] = useState(false);
 
   function rechercheElement(event) {
     const valeur = event.target.value;
@@ -142,8 +146,7 @@ export default function InComing() {
   //#endregion
 
   return (
-    <>
-      <Sidebar />
+    <Template>
       <Header>
         {!searchVisible && (
           <BsSearch className="searchIcon" onClick={toggleSearch} />
@@ -154,115 +157,149 @@ export default function InComing() {
             name="searchValue"
             placeholder="Rechercher ...."
             autoComplete="off"
-            className="form-control text-primary"
+            className="form-control text-dark"
             ref={searchInputRef}
-            onBlur={() => setSearchVisible(false)} 
+            onBlur={() => setSearchVisible(false)}
             onChange={rechercheElement}
           />
         )}
       </Header>
-      <div className="container">
-        <div className="contenu">
-          <div className="text-center my-3 mt-0">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="d-flex align-items-center">
-                <h5 className="mb-0 me-2 position-relative d-inline-block">
-                  Historique d'entree d'argent :-
-                  <Link
-                    to={"/newIncoming/"}
-                    className="add-icon mx-1"
-                    title="Ajout"
-                  >
-                    <FaPlus />
-                  </Link>
-                  -:
-                  <span className="green-underline"></span>
-                </h5>
+
+      <div className="container-fluid flex-grow-1">
+        <div className="row">
+          <Sidebar />
+
+          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+            <div className="pt-3 pb-2 mb-3">
+              <div className="text-center my-3 mt-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center">
+                    <h5 className="mb-0 me-2 position-relative d-inline-block">
+                      Historique d'entree d'argent :-
+                      <Link
+                        to={"/newIncoming/"}
+                        className="add-icon mx-1"
+                        title="Ajout"
+                      >
+                        <FaPlus />
+                      </Link>
+                      -:
+                      <span className="green-underline"></span>
+                    </h5>
+                  </div>
+                  <h5 className="mb-0 me-2 position-relative d-inline-block">
+                    Total :{" "}
+                    <span className="totaly">
+                      {totaly.montantTtl !== null &&
+                      totaly.montantTtl !== undefined
+                        ? totaly.montantTtl
+                        : "0.0"}
+                    </span>{" "}
+                    dhs
+                  </h5>
+                </div>
               </div>
-              <h5 className="mb-0 me-2 position-relative d-inline-block">
-                Total :{" "}
-                <span className="totaly">
-                  {totaly.montantTtl !== null && totaly.montantTtl !== undefined
-                    ? totaly.montantTtl
-                    : "0.0"}
-                </span>{" "}
-                dhs
-              </h5>
-            </div>
-          </div>
 
-          <div className="table-responsive text-nowrap">
-            <table className="table table-striped w-100">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Nom</th>
-                  <th>Montant</th>
-                  <th>Coms</th>
-                  <th>+Details</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentHisto.length > 0 ? (
-                  currentHisto.map((s, key) => (
-                    <tr key={key}>
-                      <td>{s.date}</td>
-                      <td>{s.snom}</td>
-                      <td>{s.montant}</td>
-                      <td>{s.coms == "" ? "/" : s.coms} </td>
-                      <td>
-                        <span
-                          className="btn btn-outline-success btn-sm pt-0 mx-1 waves-effect"
-                          onClick={() => handleDetailClick(s)}
-                        >
-                          <BsEye />
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className="btn btn-outline-primary btn-sm pt-0 mx-1 waves-effect"
-                          onClick={() => handleEditClick(s)}
-                        >
-                          <BsPencilSquare />
-                        </span>
-                        <span
-                          className="btn btn-outline-danger btn-sm pt-0 mx-1 waves-effect"
-                          onClick={() => handleDeleteClick(s)}
-                        >
-                          <BsFillTrashFill />
-                        </span>
-                      </td>
+              <div className="table-responsive text-nowrap">
+                <table className="table table-striped w-100">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Nom</th>
+                      <th>Montant</th>
+                      <th>Coms</th>
+                      <th>+Details</th>
+                      <th>Actions</th>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="10">Aucune donnée disponible</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {currentHisto.length > 0 ? (
+                      currentHisto.map((s, key) => (
+                        <tr key={key}>
+                          <td>{s.date}</td>
+                          <td>{s.snom}</td>
+                          <td>{s.montant}</td>
+                          <td>{s.coms == "" ? "/" : s.coms} </td>
+                          <td>
+                            <span
+                              className="btn btn-outline-success btn-sm pt-0 mx-1 waves-effect"
+                              onClick={() => handleDetailClick(s)}
+                            >
+                              <BsEye />
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              className="btn btn-outline-primary btn-sm pt-0 mx-1 waves-effect"
+                              onClick={() => handleEditClick(s)}
+                            >
+                              <BsPencilSquare />
+                            </span>
+                            <span
+                              className="btn btn-outline-danger btn-sm pt-0 mx-1 waves-effect"
+                              onClick={() => handleDeleteClick(s)}
+                            >
+                              <BsFillTrashFill />
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="10">Aucune donnée disponible</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
 
-          {selectedEntity && (
-            <DeleteModal
-              show={showDeleteModal}
-              onClose={() => setShowDeleteModal(false)}
-              onConfirm={handleDeleteConfirm}
-              entity={selectedEntity}
-              entityName={"histo"}
-              auth={u_info.opts}
-            />
-          )}
+              {selectedEntity && (
+                <DeleteModal
+                  show={showDeleteModal}
+                  onClose={() => setShowDeleteModal(false)}
+                  onConfirm={handleDeleteConfirm}
+                  entity={selectedEntity}
+                  entityName={"histo"}
+                  auth={u_info.opts}
+                />
+              )}
+            </div>
+
+            <div className="pt-0 pb-2 mb-3">
+              <h2>Responsive Content Area</h2>
+              <p>
+                This is the main content section. On smaller screens, click the
+                menu button to toggle the sidebar.
+              </p>
+
+              <div className="row">
+                <div className="col-md-6">
+                  <div className="card mb-3">
+                    <div className="card-body">
+                      <h5 className="card-title">Card 1</h5>
+                      <p className="card-text">Some example text for card 1.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="card mb-3">
+                    <div className="card-body">
+                      <h5 className="card-title">Card 2</h5>
+                      <p className="card-text">Some example text for card 2.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
-      <Footer />
-    </>
+    </Template>
   );
 }
