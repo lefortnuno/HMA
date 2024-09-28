@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import "./header.css";
 import hma from "../../assets/images/hma256.png";
 import { BsGearFill, BsPower, BsSearch } from "react-icons/bs";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Header(props) {
   const u_info = GetUserData();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const searchInputRef = useRef(null); // Référence pour l'input de recherche
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -18,6 +19,12 @@ export default function Header(props) {
   const toggleSearch = () => {
     setSearchVisible(!searchVisible);
   };
+
+  useEffect(() => {
+    if (searchVisible && searchInputRef.current) {
+      searchInputRef.current.focus(); // Met l'auto-focus sur l'input quand il est visible
+    }
+  }, [searchVisible]);
 
   const seDeconnecterDuSession = (event) => {
     event.preventDefault();
@@ -30,7 +37,7 @@ export default function Header(props) {
       {u_info.u_token ? (
         <div className="header d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-             
+            {/* Autres éléments ici */}
           </div>
 
           <div className="d-flex align-items-center">
@@ -43,8 +50,9 @@ export default function Header(props) {
                   type="text"
                   placeholder="Recherche"
                   className="form-control text-primary"
+                  ref={searchInputRef} // Référence pour l'input
                   value={props.children}
-                  onBlur={() => setSearchVisible(false)} // Hide input when it loses focus
+                  onBlur={() => setSearchVisible(false)} // Masque l'input quand il perd le focus
                 />
               )}
             </div>

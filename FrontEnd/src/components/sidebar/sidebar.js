@@ -49,36 +49,53 @@ export default function Sidebar() {
         </li>
         <li className={location.pathname === "/incoming/" ? "active" : ""}>
           <Link to="/incoming/">
-            {/* <BsCashStack /> */}
-            <BsGraphUp />
+            <span>
+              <BsGraphUp />
+            </span>
             <p>Gain</p>
           </Link>
         </li>
         <li className={location.pathname === "/outgoing/" ? "active" : ""}>
           <Link to="/outgoing/">
+            <span>
+              <BsGraphDown />
+            </span>
             {/* <BsCashCoin /> */}
-            <BsGraphDown />
             <p>Depense</p>
           </Link>
         </li>
         <li className={location.pathname === "/service/" ? "active" : ""}>
           <Link to="/service/">
-            <BsGear />
+            <span>
+              <BsGear />
+            </span>
             <p>Services</p>
+          </Link>
+        </li>
+        <li className={location.pathname === "/boutique/" ? "active" : ""}>
+          <Link to="/boutique/">
+            <span>
+              <BsGlobe2 />
+            </span>
+            <p>Boutiques</p>
           </Link>
         </li>
         {u_info.u_karazana === 1 && (
           <li className={location.pathname === "/users/" ? "active" : ""}>
             <Link to="/users/">
-              <BsPeople />
+              <span>
+                <BsPeople />
+              </span>
               <p>Utilisateurs</p>
             </Link>
           </li>
         )}
         <li className={location.pathname === "/about/" ? "active" : ""}>
           <Link to="/about/">
-            <BsInfoCircle />
-            <p>Apropos</p>
+            <span>
+              <BsInfoCircle />
+            </span>
+            <p>Apropos</p>  
           </Link>
         </li>
       </ul>
