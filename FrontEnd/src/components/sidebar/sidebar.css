@@ -58,7 +58,6 @@
   margin-bottom: 20px;
   padding: 1% 0%;
 }
-
 .sidebar ul li a {
   display: flex;
   align-items: center;
@@ -107,5 +106,47 @@
 @media (width < 900px) {
   .sidebar {
     margin-top: 4.3%;
+  }
+}
+
+@media (width < 760px) {
+  .sidebar {
+    margin-top: 5.3%;
+    padding: 3%;
+  }
+  .carte-visite {
+    padding: 2%;
+    border: 4px solid var(--secondary-color);
+  }
+
+  /* Appliquer l'animation au sidebar lorsqu'il est affiché */
+  #sidebarMenu {
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  #sidebarMenu.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .sidebar ul li {
+    margin-bottom: 5px;
+    padding: 0% 0%;
+  }
+  .sidebar ul li a {
+    height: 60px;
+  }
+}
+
+@media (width < 600px) {
+  .sidebar {
+    margin-top: 8.3%;
+  }
+}
+
+@media (width < 400px) {
+  .sidebar {
+    margin-top: 12.3%;
   }
 }
