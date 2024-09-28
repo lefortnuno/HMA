@@ -5,26 +5,13 @@ import hma from "../../assets/images/hma256.png";
 import { BsGearFill, BsPower, BsSearch } from "react-icons/bs";
 import { useState, useRef, useEffect } from "react";
 
-export default function Header(props) {
+export default function Header({ children }) {
   const u_info = GetUserData();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
-  const searchInputRef = useRef(null); // Référence pour l'input de recherche
-
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
-
-  const toggleSearch = () => {
-    setSearchVisible(!searchVisible);
-  };
-
-  useEffect(() => {
-    if (searchVisible && searchInputRef.current) {
-      searchInputRef.current.focus(); // Met l'auto-focus sur l'input quand il est visible
-    }
-  }, [searchVisible]);
 
   const seDeconnecterDuSession = (event) => {
     event.preventDefault();
@@ -41,21 +28,7 @@ export default function Header(props) {
           </div>
 
           <div className="d-flex align-items-center">
-            <div className="inputRecherche m-3">
-              {!searchVisible && (
-                <BsSearch className="searchIcon" onClick={toggleSearch} />
-              )}
-              {searchVisible && (
-                <input
-                  type="text"
-                  placeholder="Recherche"
-                  className="form-control text-primary"
-                  ref={searchInputRef} // Référence pour l'input
-                  value={props.children}
-                  onBlur={() => setSearchVisible(false)} // Masque l'input quand il perd le focus
-                />
-              )}
-            </div>
+            <div className="inputRecherche m-3">{children}</div>
 
             <div className="nav-item dropdown">
               <span

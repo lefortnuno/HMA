@@ -11,9 +11,11 @@ body {
   background-color: rgb(224, 224, 224);
 }
 .container {
-  background-color: aqua;
+  /* background-color: aqua; */
+  margin-left: 4%;
   width: 100%;
   margin-top: 5%;
+  min-height: 70vh;
 }
 .contenu {
   margin-top: 7%;

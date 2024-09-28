@@ -105,7 +105,7 @@ Histo.searchSomeHisto = (valeur, result) => {
   dbConn.query(
     reqSQL + myReq + `AND serivisy.nom LIKE '%${valeur.val}%'` + ordre,
     [valeur.idM],
-    (err, res) => {
+    (err, res) => { 
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
       } else {

@@ -10,7 +10,7 @@
 .footer {
   display: flex;
   justify-content: space-between;
-  align-items: center; 
+  align-items: center;
   background-color: var(--white);
   padding: 10px;
   text-align: center;
@@ -18,11 +18,11 @@
   bottom: 0;
   margin-top: 2%;
   width: 100%;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, .2); /* Slightly darker shadow for depth */
-} 
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); 
+}
 
 .footer-left {
-  margin-left: 23%; 
+  margin-left: 23%;
   margin-top: -1%;
   width: 100%;
   display: inline;
@@ -50,7 +50,7 @@
   filter: brightness(1.2);
 }
 
-.footer-right { 
+.footer-right {
   display: inline-flex;
   justify-content: end;
   text-align: right;
@@ -76,9 +76,9 @@
 
   .footer-left {
     margin-left: 0%;
-    text-align: center; 
+    text-align: center;
     margin-top: -1%;
-  } 
+  }
   .footer-left .fl-text {
     margin-bottom: -4%;
   }
