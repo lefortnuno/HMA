@@ -10,8 +10,8 @@
 
 .monContainer {
   position: relative;
-  padding: 0% 1%;
-  text-align: left;
+  padding: 2% 3%;
+  text-align: left; 
 }
 
 .monContainer header {
@@ -33,7 +33,7 @@
 .monContainer form {
   position: relative;
   margin-top: 16px;
-  min-height: 250px;
+  min-height: 30vh; 
   overflow: hidden;
   overflow-y: scroll;
 }
@@ -146,15 +146,15 @@ select {
 .retourBtn {
   background-color: #4070f4;
 }
-.backBtn:hover{
-	background-color: rgb(247, 27, 27);
-  }
+.backBtn:hover {
+  background-color: rgb(247, 27, 27);
+}
 .nextBtn:hover {
   background-color: green;
 }
-.retourBtn:hover{
-	background-color: var(--primary-color);
-  }
+.retourBtn:hover {
+  background-color: var(--primary-color);
+}
 
 .monContainer form .btnText {
   font-size: 14px;
@@ -188,12 +188,15 @@ form .buttons button,
   form .fields .monPhotoPDP {
     width: calc(100% / 3 - 15px);
   }
+  .monContainer form { 
+    min-height: 40vh;  
+  }
 }
 
 @media (max-width: 550px) {
   .monContainer {
     width: 100%;
-    padding: 10px;
+    padding: 2% 4%;
     margin: 0 2px;
   }
 
@@ -208,6 +211,9 @@ form .buttons button,
   /*Acommenter pour la version build*/
   .monToggleoption {
     margin-top: 2%;
+  }
+  .monContainer form { 
+    min-height: 50vh;  
   }
 }
 

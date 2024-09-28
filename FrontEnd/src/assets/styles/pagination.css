@@ -30,7 +30,7 @@
 .pagination-container button:hover,
 .pagination-container button:focus {
   background-color: var(--primary-color);
-  border-color: #0056b3;
+  border-color: var(--primary-color);
   outline: none;
   color: var(--text-white);
 }

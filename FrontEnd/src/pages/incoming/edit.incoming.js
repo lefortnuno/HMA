@@ -1,14 +1,20 @@
 import axios from "../../contexts/api/axios";
+import GetUserData from "../../contexts/api/udata";
+
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
+import Header from "../../components/header/header";
+import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
-import GetUserData from "../../contexts/api/udata";
+
 import "../../assets/styles/maForm.css";
 
 const url_req = `histo/`;
 
 export default function EditInComing() {
+  //#region //-useEffect
   const { id } = useParams();
   const navigate = useNavigate();
   const u_info = GetUserData();
@@ -28,22 +34,9 @@ export default function EditInComing() {
     qte: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  //#endregion
 
-  useEffect(() => {
-    axios
-      .get(`histo/${id}`, u_info.opts)
-      .then((response) => {
-        if (response.status === 200) {
-          setInputs(response.data[0]);
-        } else {
-          toast.warning("Détails non disponibles.");
-        }
-      })
-      .catch((error) => {
-        toast.error("Erreur lors du chargement des détails.");
-      });
-  }, []);
-
+  //#region //-handleChange
   const handleChange = (event) => {
     const { name, value } = event.target;
     setInputs((values) => ({ ...values, [name]: value }));
@@ -66,7 +59,9 @@ export default function EditInComing() {
       }));
     }
   };
+  //#endregion
 
+  //#region //-validation
   const validation = (event) => {
     event.preventDefault();
     let formIsValid = true;
@@ -82,6 +77,23 @@ export default function EditInComing() {
       setIsSubmitting(true); // Déclencher la soumission après mise à jour
     }
   };
+  //#endregion
+
+  //#region //-useEffect
+  useEffect(() => {
+    axios
+      .get(`histo/${id}`, u_info.opts)
+      .then((response) => {
+        if (response.status === 200) {
+          setInputs(response.data[0]);
+        } else {
+          toast.warning("Détails non disponibles.");
+        }
+      })
+      .catch((error) => {
+        toast.error("Erreur lors du chargement des détails.");
+      });
+  }, []);
 
   // Utilisation de useEffect pour soumettre après mise à jour de qte
   useEffect(() => {
@@ -89,7 +101,9 @@ export default function EditInComing() {
       onSubmit();
     }
   }, [inputs.qte, isSubmitting]);
+  //#endregion
 
+  //#region //-onSubmit
   const onSubmit = () => {
     const finalInputs = {
       ...inputs,
@@ -114,85 +128,104 @@ export default function EditInComing() {
         setIsSubmitting(false);
       });
   };
+  //#endregion
 
+  //#region //-onClose
   const onClose = () => {
     setInputs(initialInputs);
     setErreurs({ coms: false, qte: false });
     setMessages({ coms: "", qte: "" });
     navigate("/incoming/");
   };
+  //#endregion
 
+  //#region //-design
   return (
     <Template>
-      <div className="monContainer">
-        <header>Modifier un Gain</header>
-        <form>
-          <div className="form first">
-            <div className="details personal">
-              <div className="fields">
-                <div className="input-field">
-                  <label>Service :</label>
-                  <input
-                    style={{
-                      backgroundColor: "rgb(218, 218, 218)",
-                      fontWeight: "800",
-                    }}
-                    value={inputs.snom}
-                    disabled={true}
-                  />
-                </div>
-                <div className="input-field">
-                  <label>Quantité :</label>
-                  <input
-                    type="number"
-                    name="qte"
-                    onChange={handleChange}
-                    value={inputs.qte}
-                    placeholder="Entrez la quantité du service"
-                    autoComplete="off"
-                    min={0}
-                    max={99999}
-                  />
-                  <small className="text-danger d-block">
-                    {erreurs.qte ? messages.qte : null}
-                  </small>
-                </div>
-                <div className="input-field">
-                  <label>Commentaires :</label>
-                  <input
-                    type="text"
-                    name="coms"
-                    onChange={handleChange}
-                    value={inputs.coms}
-                    placeholder="Entrez un commentaire"
-                    autoComplete="off"
-                  />
-                  <small className="text-danger d-block">
-                    {erreurs.coms ? messages.coms : null}
-                  </small>
-                </div>
-              </div>
+      <Header></Header>
 
-              <div className="buttons">
-                <button
-                  onClick={onClose}
-                  type="button"
-                  className="backBtn btn btn-danger"
-                >
-                  <span>Annuler</span>
-                </button>
-                <button
-                  onClick={validation}
-                  type="submit"
-                  className="nextBtn btn btn-success"
-                >
-                  <span>Enregistrer</span>
-                </button>
+      <div className="container-fluid flex-grow-1">
+        <div className="row">
+          <Sidebar />
+
+          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+            {/* -------------------------- PAGE CONTENT -------------------------- */}
+            <div className="pt-3 pb-2 mb-3">
+              <div className="monContainer bg-white card mb-3 ">
+                <header>Modifier un Gain</header>
+                <form>
+                  <div className="form first">
+                    <div className="details personal">
+                      <div className="fields">
+                        <div className="input-field">
+                          <label>Service :</label>
+                          <input
+                            style={{
+                              backgroundColor: "rgb(218, 218, 218)",
+                              fontWeight: "800",
+                            }}
+                            value={inputs.snom}
+                            disabled={true}
+                          />
+                        </div>
+                        <div className="input-field">
+                          <label>Quantité :</label>
+                          <input
+                            type="number"
+                            name="qte"
+                            onChange={handleChange}
+                            value={inputs.qte}
+                            placeholder="Entrez la quantité du service"
+                            autoComplete="off"
+                            min={0}
+                            max={99999}
+                          />
+                          <small className="text-danger d-block">
+                            {erreurs.qte ? messages.qte : null}
+                          </small>
+                        </div>
+                        <div className="input-field">
+                          <label>Commentaires :</label>
+                          <input
+                            type="text"
+                            name="coms"
+                            onChange={handleChange}
+                            value={inputs.coms}
+                            placeholder="Entrez un commentaire"
+                            autoComplete="off"
+                          />
+                          <small className="text-danger d-block">
+                            {erreurs.coms ? messages.coms : null}
+                          </small>
+                        </div>
+                      </div>
+
+                      <div className="buttons">
+                        <button
+                          onClick={onClose}
+                          type="button"
+                          className="backBtn btn btn-danger"
+                        >
+                          <span>Annuler</span>
+                        </button>
+                        <button
+                          onClick={validation}
+                          type="submit"
+                          className="nextBtn btn btn-success"
+                        >
+                          <span>Enregistrer</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
               </div>
             </div>
-          </div>
-        </form>
+            {/* -------------------------- FIN -------------------------- */}
+          </main>
+        </div>
       </div>
     </Template>
   );
+  //#endregion
 }
