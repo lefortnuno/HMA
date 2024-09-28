@@ -53,7 +53,7 @@ Histo.getAllMyInComingHisto = (id, result) => {
   dbConn.query(
     reqSQL + myReq + ` AND hetsika.karazana = 1 ` + ordre,
     id,
-    (err, res) => {  
+    (err, res) => {
       if (err) {
         result(err, null);
       } else {
@@ -64,7 +64,7 @@ Histo.getAllMyInComingHisto = (id, result) => {
 };
 
 Histo.getMyTotalOfInComing = (id, result) => {
-  dbConn.query(reqMntTtl + ` AND hetsika.karazana = 1 `, id, (err, res) => { 
+  dbConn.query(reqMntTtl + ` AND hetsika.karazana = 1 `, id, (err, res) => {
     if (err) {
       result(err, null);
     } else {
@@ -86,6 +86,15 @@ Histo.getAllMyOutGoingHisto = (id, result) => {
     }
   );
 };
+Histo.getMyTotalOfOutGoing = (id, result) => {
+  dbConn.query(reqMntTtl + ` AND hetsika.karazana = 0 `, id, (err, res) => {
+    if (err) {
+      result(err, null);
+    } else {
+      result(null, res);
+    }
+  });
+};
 
 Histo.getIdHisto = (id, result) => {
   dbConn.query(reqSQL + ` AND hetsika.id = ? `, id, (err, res) => {
@@ -105,7 +114,7 @@ Histo.searchSomeHisto = (valeur, result) => {
   dbConn.query(
     reqSQL + myReq + `AND serivisy.nom LIKE '%${valeur.val}%'` + ordre,
     [valeur.idM],
-    (err, res) => { 
+    (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
       } else {

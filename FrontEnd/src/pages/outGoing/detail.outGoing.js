@@ -11,7 +11,7 @@ import Template from "../../components/template/template";
 
 import hma from "../../assets/images/hma256.png";
 
-export default function InComingDetails() {
+export default function OutGoingDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const u_info = GetUserData();
@@ -36,7 +36,7 @@ export default function InComingDetails() {
   if (!details) return <div>Chargement...</div>;
 
   const onClose = () => {
-    navigate("/inComing/");
+    navigate("/outGoing/");
   };
   return ( 
       <Template>
@@ -50,7 +50,7 @@ export default function InComingDetails() {
               {/* -------------------------- PAGE CONTENT -------------------------- */}
               <div className="pt-3 pb-2 mb-3">
                 <div className="monContainer bg-white card mb-3 ">
-                  <header>Détails de l'entrée d'argent</header>
+                  <header>Détails du sortie d'argent</header>
 
                   <div className="mt-2">
                     <div className="row">

@@ -1,0 +1,80 @@
+:root {
+  --primary-color: #2015ea;
+  --primary-color-light: #6861f1;
+  --secondary-color: #c0dbea;
+  --text-dark: #020617;
+  --text-light: #8995a7;
+  --white: #ffffff;
+  --max-width: 1200px;
+}
+.main {
+  margin-top: 2.3%;
+} 
+.green-underline {
+  display: block;
+  width: 12%;
+  height: 2px;
+  background-color: var(--primary-color);
+  position: absolute;
+  left: 1px;
+  bottom: -4px;
+}
+.add-icon {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+.totaly {
+  color: var(--primary-color);
+}
+.add-icon:hover {
+  color: #28a745;
+  text-decoration: none;
+}
+.add-icon:hover + .green-underline {
+  background-color: #28a745;
+}
+.text-center {
+  text-align: center;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.me-2 {
+  margin-right: 0.5rem; /* or adjust as needed */
+}
+
+.position-relative {
+  position: relative;
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+@media (width < 1150px) {
+  .main {
+    margin-top: 3.3%;
+  }
+}
+
+@media (width < 900px) {
+  .main {
+    margin-top: 4.3%;
+  }
+}

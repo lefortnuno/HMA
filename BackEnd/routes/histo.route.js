@@ -12,19 +12,24 @@ router.post(
 
 router.get("/histo/:id", user.checkUtilisateur, HistoController.getAllMyHisto);
 router.get(
-  "/incoming/:id",
+  "/inComing/:id",
   user.checkUtilisateur,
   HistoController.getAllMyInComingHisto
 );
 router.get(
-  "/incomingTtl/:id",
+  "/inComingTtl/:id",
   user.checkUtilisateur,
   HistoController.getMyTotalOfInComing
 );
 router.get(
-  "/outgoing/:id",
+  "/outGoing/:id",
   user.checkUtilisateur,
   HistoController.getAllMyOutGoingHisto
+);
+router.get(
+  "/outGoingTtl/:id",
+  user.checkUtilisateur,
+  HistoController.getMyTotalOfOutGoing
 );
 router.get("/:id", user.checkUtilisateur, HistoController.getIdHisto);
 

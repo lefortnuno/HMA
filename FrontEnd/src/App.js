@@ -17,10 +17,15 @@ import About from "./pages/about/about";
 import Service from "./pages/services/service";
 import AddService from "./pages/services/add.service";
 
-import InComing from "./pages/incoming/incoming";
-import AddInComing from "./pages/incoming/add.incoming";
-import InComingDetails from "./pages/incoming/detail.incoming";
-import EditInComing from "./pages/incoming/edit.incoming";
+import InComing from "./pages/inComing/inComing";
+import AddInComing from "./pages/inComing/add.inComing";
+import InComingDetails from "./pages/inComing/detail.inComing";
+import EditInComing from "./pages/inComing/edit.inComing";
+
+import OutGoing from "./pages/outGoing/outGoing";
+import AddOutGoing from "./pages/outGoing/add.outGoing";
+import OutGoingDetails from "./pages/outGoing/detail.outGoing";
+import EditOutGoing from "./pages/outGoing/edit.outGoing";
 
 function App() {
   return (
@@ -36,10 +41,16 @@ function App() {
           <Route path="about/" element={<SignInProtection Cmp={About}/>} />
           <Route path="service/" element={<SignInProtection Cmp={Service}/>} />
           <Route path="newService/" element={<SignInProtection Cmp={AddService}/>} />
-          <Route path="incoming/" element={<SignInProtection Cmp={InComing}/>} />
-          <Route path="newIncoming/" element={<SignInProtection Cmp={AddInComing}/>} />
-          <Route path="aboutIncoming/:id" element={<SignInProtection Cmp={InComingDetails}/>} />
+
+          <Route path="inComing/" element={<SignInProtection Cmp={InComing}/>} /> 
+          <Route path="newInComing/" element={<SignInProtection Cmp={AddInComing}/>} />
+          <Route path="aboutInComing/:id" element={<SignInProtection Cmp={InComingDetails}/>} />
           <Route path="editIncoming/:id" element={<SignInProtection Cmp={EditInComing}/>} />
+          
+          <Route path="outGoing/" element={<SignInProtection Cmp={OutGoing}/>} /> 
+          <Route path="newOutGoing/" element={<SignInProtection Cmp={AddOutGoing}/>} />
+          <Route path="aboutOutGoing/:id" element={<SignInProtection Cmp={OutGoingDetails}/>} />
+          <Route path="editOutGoing/:id" element={<SignInProtection Cmp={EditOutGoing}/>} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -55,6 +55,16 @@ module.exports.getAllMyOutGoingHisto = (req, res) => {
   });
 };
 
+module.exports.getMyTotalOfOutGoing = (req, res) => {
+  Histo.getMyTotalOfOutGoing(req.params.id, (err, resp) => {
+    if (!err) {
+      res.send(resp);
+    } else {
+      res.send(err);
+    }
+  });
+};
+
 module.exports.getIdHisto = (req, res) => {
   Histo.getIdHisto(req.params.id, (err, resp) => {
     if (!err) {

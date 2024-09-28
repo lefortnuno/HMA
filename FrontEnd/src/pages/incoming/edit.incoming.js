@@ -116,7 +116,7 @@ export default function EditInComing() {
       .then((response) => {
         if (response.status === 200 && response.data.success) {
           toast.success(response.data.message);
-          navigate("/incoming/");
+          navigate("/inComing/");
         } else {
           toast.error(response.data.message || "Échec de l'ajout!");
         }
@@ -135,7 +135,7 @@ export default function EditInComing() {
     setInputs(initialInputs);
     setErreurs({ coms: false, qte: false });
     setMessages({ coms: "", qte: "" });
-    navigate("/incoming/");
+    navigate("/inComing/");
   };
   //#endregion
 

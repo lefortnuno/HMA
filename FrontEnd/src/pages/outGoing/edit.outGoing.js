@@ -1,7 +1,7 @@
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -12,57 +12,28 @@ import Template from "../../components/template/template";
 import "../../assets/styles/maForm.css";
 
 const url_req = `histo/`;
-const searchUrl = `service/recherche/`;
 
-export default function AddInComing() {
-  //#region //-variable
+export default function EditOutGoing() {
+  //#region //-useEffect
+  const { id } = useParams();
   const navigate = useNavigate();
   const u_info = GetUserData();
 
   const initialInputs = {
     coms: "",
     qte: "",
-    idS: "",
-    nomS: "",
   };
 
   const [inputs, setInputs] = useState(initialInputs);
   const [erreurs, setErreurs] = useState({
     coms: false,
     qte: false,
-    idS: false,
-    nomS: "",
   });
   const [messages, setMessages] = useState({
     coms: "",
     qte: "",
-    idS: "",
-    nomS: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false); // Ajout d'un état de soumission
-  const [filteredServices, setFilteredServices] = useState([]);
-  const [isServiceSelected, setIsServiceSelected] = useState(false);
-  //#endregion
-
-  //#region //-getService
-  const getSomeService = (val) => {
-    setIsServiceSelected(false);
-    axios
-      .post(searchUrl, { query: val }, u_info.opts)
-      .then((response) => {
-        if (response.status === 200) {
-          setFilteredServices(response.data.res);
-        } else {
-          toast.error(
-            response.data.message ||
-              "Erreur lors de la récupération des services."
-          );
-        }
-      })
-      .catch(() => {
-        toast.error("Erreur lors de la recherche des services.");
-      });
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
   //#endregion
 
   //#region //-handleChange
@@ -87,24 +58,6 @@ export default function AddInComing() {
         coms: "Commentaire trop long",
       }));
     }
-
-    if (name === "nomS") {
-      getSomeService(value);
-    }
-  };
-  //#endregion
-
-  //#region //-handleSelect
-  const handleSelectService = (serviceId, serviceNom) => {
-    setInputs((values) => ({
-      ...values,
-      idS: serviceId,
-      nomS: serviceNom,
-    }));
-    setFilteredServices([]);
-    setIsServiceSelected(true);
-    setErreurs((values) => ({ ...values, nomS: false }));
-    setMessages((values) => ({ ...values, nomS: "" }));
   };
   //#endregion
 
@@ -112,15 +65,6 @@ export default function AddInComing() {
   const validation = (event) => {
     event.preventDefault();
     let formIsValid = true;
-
-    if (!inputs["idS"]) {
-      setErreurs((values) => ({ ...values, nomS: true }));
-      setMessages((values) => ({
-        ...values,
-        nomS: "Champ service obligatoire!",
-      }));
-      formIsValid = false;
-    }
 
     if (!inputs["qte"]) {
       setInputs((prevInputs) => ({
@@ -136,6 +80,21 @@ export default function AddInComing() {
   //#endregion
 
   //#region //-useEffect
+  useEffect(() => {
+    axios
+      .get(`histo/${id}`, u_info.opts)
+      .then((response) => {
+        if (response.status === 200) {
+          setInputs(response.data[0]);
+        } else {
+          toast.warning("Détails non disponibles.");
+        }
+      })
+      .catch((error) => {
+        toast.error("Erreur lors du chargement des détails.");
+      });
+  }, []);
+
   // Utilisation de useEffect pour soumettre après mise à jour de qte
   useEffect(() => {
     if (isSubmitting && inputs.qte) {
@@ -149,15 +108,15 @@ export default function AddInComing() {
     const finalInputs = {
       ...inputs,
       idM: u_info.u_id,
-      karazana: 1,
+      karazana: 0,
     };
 
     axios
-      .post(url_req, finalInputs, u_info.opts)
+      .put(url_req + `${id}`, finalInputs, u_info.opts)
       .then((response) => {
         if (response.status === 200 && response.data.success) {
           toast.success(response.data.message);
-          navigate("/inComing/");
+          navigate("/outGoing/");
         } else {
           toast.error(response.data.message || "Échec de l'ajout!");
         }
@@ -166,7 +125,7 @@ export default function AddInComing() {
         toast.error("Erreur lors de l'ajout du service.");
       })
       .finally(() => {
-        setIsSubmitting(false); // Réinitialiser après soumission
+        setIsSubmitting(false);
       });
   };
   //#endregion
@@ -174,9 +133,9 @@ export default function AddInComing() {
   //#region //-onClose
   const onClose = () => {
     setInputs(initialInputs);
-    setErreurs({ coms: false, qte: false, idS: false });
-    setMessages({ coms: "", qte: "", idS: "" });
-    navigate("/inComing/");
+    setErreurs({ coms: false, qte: false });
+    setMessages({ coms: "", qte: "" });
+    navigate("/outGoing/");
   };
   //#endregion
 
@@ -192,8 +151,8 @@ export default function AddInComing() {
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
             {/* -------------------------- PAGE CONTENT -------------------------- */}
             <div className="pt-3 pb-2 mb-3">
-              <div className="monContainer bg-white card mb-3">
-                <header>Ajouter un Gain</header>
+              <div className="monContainer bg-white card mb-3 ">
+                <header>Modifier une Dépense</header>
                 <form>
                   <div className="form first">
                     <div className="details personal">
@@ -201,39 +160,13 @@ export default function AddInComing() {
                         <div className="input-field">
                           <label>Service :</label>
                           <input
-                            name="nomS"
-                            onChange={handleChange}
-                            type="text"
-                            value={inputs.nomS}
-                            placeholder="Recherchez un service..."
-                            autoComplete="off"
+                            style={{
+                              backgroundColor: "rgb(218, 218, 218)",
+                              fontWeight: "800",
+                            }}
+                            value={inputs.snom}
+                            disabled={true}
                           />
-                          <small className="text-danger d-block">
-                            {erreurs.nomS ? messages.nomS : null}
-                          </small>
-                          {inputs.nomS &&
-                            !isServiceSelected &&
-                            (filteredServices.length > 0 ? (
-                              <ul>
-                                {filteredServices.map((service) => (
-                                  <li
-                                    key={service.id}
-                                    onClick={() =>
-                                      handleSelectService(
-                                        service.id,
-                                        service.nom
-                                      )
-                                    }
-                                  >
-                                    {service.nom}
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <ul className="aucuneUl">
-                                <li className="aucuneLi">aucune</li>
-                              </ul>
-                            ))}
                         </div>
                         <div className="input-field">
                           <label>Quantité :</label>

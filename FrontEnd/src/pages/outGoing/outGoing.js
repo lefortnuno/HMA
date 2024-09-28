@@ -21,12 +21,12 @@ import {
   BsSearch,
 } from "react-icons/bs";
 
-import "./inComing.css";
+import "./outGoing.css";
 
-const url_req = `histo/inComing/`;
+const url_req = `histo/outGoing/`;
 const histoPerPage = 5;
 
-export default function InComing() {
+export default function OutGoing() {
   //#region //-variable
   const u_info = GetUserData();
   const [histo, setHisto] = useState([]);
@@ -74,7 +74,7 @@ export default function InComing() {
   }
   function getTotaly() {
     axios
-      .get(`histo/inComingTtl/${u_info.u_id}`, u_info.opts)
+      .get(`histo/outGoingTtl/${u_info.u_id}`, u_info.opts)
       .then(function (response) {
         if (response.status === 200) {
           const allHisto = response.data[0];
@@ -102,11 +102,11 @@ export default function InComing() {
   };
 
   const handleEditClick = (entity) => {
-    navigate(`/editinComing/${entity.id}`, { state: { entity } });
+    navigate(`/editOutGoing/${entity.id}`, { state: { entity } });
   };
 
   const handleDetailClick = (entity) => {
-    navigate(`/aboutinComing/${entity.id}`, { state: { entity } });
+    navigate(`/aboutOutGoing/${entity.id}`, { state: { entity } });
   };
   //#endregion
 
@@ -178,9 +178,9 @@ export default function InComing() {
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
                     <h5 className="mb-0 me-2 position-relative d-inline-block">
-                      Historique d'entrée d'argent :-
+                      Historique de sortie d'argent :-
                       <Link
-                        to={"/newinComing/"}
+                        to={"/newOutGoing/"}
                         className="add-icon mx-1"
                         title="Ajout"
                       >

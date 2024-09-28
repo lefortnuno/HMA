@@ -56,21 +56,21 @@ console.log(u_info);
               <p>Accueil</p>
             </Link>
           </li>
-          <li className={location.pathname === "/incoming/" ? "active" : ""}>
-            <Link to="/incoming/">
+          <li className={location.pathname === "/inComing/" ? "active" : ""}>
+            <Link to="/inComing/">
               <span>
                 <BsGraphUp />
               </span>
               <p>Gain</p>
             </Link>
           </li>
-          <li className={location.pathname === "/outgoing/" ? "active" : ""}>
-            <Link to="/outgoing/">
+          <li className={location.pathname === "/outGoing/" ? "active" : ""}>
+            <Link to="/outGoing/">
               <span>
                 <BsGraphDown />
               </span>
               {/* <BsCashCoin /> */}
-              <p>Depense</p>
+              <p>Dépense</p>
             </Link>
           </li>
           <li className={location.pathname === "/service/" ? "active" : ""}>

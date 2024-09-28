@@ -14,7 +14,7 @@ import "../../assets/styles/maForm.css";
 const url_req = `histo/`;
 const searchUrl = `service/recherche/`;
 
-export default function AddInComing() {
+export default function AddOutGoing() {
   //#region //-variable
   const navigate = useNavigate();
   const u_info = GetUserData();
@@ -149,7 +149,7 @@ export default function AddInComing() {
     const finalInputs = {
       ...inputs,
       idM: u_info.u_id,
-      karazana: 1,
+      karazana: 0,
     };
 
     axios
@@ -157,7 +157,7 @@ export default function AddInComing() {
       .then((response) => {
         if (response.status === 200 && response.data.success) {
           toast.success(response.data.message);
-          navigate("/inComing/");
+          navigate("/outGoing/");
         } else {
           toast.error(response.data.message || "Échec de l'ajout!");
         }
@@ -176,7 +176,7 @@ export default function AddInComing() {
     setInputs(initialInputs);
     setErreurs({ coms: false, qte: false, idS: false });
     setMessages({ coms: "", qte: "", idS: "" });
-    navigate("/inComing/");
+    navigate("/outGoing/");
   };
   //#endregion
 
@@ -193,7 +193,7 @@ export default function AddInComing() {
             {/* -------------------------- PAGE CONTENT -------------------------- */}
             <div className="pt-3 pb-2 mb-3">
               <div className="monContainer bg-white card mb-3">
-                <header>Ajouter un Gain</header>
+                <header>Ajouter un Dépense</header>
                 <form>
                   <div className="form first">
                     <div className="details personal">
