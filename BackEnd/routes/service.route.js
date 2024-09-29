@@ -11,6 +11,7 @@ router.post(
 );
 
 router.get("/", user.checkUtilisateur, ServiceController.getAllServices);
+router.get("/serviceTtl", user.checkUtilisateur, ServiceController.getMyTotalOfService);
 router.get("/:id", user.checkUtilisateur, ServiceController.getIdService);
 
 router.put("/:id", user.checkUtilisateur, ServiceController.updateService);

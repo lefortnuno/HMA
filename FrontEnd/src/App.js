@@ -16,6 +16,8 @@ import About from "./pages/about/about";
 
 import Service from "./pages/services/service";
 import AddService from "./pages/services/add.service";
+import ServiceDetails from "./pages/services/detail.service";
+import EditService from "./pages/services/edit.service";
 
 import InComing from "./pages/inComing/inComing";
 import AddInComing from "./pages/inComing/add.inComing";
@@ -39,8 +41,11 @@ function App() {
           <Route path="newUser/" element={<SignIn />} />
           <Route path="home/" element={<SignInProtection Cmp={Home}/>} />
           <Route path="about/" element={<SignInProtection Cmp={About}/>} />
+
           <Route path="service/" element={<SignInProtection Cmp={Service}/>} />
           <Route path="newService/" element={<SignInProtection Cmp={AddService}/>} />
+          <Route path="aboutService/:id" element={<SignInProtection Cmp={ServiceDetails}/>} />
+          <Route path="editService/:id" element={<SignInProtection Cmp={EditService}/>} />
 
           <Route path="inComing/" element={<SignInProtection Cmp={InComing}/>} /> 
           <Route path="newInComing/" element={<SignInProtection Cmp={AddInComing}/>} />

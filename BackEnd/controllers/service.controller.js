@@ -34,6 +34,16 @@ module.exports.getIdService = (req, res) => {
   });
 };
 
+module.exports.getMyTotalOfService = (req, res) => {
+  Service.getMyTotalOfService((err, resp) => {
+    if (!err) {
+      res.send(resp);
+    } else {
+      res.send(err);
+    }
+  });
+};
+
 module.exports.updateService = (req, res) => {
   let { nom, prix, fandrefesana, karazana } = req.body;
   const updateService = { nom, prix, fandrefesana, karazana };
@@ -58,9 +68,9 @@ module.exports.deleteService = (req, res) => {
 };
 
 module.exports.searchService = (req, res) => {
-  const { query } = req.body;
- 
-  Service.searchService({ query }, (err, resp) => {
+  const { val } = req.body;
+
+  Service.searchService({ val }, (err, resp) => {
     if (!err) {
       res.send(resp);
     } else {

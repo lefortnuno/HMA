@@ -10,6 +10,7 @@ let Service = function (service) {
 
 const reqSQL = `SELECT * FROM serivisy `;
 const ordre = ` ORDER BY id DESC `;
+const reqMntTtl = `SELECT COUNT(id) AS isaTtl FROM serivisy`;
 
 Service.addService = (newService, result) => {
   Service.getNomService(newService.nom, (err, resNom) => {
@@ -53,7 +54,7 @@ Service.deleteService = (id, result) => {
 };
 
 Service.getAllServices = (result) => {
-  dbConn.query(reqSQL + ordre, (err, res) => { 
+  dbConn.query(reqSQL + ordre, (err, res) => {
     if (err) {
       result(err, null);
     } else {
@@ -76,6 +77,16 @@ Service.getIdService = (id, result) => {
   });
 };
 
+Service.getMyTotalOfService = (result) => {
+  dbConn.query(reqMntTtl, (err, res) => {
+    if (err) {
+      result(err, null);
+    } else {
+      result(null, res);
+    }
+  });
+};
+
 Service.getNomService = (nom, result) => {
   dbConn.query(reqSQL + ` WHERE nom = ?`, nom, (err, res) => {
     if (err) {
@@ -90,11 +101,9 @@ Service.getNomService = (nom, result) => {
   });
 };
 
-Service.searchService = (valeur, result) => {
+Service.searchService = (valeur, result) => { 
   dbConn.query(
-    reqSQL +
-      `WHERE nom LIKE '${valeur.query}%'` +
-      ordre,
+    reqSQL + `WHERE nom LIKE '${valeur.val}%'` + ordre,
     (err, res) => { 
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -128,7 +137,7 @@ Service.advancedSearchService = (valeur, result) => {
   );
 };
 
-Service.trieServiceByUnite = (valeur, result) => { 
+Service.trieServiceByUnite = (valeur, result) => {
   dbConn.query(
     reqSQL + `WHERE  fandrefesana = '${valeur.val}'` + ordre,
     (err, res) => {

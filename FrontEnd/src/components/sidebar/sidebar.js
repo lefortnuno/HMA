@@ -26,8 +26,7 @@ import {
 
 export default function Sidebar() {
   const u_info = GetUserData();
-  const location = useLocation();
-console.log(u_info);
+  const location = useLocation(); 
 
   return (
     <nav
