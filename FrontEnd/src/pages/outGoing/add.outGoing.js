@@ -48,7 +48,7 @@ export default function AddOutGoing() {
   const getSomeService = (val) => {
     setIsServiceSelected(false);
     axios
-      .post(searchUrl, { query: val }, u_info.opts)
+      .post(searchUrl, { val: val }, u_info.opts)
       .then((response) => {
         if (response.status === 200) {
           setFilteredServices(response.data.res);
