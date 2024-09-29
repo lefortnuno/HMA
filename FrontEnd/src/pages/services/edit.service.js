@@ -110,7 +110,7 @@ export default function EditService() {
       .then((response) => {
         if (response.status === 200 && response.data.success) {
           toast.success(response.data.message);
-          navigate("/service/");
+          navigate("/services/");
         } else {
           toast.error(response.data.message || "Échec de l'ajout!");
         }
@@ -129,7 +129,7 @@ export default function EditService() {
     setInputs(initialInputs);
     setErreurs({ nom: false, prix: false });
     setMessages({ nom: "", prix: "" });
-    navigate("/service/");
+    navigate("/services/");
   };
   //#endregion
 

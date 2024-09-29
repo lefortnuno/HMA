@@ -43,9 +43,7 @@ export default function InComing() {
     if (searchVisible && searchInputRef.current) {
       searchInputRef.current.focus(); // Met l'auto-focus sur l'input quand il est visible
       setCurrentPage(1);
-    } else {
-      getHisto();
-    }
+    } 
   }, [searchVisible]);
 
   useEffect(() => {

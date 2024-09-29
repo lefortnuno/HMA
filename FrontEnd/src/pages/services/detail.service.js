@@ -35,7 +35,7 @@ export default function ServiceDetails() {
   if (!details) return <div>Chargement...</div>;
 
   const onClose = () => {
-    navigate("/service/");
+    navigate("/services/");
   };
   return ( 
       <Template>

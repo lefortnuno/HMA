@@ -320,13 +320,13 @@ export default function AddService() {
       .then((response) => {
         if (response.status === 200 && response.data.success) {
           toast.success(response.data.message);
-          navigate("/service/");
+          navigate("/services/");
         } else {
           toast.error(response.data.message || "Échec de l'ajout!");
         }
       })
       .catch(() => {
-        toast.error("Erreur lors de l'ajout du service.");
+        toast.error("Erreur lors de l'ajout du services.");
       })
       .finally(() => {
         setIsSubmitting(false); // Réinitialiser après soumission
@@ -339,7 +339,7 @@ export default function AddService() {
     setInputs(initialInputs);
     setErreurs({ nom: false, prix: false });
     setMessages({ nom: "", prix: "" });
-    navigate("/service/");
+    navigate("/services/");
   };
   //#endregion
 
