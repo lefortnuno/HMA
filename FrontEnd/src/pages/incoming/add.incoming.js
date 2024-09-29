@@ -9,10 +9,10 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
 
-import "../../assets/styles/maForm.css";
+import "../../assets/styles/maForm.css"; 
 
 const url_req = `histo/`;
-const searchUrl = `service/recherche/`;
+const searchUrl = `service/recherche`;
 
 export default function AddInComing() {
   //#region //-variable
@@ -48,8 +48,8 @@ export default function AddInComing() {
   const getSomeService = (val) => {
     setIsServiceSelected(false);
     axios
-      .post(searchUrl, { query: val }, u_info.opts)
-      .then((response) => {
+      .post(searchUrl, { val: val }, u_info.opts)
+      .then((response) => { 
         if (response.status === 200) {
           setFilteredServices(response.data.res);
         } else {

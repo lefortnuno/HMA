@@ -11,6 +11,7 @@ let Utilisateur = function (utilisateur) {
 
 const reqSQL = `SELECT * FROM mpampiasa `;
 const ordre = ` ORDER BY id DESC `;
+const reqMntTtl = `SELECT COUNT(id) AS isaTtl FROM mpampiasa`;
 
 Utilisateur.addUtilisateur = (newUtilisateur, result) => {
   Utilisateur.getIdPSUtilisateur(newUtilisateur.idPS, (err, resIdPS) => {
@@ -70,6 +71,16 @@ Utilisateur.loginUtilisateur = (values, result) => {
 
 Utilisateur.getAllUtilisateurs = (result) => {
   dbConn.query(reqSQL + ordre, (err, res) => {
+    if (err) {
+      result(err, null);
+    } else {
+      result(null, res);
+    }
+  });
+};
+
+Utilisateur.getMyTotalOfUser = (result) => {
+  dbConn.query(reqMntTtl, (err, res) => {
     if (err) {
       result(err, null);
     } else {

@@ -22,8 +22,7 @@ export default function ServiceDetails() {
       .get(`service/${id}`, u_info.opts)
       .then((response) => {
         if (response.status === 200) {
-          setDetails(response.data[0]);
-          console.log(response.data[0]);
+          setDetails(response.data[0]); 
         } else {
           toast.warning("Détails non disponibles.");
         }

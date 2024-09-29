@@ -57,6 +57,16 @@ module.exports.getAllUtilisateurs = (req, res) => {
   });
 };
 
+module.exports.getMyTotalOfUser = (req, res) => {
+  Utilisateur.getMyTotalOfUser((err, resp) => {
+    if (!err) {
+      res.send(resp);
+    } else {
+      res.send(err);
+    }
+  });
+};
+
 module.exports.getIdUtilisateur = (req, res) => {
   Utilisateur.getIdUtilisateur(req.params.id, (err, resp) => {
     if (!err) {

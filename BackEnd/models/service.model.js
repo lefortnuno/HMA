@@ -105,7 +105,7 @@ Service.searchService = (valeur, result) => {
   dbConn.query(
     reqSQL + `WHERE nom LIKE '${valeur.val}%'` + ordre,
     (err, res) => { 
-      if (err) {
+      if (err) { 
         result({ err, message: "erreur !", success: false }, null);
       } else {
         if (res.length !== 0) {

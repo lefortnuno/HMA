@@ -33,7 +33,7 @@
 .monContainer form {
   position: relative;
   margin-top: 16px;
-  min-height: 30vh; 
+  min-height: 40vh; 
   overflow: hidden;
   overflow-y: scroll;
 }
@@ -189,7 +189,7 @@ form .buttons button,
     width: calc(100% / 3 - 15px);
   }
   .monContainer form { 
-    min-height: 40vh;  
+    min-height: 50vh;  
   }
 }
 
@@ -213,7 +213,7 @@ form .buttons button,
     margin-top: 2%;
   }
   .monContainer form { 
-    min-height: 50vh;  
+    min-height: 60vh;  
   }
 }
 

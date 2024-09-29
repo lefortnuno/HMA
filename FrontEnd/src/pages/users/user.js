@@ -21,12 +21,12 @@ import {
   BsSearch,
 } from "react-icons/bs";
 
-// import "./service.css";
+// import "./user.css";
 
-const url_req = `service/`;
+const url_req = `utilisateur/`;
 const histoPerPage = 5;
 
-export default function Service() {
+export default function User() {
   //#region //-variable
   const u_info = GetUserData();
   const [histo, setHisto] = useState([]);
@@ -58,7 +58,7 @@ export default function Service() {
   function getHisto() {
     axios
       .get(url_req, u_info.opts)
-      .then(function (response) {
+      .then(function (response) { 
         if (response.status === 200) {
           const allHisto = response.data;
           setHisto(allHisto);
@@ -74,7 +74,7 @@ export default function Service() {
   }
   function getTotaly() {
     axios
-      .get(url_req + `serviceTtl/`, u_info.opts)
+      .get(url_req + `userTtl/`, u_info.opts)
       .then(function (response) {
         if (response.status === 200) {
           const allHisto = response.data[0];
@@ -102,11 +102,12 @@ export default function Service() {
   };
 
   const handleEditClick = (entity) => {
-    navigate(`/editService/${entity.id}`, { state: { entity } });
+    // navigate(`/editUser/${entity.id}`, { state: { entity } });
+    navigate(`/users/` );
   };
 
   const handleDetailClick = (entity) => {
-    navigate(`/aboutService/${entity.id}`, { state: { entity } });
+    navigate(`/aboutUser/${entity.id}`, { state: { entity } });
   };
   //#endregion
 
@@ -177,9 +178,9 @@ export default function Service() {
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
                     <h5 className="mb-0 me-2 position-relative d-inline-block">
-                      Liste des Services :-
+                      Liste des Utilisateurs :-
                       <Link
-                        to={"/newService/"}
+                        to={"/newUser/"}
                         className="add-icon mx-1"
                         title="Ajout"
                       >
@@ -205,9 +206,9 @@ export default function Service() {
                 <table className="table table-striped w-100">
                   <thead>
                     <tr>
+                      <th>ID</th>
                       <th>Nom</th>
-                      <th>Prix</th>
-                      <th>Unité</th>
+                      <th>Prénom</th> 
                       <th>Type</th>
                       <th>+Details</th>
                       <th>Actions</th>
@@ -217,11 +218,11 @@ export default function Service() {
                     {currentHisto.length > 0 ? (
                       currentHisto.map((s, key) => (
                         <tr key={key}>
+                          <td>{s.idPS}</td>
                           <td>{s.nom}</td>
-                          <td>{s.prix}</td>
-                          <td>{s.fandrefesana}</td>
+                          <td>{s.prenom}</td> 
                           <td>
-                            {s.karazana == 1 ? "Intellectuel" : "Matériel"}{" "}
+                            {s.karazana == 1 ? "Administrateur" : "Utilisateur"} 
                           </td>
                           <td>
                             <span
@@ -234,7 +235,7 @@ export default function Service() {
                           <td>
                             <span
                               className="btn btn-outline-primary btn-sm pt-0 mx-1 waves-effect"
-                              onClick={() => handleEditClick(s)}
+                              onClick={() => handleEditClick(s)} aria-disabled={true}
                             >
                               <BsPencilSquare />
                             </span>
@@ -268,7 +269,7 @@ export default function Service() {
                   onClose={() => setShowDeleteModal(false)}
                   onConfirm={handleDeleteConfirm}
                   entity={selectedEntity}
-                  entityName={"service"}
+                  entityName={"utilisateur"}
                   auth={u_info.opts}
                 />
               )}

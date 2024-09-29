@@ -16,6 +16,7 @@ router.get(
   admin.checkUtilisateur,
   UtilisateurController.getAllUtilisateurs
 );
+router.get("/userTtl", admin.checkUtilisateur, UtilisateurController.getMyTotalOfUser);
 router.get(
   "/:id",
   user.checkUtilisateur,

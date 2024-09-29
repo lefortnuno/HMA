@@ -11,7 +11,7 @@ import Template from "../../components/template/template";
 
 import hma from "../../assets/images/hma256.png";
 
-export default function InComingDetails() {
+export default function UserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const u_info = GetUserData();
@@ -19,7 +19,7 @@ export default function InComingDetails() {
 
   useEffect(() => {
     axios
-      .get(`histo/${id}`, u_info.opts)
+      .get(`utilisateur/${id}`, u_info.opts)
       .then((response) => {
         if (response.status === 200) {
           setDetails(response.data[0]); 
@@ -35,7 +35,7 @@ export default function InComingDetails() {
   if (!details) return <div>Chargement...</div>;
 
   const onClose = () => {
-    navigate("/inComing/");
+    navigate("/users/");
   };
   return ( 
       <Template>
@@ -49,7 +49,7 @@ export default function InComingDetails() {
               {/* -------------------------- PAGE CONTENT -------------------------- */}
               <div className="pt-3 pb-2 mb-3">
                 <div className="monContainer bg-white card mb-3 ">
-                  <header>Détails de l'entrée d'argent</header>
+                  <header>Détails sur l'utilisateur</header>
 
                   <div className="mt-2">
                     <div className="row">

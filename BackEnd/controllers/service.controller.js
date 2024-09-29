@@ -68,8 +68,8 @@ module.exports.deleteService = (req, res) => {
 };
 
 module.exports.searchService = (req, res) => {
-  const { val } = req.body;
-
+  const { val } = req.body; 
+  
   Service.searchService({ val }, (err, resp) => {
     if (!err) {
       res.send(resp);

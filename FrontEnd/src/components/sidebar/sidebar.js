@@ -73,7 +73,7 @@ export default function Sidebar() {
             </Link>
           </li>
           <li className={location.pathname === "/service/" ? "active" : ""}>
-            <Link to="/service/">
+            <Link to="/services/">
               <span>
                 <BsGear />
               </span>

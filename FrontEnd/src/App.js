@@ -9,10 +9,14 @@ import LogOutProtection from "./contexts/ptotections/logout.protection";
 
 import PageNotFound from "./pages/404/page404";
 import LogIn from "./pages/login/login";
-import SignIn from "./pages/signin/signin";
 
 import Home from "./pages/home/home";
 import About from "./pages/about/about";
+
+import User from "./pages/users/user"; 
+import SignIn from "./pages/signin/signin";
+import UserDetails from "./pages/users/detail.user";
+import EditUser from "./pages/users/edit.user";
 
 import Service from "./pages/services/service";
 import AddService from "./pages/services/add.service";
@@ -38,11 +42,15 @@ function App() {
           <Route index element={<LogOutProtection Cmp={LogIn} />} />
           {/* <Route index element={<LogIn/>} /> */}
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
-          <Route path="newUser/" element={<SignIn />} />
           <Route path="home/" element={<SignInProtection Cmp={Home}/>} />
           <Route path="about/" element={<SignInProtection Cmp={About}/>} />
+          
+          <Route path="users/" element={<SignInProtection Cmp={User}/>} />
+          <Route path="newUser/" element={<SignIn />} />
+          <Route path="aboutUser/:id" element={<SignInProtection Cmp={UserDetails}/>} />
+          <Route path="editUser/:id" element={<SignInProtection Cmp={EditUser}/>} />
 
-          <Route path="service/" element={<SignInProtection Cmp={Service}/>} />
+          <Route path="services/" element={<SignInProtection Cmp={Service}/>} />
           <Route path="newService/" element={<SignInProtection Cmp={AddService}/>} />
           <Route path="aboutService/:id" element={<SignInProtection Cmp={ServiceDetails}/>} />
           <Route path="editService/:id" element={<SignInProtection Cmp={EditService}/>} />
