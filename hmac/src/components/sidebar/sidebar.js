@@ -80,7 +80,7 @@ export default function Sidebar() {
               <p>Services</p>
             </Link>
           </li>
-          <li className={location.pathname === "/boutique/" ? "active" : ""}>
+          <li className={location.pathname === "/boutiques/" ? "active" : ""}>
             <Link to="/boutiques/">
               <span>
                 <BsGlobe2 />
