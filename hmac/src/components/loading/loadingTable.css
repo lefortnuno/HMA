@@ -1,0 +1,53 @@
+:root {
+    --primary-color: #2015ea;
+    --boostrapPrimary: #007bff;
+    --primary-color-light: #6861f1;
+    --secondary-color: #c0dbea;
+    --text-dark: #020617;
+    --text-light: #8995a7;
+    --white: #ffffff;
+    --max-width: 1200px;
+  }
+  .loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    width: 100%;
+  }
+  
+  .loadingRow {
+    position: relative; 
+    background-color: var(--white);  
+    border-radius: 4px;
+    overflow: hidden;  
+  }
+  
+  .loadingLight {
+    position: absolute;
+    top: 0;
+    left: -100%; 
+    width: 50%;  
+    height: 100%;  
+    background-color: var(--secondary-color);
+    animation: loading 1.8s infinite; 
+  }
+  
+  .loadingCell {
+    padding: 0.6%; /*Hauteur du loading*/
+    flex: 1; 
+    text-align: center;
+  }
+  
+  /* Animation pour déplacer la lumière */
+  @keyframes loading {
+    0% {
+      left: -100%; 
+    }
+    50% {
+      left: 100%;  
+    }
+    100% {
+      left: -100%; 
+    }
+  }
+  

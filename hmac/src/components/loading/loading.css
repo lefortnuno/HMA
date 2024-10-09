@@ -1,0 +1,26 @@
+:root {
+  --primary-color: #2015ea;
+  --boostrapPrimary: #007bff;
+  --primary-color-light: #6861f1;
+  --secondary-color: #c0dbea;
+  --text-dark: #020617;
+  --text-light: #8995a7;
+  --white: #ffffff;
+  --max-width: 1200px;
+}
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.spinner {
+  width: 3rem;
+  height: 3rem;
+}
+.loadingText {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: var(--boostrapPrimary);
+}

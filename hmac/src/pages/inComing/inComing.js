@@ -7,6 +7,7 @@ import More from "../../components/more/more";
 import Template from "../../components/template/template";
 import Pagination from "../../components/pagination/pagination";
 import DeleteModal from "../../components/modals/delete";
+import LoadingTable from "../../components/loading/loadingTable";
 
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -30,6 +31,7 @@ export default function InComing() {
   //#region //-variable
   const u_info = GetUserData();
   const [histo, setHisto] = useState([]);
+  const [details, setDetails] = useState(null);
   const [totaly, setTotaly] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,7 +45,7 @@ export default function InComing() {
     if (searchVisible && searchInputRef.current) {
       searchInputRef.current.focus(); // Met l'auto-focus sur l'input quand il est visible
       setCurrentPage(1);
-    } 
+    }
   }, [searchVisible]);
 
   useEffect(() => {
@@ -77,6 +79,7 @@ export default function InComing() {
         if (response.status === 200) {
           const allHisto = response.data[0];
           setTotaly(allHisto);
+          setDetails(allHisto);
         } else {
           toast.warning("Vous n'êtes pas autorisé à accéder à cette page!");
         }
@@ -214,41 +217,47 @@ export default function InComing() {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentHisto.length > 0 ? (
-                      currentHisto.map((s, key) => (
-                        <tr key={key}>
-                          <td>{s.date}</td>
-                          <td>{s.snom}</td>
-                          <td>{s.montant}</td>
-                          <td>{s.coms == "" ? "/" : s.coms} </td>
-                          <td>
-                            <span
-                              className="btn btn-outline-success btn-sm pt-0 mx-1 waves-effect"
-                              onClick={() => handleDetailClick(s)}
-                            >
-                              <BsEye />
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              className="btn btn-outline-primary btn-sm pt-0 mx-1 waves-effect"
-                              onClick={() => handleEditClick(s)}
-                            >
-                              <BsPencilSquare />
-                            </span>
-                            <span
-                              className="btn btn-outline-danger btn-sm pt-0 mx-1 waves-effect"
-                              onClick={() => handleDeleteClick(s)}
-                            >
-                              <BsFillTrashFill />
-                            </span>
-                          </td>
-                        </tr>
-                      ))
+                    {!details ? (
+                      <LoadingTable />
                     ) : (
-                      <tr>
-                        <td colSpan="10">Aucune donnée disponible</td>
-                      </tr>
+                      <>
+                        {currentHisto.length > 0 ? (
+                          currentHisto.map((s, key) => (
+                            <tr key={key}>
+                              <td>{s.date}</td>
+                              <td>{s.snom}</td>
+                              <td>{s.montant}</td>
+                              <td>{s.coms == "" ? "/" : s.coms} </td>
+                              <td>
+                                <span
+                                  className="btn btn-outline-success btn-sm pt-0 mx-1 waves-effect"
+                                  onClick={() => handleDetailClick(s)}
+                                >
+                                  <BsEye />
+                                </span>
+                              </td>
+                              <td>
+                                <span
+                                  className="btn btn-outline-primary btn-sm pt-0 mx-1 waves-effect"
+                                  onClick={() => handleEditClick(s)}
+                                >
+                                  <BsPencilSquare />
+                                </span>
+                                <span
+                                  className="btn btn-outline-danger btn-sm pt-0 mx-1 waves-effect"
+                                  onClick={() => handleDeleteClick(s)}
+                                >
+                                  <BsFillTrashFill />
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="10">Aucune donnée disponible</td>
+                          </tr>
+                        )}
+                      </>
                     )}
                   </tbody>
                 </table>

@@ -96,6 +96,12 @@
   font-weight: bold;
   background-color: var(--gray);
 }
+.separator { 
+  height: 6px; 
+  background-color: var(--secondary-color);
+  margin: 1rem 0;  
+  width: 100%; 
+}
 
 @media (width < 1150px) {
   .sidebar {

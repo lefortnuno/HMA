@@ -89,7 +89,8 @@ export default function Sidebar() {
             </Link>
           </li>
 
-          <li></li>
+          <div className="separator"></div>
+
           {u_info.u_karazana == 1 && (
             <li className={location.pathname === "/users/" ? "active" : ""}>
               <Link to="/users/">
