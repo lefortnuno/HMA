@@ -1,5 +1,5 @@
 cd C:\Users\~Trofel~\Desktop\HMA
 
 git add *
-git commit -m "Auto Online Env by Trofel"
+git commit -m "Correction requete SQL Boutique.js"
 git push 
