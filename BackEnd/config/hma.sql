@@ -29,6 +29,17 @@ create table serivisy(
     unique index `nom_unique` (`nom`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = latin1;
 
+create table botika(
+    id int(11) not null auto_increment,
+    nom varchar(300) not null,
+    prix float not null,
+    idB int(11) not null,
+    primary key(id),
+    unique index `id_unique` (`id` desc),
+    index `serivisy_idBx` (`idB` desc),
+    constraint idB foreign key (idB) references hma.serivisy(id) on delete CASCADE on update CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = latin1;
+
 create table hetsika(
     id int(11) not null auto_increment,
     date date,
