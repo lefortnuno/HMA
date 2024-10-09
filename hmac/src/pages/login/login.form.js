@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
 const URL_DE_BASE = `utilisateur/seConnecter/`;
-let isValidate = false; 
+let isValidate = false;
+const timerDelai = 5000;
 
 export default function LoginForm() {
   //#region // VARIABLES
@@ -149,7 +150,10 @@ export default function LoginForm() {
   //#region // VALIDATION
   const validation = (event) => {
     event.preventDefault();
+    autoValidation();
+  };
 
+  const autoValidation = () => {
     let formIsValid = true;
 
     // Vérifie si l'identifiant est valide
@@ -267,8 +271,8 @@ export default function LoginForm() {
     });
   }, [disabledInputs]);
 
+  //Auto show password field when idS complet
   const isIdPSCompleteAndValid = inputs.idPS && !erreurs.idPS;
-
   useEffect(() => {
     if (isIdPSCompleteAndValid) {
       if (timeoutRef.current) {
@@ -279,11 +283,12 @@ export default function LoginForm() {
       timeoutRef.current = setTimeout(() => {
         setShowMe(true);
         setDisabledInputs((prevState) => ({ ...prevState, pwd0: false }));
-      }, 4000);
+      }, timerDelai);
     } else {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+
       setShowMe(false);
       setDisabledInputs((prevState) => ({
         ...prevState,
@@ -308,9 +313,9 @@ export default function LoginForm() {
     };
   }, [isIdPSCompleteAndValid]);
 
+  // Auto set up inputs.pwd
   const isPwdCompleteAndValid =
     inputs.pwd0 && inputs.pwd1 && inputs.pwd2 && inputs.pwd3;
-
   useEffect(() => {
     if (isPwdCompleteAndValid) {
       const newPwd = `${inputs.pwd0}${inputs.pwd1}${inputs.pwd2}${inputs.pwd3}`;
@@ -319,6 +324,25 @@ export default function LoginForm() {
       setInputs((prevState) => ({ ...prevState, pwd: "" }));
     }
   }, [isPwdCompleteAndValid]);
+
+  // Auto Login when password complete
+  const isPwdCompleteAndValidInInputs = inputs.pwd;
+  useEffect(() => {
+    if (isPwdCompleteAndValidInInputs) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current); // Annule le timeout précédent
+      }
+
+      // Démarrer un nouveau timer
+      timeoutRef.current = setTimeout(() => {
+        autoValidation(); 
+      }, timerDelai);
+    } else {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current); // Annule le timeout précédent
+      }
+    }
+  }, [isPwdCompleteAndValidInInputs]);
   //#endregion
 
   return (
