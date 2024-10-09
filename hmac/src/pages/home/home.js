@@ -7,6 +7,8 @@ import More from "../../components/more/more";
 
 export default function Home() {
   const navigate = useNavigate();
+  console.log("je suis dans home");
+
   return (
     <Template>
       <Header></Header>
