@@ -67,8 +67,7 @@ export default function InComing() {
           toast.warning("Vous n'êtes pas autorisé à accéder à cette page!");
         }
       })
-      .catch((error) => {
-        toast.error("Erreur lors du chargement des histo.");
+      .catch((error) => { 
         setHisto([]); // Gérer l'erreur en réinitialisant les histo à un tableau vide
       });
   }
@@ -84,8 +83,7 @@ export default function InComing() {
           toast.warning("Vous n'êtes pas autorisé à accéder à cette page!");
         }
       })
-      .catch((error) => {
-        toast.error("Erreur lors du chargement des histo.");
+      .catch((error) => { 
         setTotaly([]);
       });
   }

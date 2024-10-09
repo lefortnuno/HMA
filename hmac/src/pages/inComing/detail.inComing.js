@@ -28,9 +28,7 @@ export default function InComingDetails() {
           toast.warning("Détails non disponibles.");
         }
       })
-      .catch((error) => {
-        toast.error("Erreur lors du chargement des détails.");
-      });
+      .catch((error) => {});
   }, []);
 
   const onClose = () => {
@@ -59,7 +57,7 @@ export default function InComingDetails() {
                     </div>
                     <div className="col-md-8">
                       {!details ? (
-                        <Loading/>
+                        <Loading />
                       ) : (
                         <div>
                           <p>

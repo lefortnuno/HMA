@@ -28,9 +28,7 @@ export default function ServiceDetails() {
           toast.warning("Détails non disponibles.");
         }
       })
-      .catch((error) => {
-        toast.error("Erreur lors du chargement des détails.");
-      });
+      .catch((error) => {});
   }, []);
 
   const onClose = () => {

@@ -28,9 +28,7 @@ export default function BoutiqueDetails() {
           toast.warning("Détails non disponibles.");
         }
       })
-      .catch((error) => {
-        toast.error("Erreur lors du chargement des détails.");
-      });
+      .catch((error) => {});
   }, []);
 
   const onClose = () => {
