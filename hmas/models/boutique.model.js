@@ -8,6 +8,7 @@ let Boutique = function (boutique) {
 };
 
 const reqSQL = `SELECT * FROM botika WHERE id IN (SELECT MIN(id) FROM botika GROUP BY nom) `;
+const reqSQLList = `SELECT * FROM botika WHERE id IN (SELECT MIN(id) FROM botika GROUP BY nom) `;
 const ordre = ` ORDER BY id DESC `;
 const reqMntTtl = `SELECT COUNT(DISTINCT nom) AS isaTtl FROM botika`;
 
@@ -60,7 +61,7 @@ Boutique.getAllBoutiques = (result) => {
 };
 
 Boutique.getIdBoutique = (id, result) => {
-  dbConn.query(reqSQL + ` WHERE id = ?`, id, (err, res) => {
+  dbConn.query(reqSQL + ` AND id = ?`, id, (err, res) => {
     if (err) {
       result(err, null);
     } else {
@@ -85,7 +86,7 @@ Boutique.getMyTotalOfBoutique = (result) => {
 
 Boutique.getNomBoutique = (verif, result) => {
   dbConn.query(
-    reqSQL + ` WHERE nom = ? AND idB=?`,
+    reqSQL + ` AND nom = ? AND idB=?`,
     [verif.nom, verif.idB],
     (err, res) => {
       if (err) {
@@ -103,7 +104,7 @@ Boutique.getNomBoutique = (verif, result) => {
 
 Boutique.searchBoutique = (valeur, result) => {
   dbConn.query(
-    reqSQL + `WHERE nom LIKE '${valeur.val}%'` + ordre,
+    reqSQL + ` AND nom LIKE '${valeur.val}%'` + ordre,
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -121,7 +122,7 @@ Boutique.searchBoutique = (valeur, result) => {
 Boutique.advancedSearchBoutique = (valeur, result) => {
   dbConn.query(
     reqSQL +
-      `WHERE (nom LIKE '%${valeur.val}%' OR prix LIKE '%${valeur.val}%')` +
+      ` AND (nom LIKE '%${valeur.val}%' OR prix LIKE '%${valeur.val}%')` +
       ordre,
     (err, res) => {
       if (err) {
@@ -139,7 +140,7 @@ Boutique.advancedSearchBoutique = (valeur, result) => {
 
 Boutique.trieBoutiqueByUnite = (valeur, result) => {
   dbConn.query(
-    reqSQL + `WHERE  fandrefesana = '${valeur.val}'` + ordre,
+    reqSQL + ` AND fandrefesana = '${valeur.val}'` + ordre,
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -156,7 +157,7 @@ Boutique.trieBoutiqueByUnite = (valeur, result) => {
 
 Boutique.trieBoutiqueByType = (valeur, result) => {
   dbConn.query(
-    reqSQL + `WHERE karazana = '${valeur.val}'` + ordre,
+    reqSQL + ` AND karazana = '${valeur.val}'` + ordre,
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);

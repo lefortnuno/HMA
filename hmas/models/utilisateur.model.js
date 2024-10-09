@@ -60,9 +60,7 @@ Utilisateur.deleteUtilisateur = (id, result) => {
 
 Utilisateur.loginUtilisateur = (values, result) => {
   const requete = ` WHERE idPS=?`;
-  dbConn.query(reqSQL + requete, [values.idPS, values.pwd], (err, res) => { 
-    console.log("Erreur sur login : ", err);
-    
+  dbConn.query(reqSQL + requete, [values.idPS, values.pwd], (err, res) => {
     if (!err) {
       result(null, res);
     } else {
