@@ -1,8 +1,8 @@
 import GetUserData from "../../contexts/api/udata";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { BsGearFill, BsPower } from "react-icons/bs";
+import { useNavigate, Link } from "react-router-dom";
+import { BsGearFill, BsGear, BsPower } from "react-icons/bs";
 
 import "./header.css";
 import hma from "../../assets/images/hma256.png";
@@ -90,16 +90,20 @@ export default function Header({ children }) {
                   </li>
                   <div className="dropdown-divider"></div>
                   <div className="dropdown-item">
-                    <BsGearFill />
-                    <span>Paramètres de compte</span>
+                    <span>
+                      <BsGear />
+                    </span>
+                    <p>Paramètres de compte</p>
                   </div>
                   <div className="dropdown-divider"></div>
                   <div
-                    className="dropdown-item logOut"
+                    className="dropdown-item"
                     onClick={(e) => seDeconnecterDuSession(e)}
                   >
-                    <BsPower />
-                    <span>Se déconnecter</span>
+                    <span>
+                      <BsPower />
+                    </span>
+                    <p>Se déconnecter</p>
                   </div>
                 </ul>
               </div>
