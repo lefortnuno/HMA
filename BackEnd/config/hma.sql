@@ -20,7 +20,6 @@ create table mpampiasa(
 create table serivisy(
     id int(11) not null auto_increment,
     nom varchar(300) not null,
-    prix float not null,
     fandrefesana varchar(25) not null,
     karazana boolean default 0,
     -- 0 = False = MATERIEL -- 1 = TRUE = ARA-TSAINA

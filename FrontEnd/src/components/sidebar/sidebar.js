@@ -26,7 +26,7 @@ import {
 
 export default function Sidebar() {
   const u_info = GetUserData();
-  const location = useLocation(); 
+  const location = useLocation();
 
   return (
     <nav
@@ -81,7 +81,7 @@ export default function Sidebar() {
             </Link>
           </li>
           <li className={location.pathname === "/boutique/" ? "active" : ""}>
-            <Link to="/boutique/">
+            <Link to="/boutiques/">
               <span>
                 <BsGlobe2 />
               </span>

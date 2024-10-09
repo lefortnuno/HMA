@@ -1,21 +1,20 @@
 let dbConn = require("../config/db");
 
-let Service = function (service) {
-  this.id = service.id;
-  this.nom = service.nom;
-  this.prix = service.prix;
-  this.fandrefesana = service.fandrefesana;
-  this.karazana = service.karazana;
+let Boutique = function (boutique) {
+  this.id = boutique.id;
+  this.nom = boutique.nom;
+  this.prix = boutique.prix;
+  this.idB = boutique.idB;
 };
 
-const reqSQL = `SELECT * FROM serivisy `;
+const reqSQL = `SELECT * FROM botika WHERE id IN (SELECT MIN(id) FROM botika GROUP BY nom) `;
 const ordre = ` ORDER BY id DESC `;
-const reqMntTtl = `SELECT COUNT(id) AS isaTtl FROM serivisy`;
+const reqMntTtl = `SELECT COUNT(DISTINCT nom) AS isaTtl FROM botika`;
 
-Service.addService = (newService, result) => {
-  Service.getNomService(newService.nom, (err, resNom) => {
+Boutique.addBoutique = (newBoutique, result) => {
+  Boutique.getNomBoutique(newBoutique, (err, resNom) => {
     if (resNom.length == 0) {
-      dbConn.query("INSERT INTO serivisy SET ?", newService, (err, res) => {
+      dbConn.query("INSERT INTO botika SET ?", newBoutique, (err, res) => {
         if (!err) {
           result(null, { success: true, message: "Ajout reussi !" });
         } else {
@@ -25,35 +24,32 @@ Service.addService = (newService, result) => {
     } else {
       result(null, {
         success: false,
-        message: `Ajout non autorisé! Service Existant !`,
+        message: `Ajout non autorisé! Service Boutique Existant !`,
       });
     }
   });
 };
 
-Service.deleteService = (id, result) => {
-  Service.getIdService(id, (err, resId) => {
+Boutique.deleteBoutique = (id, result) => {
+  Boutique.getIdBoutique(id, (err, resId) => {
     if (resId.length != 0) {
-      dbConn.query(
-        `DELETE FROM serivisy WHERE id = ${id}`,
-        function (err, res) {
-          if (err) {
-            result(err, null);
-          } else {
-            result(null, { success: true });
-          }
+      dbConn.query(`DELETE FROM botika WHERE id = ${id}`, function (err, res) {
+        if (err) {
+          result(err, null);
+        } else {
+          result(null, { success: true });
         }
-      );
+      });
     } else {
       result(null, {
         success: false,
-        message: `Echec de suppression! Service non existant !`,
+        message: `Echec de suppression! Boutique non existant !`,
       });
     }
   });
 };
 
-Service.getAllServices = (result) => {
+Boutique.getAllBoutiques = (result) => {
   dbConn.query(reqSQL + ordre, (err, res) => {
     if (err) {
       result(err, null);
@@ -63,7 +59,7 @@ Service.getAllServices = (result) => {
   });
 };
 
-Service.getIdService = (id, result) => {
+Boutique.getIdBoutique = (id, result) => {
   dbConn.query(reqSQL + ` WHERE id = ?`, id, (err, res) => {
     if (err) {
       result(err, null);
@@ -77,7 +73,7 @@ Service.getIdService = (id, result) => {
   });
 };
 
-Service.getMyTotalOfService = (result) => {
+Boutique.getMyTotalOfBoutique = (result) => {
   dbConn.query(reqMntTtl, (err, res) => {
     if (err) {
       result(err, null);
@@ -87,25 +83,29 @@ Service.getMyTotalOfService = (result) => {
   });
 };
 
-Service.getNomService = (nom, result) => {
-  dbConn.query(reqSQL + ` WHERE nom = ?`, nom, (err, res) => {
-    if (err) {
-      result(err, null);
-    } else {
-      if (res.length !== 0) {
-        result(null, res);
+Boutique.getNomBoutique = (verif, result) => {
+  dbConn.query(
+    reqSQL + ` WHERE nom = ? AND idB=?`,
+    [verif.nom, verif.idB],
+    (err, res) => {
+      if (err) {
+        result(err, null);
       } else {
-        result(null, res);
+        if (res.length !== 0) {
+          result(null, res);
+        } else {
+          result(null, res);
+        }
       }
     }
-  });
+  );
 };
 
-Service.searchService = (valeur, result) => { 
+Boutique.searchBoutique = (valeur, result) => {
   dbConn.query(
     reqSQL + `WHERE nom LIKE '${valeur.val}%'` + ordre,
-    (err, res) => { 
-      if (err) { 
+    (err, res) => {
+      if (err) {
         result({ err, message: "erreur !", success: false }, null);
       } else {
         if (res.length !== 0) {
@@ -118,7 +118,7 @@ Service.searchService = (valeur, result) => {
   );
 };
 
-Service.advancedSearchService = (valeur, result) => {
+Boutique.advancedSearchBoutique = (valeur, result) => {
   dbConn.query(
     reqSQL +
       `WHERE (nom LIKE '%${valeur.val}%' OR prix LIKE '%${valeur.val}%')` +
@@ -137,7 +137,7 @@ Service.advancedSearchService = (valeur, result) => {
   );
 };
 
-Service.trieServiceByUnite = (valeur, result) => {
+Boutique.trieBoutiqueByUnite = (valeur, result) => {
   dbConn.query(
     reqSQL + `WHERE  fandrefesana = '${valeur.val}'` + ordre,
     (err, res) => {
@@ -154,7 +154,7 @@ Service.trieServiceByUnite = (valeur, result) => {
   );
 };
 
-Service.trieServiceByType = (valeur, result) => {
+Boutique.trieBoutiqueByType = (valeur, result) => {
   dbConn.query(
     reqSQL + `WHERE karazana = '${valeur.val}'` + ordre,
     (err, res) => {
@@ -171,14 +171,14 @@ Service.trieServiceByType = (valeur, result) => {
   );
 };
 
-Service.updateService = (updateService, id, result) => {
-  Service.getIdService(id, (err, resId) => {
-    if (resId[0].nom == updateService.nom) {
-      delete updateService.nom; // j'enleve l'nom parce qu'il n'a pas ete modifier
+Boutique.updateBoutique = (updateBoutique, id, result) => {
+  Boutique.getIdBoutique(id, (err, resId) => {
+    if (resId[0].nom == updateBoutique.nom) {
+      delete updateBoutique.nom; // j'enleve l'nom parce qu'il n'a pas ete modifier
 
       dbConn.query(
-        `UPDATE serivisy SET ? WHERE id = ${id}`,
-        updateService,
+        `UPDATE botika SET ? WHERE id = ${id}`,
+        updateBoutique,
         function (err, res) {
           if (err) {
             result(err, null);
@@ -188,11 +188,11 @@ Service.updateService = (updateService, id, result) => {
         }
       );
     } else {
-      Service.getNomService(updateService.nom, (err, resNom) => {
+      Boutique.getNomBoutique(updateBoutique.nom, (err, resNom) => {
         if (resNom.length == 0) {
           dbConn.query(
-            `UPDATE serivisy SET ? WHERE id = ${id}`,
-            updateService,
+            `UPDATE botika SET ? WHERE id = ${id}`,
+            updateBoutique,
             function (err, res) {
               if (err) {
                 result(err, null);
@@ -204,7 +204,7 @@ Service.updateService = (updateService, id, result) => {
         } else {
           result(null, {
             success: false,
-            message: `Echec de la modification! Service existant!`,
+            message: `Echec de la modification! Service Boutique existant!`,
           });
         }
       });
@@ -212,4 +212,4 @@ Service.updateService = (updateService, id, result) => {
   });
 };
 
-module.exports = Service;
+module.exports = Boutique;
