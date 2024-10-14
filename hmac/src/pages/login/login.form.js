@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 const URL_DE_BASE = `utilisateur/seConnecter/`;
 let isValidate = false;
-const timerDelai = 2500;
+const timerDelai = 1250;
 
 export default function LoginForm() {
   //#region // VARIABLES

@@ -42,7 +42,7 @@ export default function ServiceDetails() {
         <div className="row">
           <Sidebar />
 
-          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 main">
             {/* -------------------------- PAGE CONTENT -------------------------- */}
             <div className="pt-3 pb-2 mb-3">
               <div className="monContainer bg-white card mb-3 ">
