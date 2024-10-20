@@ -3,10 +3,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 require("dotenv").config({ path: "./config/.env" });
 
-const utilisateurRoute = require("./routes/utilisateur.route");
 const serviceRoute = require("./routes/service.route");
-const histoRoute = require("./routes/histo.route");
-const boutiqueRoute = require("./routes/boutique.route");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,10 +25,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/utilisateur", utilisateurRoute);
 app.use("/api/service", serviceRoute);
-app.use("/api/histo", histoRoute);
-app.use("/api/boutique", boutiqueRoute)
 
 app.listen(process.env.PORT || process.env.IP_HOST, () => {
   console.log(`Lancé sur ${process.env.IP_HOST}:${process.env.PORT} .... `);

@@ -1,4 +1,4 @@
-module.export.sendResponse = (
+module.exports.sendResponse = (
   res,
   success,
   message,
