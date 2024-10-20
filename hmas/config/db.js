@@ -1,5 +1,5 @@
 "use strict";
-const mysql = require("mysql");
+const mysql = require("mysql2/promise");
 
 const dbConn = mysql.createConnection({
   host: process.env.SUN_DB_HOST,
@@ -8,11 +8,13 @@ const dbConn = mysql.createConnection({
   database: process.env.SUN_DB_NAME,
 });
 
-dbConn.connect(function (err) {
-  if (err) throw err;
-  console.log(
-    `Connection au base de donnée '${process.env.SUN_DB_NAME}' reussi. `
-  );
-});
-
+dbConn
+  .then(() => {
+    console.log(
+      `Connection au base de donnée '${process.env.SUN_DB_NAME}' réussie.`
+    );
+  })
+  .catch((err) => {
+    console.error("Erreur de connexion à la base de données :", err);
+  });
 module.exports = dbConn;

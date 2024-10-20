@@ -12,23 +12,24 @@ const reqSQL = `SELECT * FROM serivisy `;
 const ordre = ` ORDER BY id DESC `;
 const reqMntTtl = `SELECT COUNT(id) AS isaTtl FROM serivisy`;
 
-Service.addService = (newService, result) => {
-  Service.getNomService(newService.nom, (err, resNom) => {
+Service.addService = async (newService) => {
+  try {
+    const resNom = await Service.getNomService(newService.nom);
     if (resNom.length == 0) {
-      dbConn.query("INSERT INTO serivisy SET ?", newService, (err, res) => {
-        if (!err) {
-          result(null, { success: true, message: "Ajout reussi !" });
-        } else {
-          result(err, null);
-        }
-      });
+      const result = (await dbConn).query(
+        "INSERT INTO serivisy SET ?",
+        newService
+      );
+      return { success: true, message: "Ajout reussi !" };
     } else {
-      result(null, {
+      return {
         success: false,
         message: `Ajout non autorisé! Service Existant !`,
-      });
+      }; 
     }
-  });
+  } catch (error) {
+    throw err;
+  }
 };
 
 Service.deleteService = (id, result) => {
@@ -101,11 +102,11 @@ Service.getNomService = (nom, result) => {
   });
 };
 
-Service.searchService = (valeur, result) => { 
+Service.searchService = (valeur, result) => {
   dbConn.query(
     reqSQL + `WHERE nom LIKE '${valeur.val}%'` + ordre,
-    (err, res) => { 
-      if (err) { 
+    (err, res) => {
+      if (err) {
         result({ err, message: "erreur !", success: false }, null);
       } else {
         if (res.length !== 0) {
@@ -211,5 +212,32 @@ Service.updateService = (updateService, id, result) => {
     }
   });
 };
+
+Service.fetchAndUpdateImage = async () => {
+  try {
+    const [rows] = await dbConn.query(reqSQL + ` WHERE sImg is NULL`);
+
+    for (const row of rows) {
+      const imageUrl = await this.fetchImage(row.nom);
+      if (imageUrl) {
+        await dbConn.query("UPDATE serivisy SET sImg=? WHERE id=?", [
+          imageUrl,
+          row.id,
+        ]);
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+async function fetchImage(imageName) {
+  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+    imageName
+  )}&client_id=${process.env.UNSPLASH_API_KEY}`;
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data.results[0]?.urls?.regular || null;
+}
 
 module.exports = Service;

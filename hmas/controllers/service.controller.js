@@ -1,17 +1,16 @@
 "use strict";
 const Service = require("../models/service.model");
 
-module.exports.addService = (req, res) => {
+module.exports.addService = async (req, res) => {
   const { nom, prix, fandrefesana, karazana } = req.body;
   const newService = { nom, prix, fandrefesana, karazana };
-
-  Service.addService(newService, (err, resp) => {
-    if (err) {
-      res.send(err);
-    } else {
-      res.send(resp);
-    }
-  });
+ 
+  try {
+    const resp = await Service.addService(newService);
+    res.send(resp);
+  } catch (error) {
+    res.status(500).send(err);
+  }
 };
 
 module.exports.getAllServices = (req, res) => {
@@ -68,8 +67,8 @@ module.exports.deleteService = (req, res) => {
 };
 
 module.exports.searchService = (req, res) => {
-  const { val } = req.body; 
-  
+  const { val } = req.body;
+
   Service.searchService({ val }, (err, resp) => {
     if (!err) {
       res.send(resp);

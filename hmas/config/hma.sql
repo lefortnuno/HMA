@@ -20,6 +20,7 @@ create table mpampiasa(
 create table serivisy(
     id int(11) not null auto_increment,
     nom varchar(300) not null,
+    sImg varchar(300) default null,
     fandrefesana varchar(25) not null,
     karazana boolean default 0,
     -- 0 = False = MATERIEL -- 1 = TRUE = ARA-TSAINA
@@ -31,6 +32,7 @@ create table serivisy(
 create table botika(
     id int(11) not null auto_increment,
     nom varchar(300) not null,
+    bImg varchar(300) default null,
     prix float not null,
     idB int(11) not null,
     primary key(id),
