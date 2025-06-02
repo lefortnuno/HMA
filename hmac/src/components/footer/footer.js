@@ -81,13 +81,19 @@ export default function Footer() {
             className="img-fluid logo rounded-square me-2"
           />
         </div>
-        <div className="fr-img">
+        <a
+          className="fr-img"
+          href="https://trofel.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ cursor: "pointer" }}
+        >
           <img
             src={trofel}
             alt="trofel"
             className="img-fluid logo rounded-square me-5"
           />
-        </div>
+        </a>
       </div>
     </footer>
   );

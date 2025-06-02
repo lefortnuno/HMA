@@ -7,7 +7,7 @@ export default function More() {
           This is the main content section. On smaller screens, click the menu
           button to toggle the sidebar.
         </p> */}
-        <p style={{ textWrap: "balance"}}>
+        {/* <p style={{ textWrap: "balance"}}>
           --------------------------------------------------------------------------------------------------------------
         </p>
 
@@ -28,7 +28,7 @@ export default function More() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </>
   );

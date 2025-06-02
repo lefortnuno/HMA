@@ -34,7 +34,13 @@ export default function Sidebar() {
       className="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
     >
       <div className="position-sticky">
-        <div className="carte-visite">
+        <a
+          className="carte-visite"
+          href="https://trofel.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ cursor: "pointer" }}
+        >
           <img
             src={hma}
             alt="bg-hma"
@@ -44,7 +50,7 @@ export default function Sidebar() {
           <div className="carte-visite-name">
             <p className="text-muted">Bonjour</p> <b>{u_info.u_nom}</b>
           </div>
-        </div>
+        </a>
 
         <ul className="nav flex-column">
           <li className={location.pathname === "/home/" ? "active" : ""}>

@@ -196,7 +196,7 @@ export default function LoginForm() {
         if (response.status === 200) {
           if (response.data.success) {
             toast.success(response.data.message);
-            navigate("/home/"); // Redirection après connexion réussie
+            navigate("/services/"); // Redirection après connexion réussie
             console.log("Info recu du backend : ", response);
 
             localStorage.setItem("token", response.data.token);
