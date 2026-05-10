@@ -11,20 +11,26 @@ import "./loyer.css";
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const CATEGORIES = ["Réparation","Entretien","Charges","Fournitures","Salaires","Autre"];
 
+function formatDate(str) {
+  if (!str) return "—";
+  const d = new Date(str);
+  if (isNaN(d)) return "—";
+  return `${d.getDate()} ${MOIS_LABELS[d.getMonth() + 1]} ${d.getFullYear()}`;
+}
+
+function initForm(now) {
+  return { description: "", montant: "", categorie: "Autre", date: now.toISOString().split("T")[0] };
+}
+
 export default function Depenses() {
   const u_info = GetUserData();
   const now = new Date();
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee, setAnnee] = useState(now.getFullYear());
   const [depenses, setDepenses] = useState([]);
-  const [form, setForm] = useState({
-    description: "",
-    montant: "",
-    categorie: "Autre",
-    date: now.toISOString().split("T")[0],
-  });
+  const [form, setForm] = useState(initForm(now));
   const [saving, setSaving] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchDepenses();
@@ -46,8 +52,8 @@ export default function Depenses() {
       .post("loyer/depenses", { ...form, mois, annee, montant: +form.montant }, u_info.opts)
       .then(() => {
         toast.success("Dépense ajoutée");
-        setForm({ description: "", montant: "", categorie: "Autre", date: now.toISOString().split("T")[0] });
-        setShowForm(false);
+        setForm(initForm(now));
+        setShowModal(false);
         fetchDepenses();
       })
       .catch(() => toast.error("Erreur d'enregistrement"))
@@ -81,69 +87,24 @@ export default function Depenses() {
                   <BsCurrencyExchange /> Dépenses Immobilier
                 </h1>
                 <p className="text-muted small mb-0">
-                  {MOIS_LABELS[mois]} {annee} — Total : {totalMois.toLocaleString()} Ar
+                  {MOIS_LABELS[mois]} {annee} — Total : <span className="fw-bold text-danger">{totalMois.toLocaleString()} Ar</span>
                 </p>
               </div>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 align-items-center flex-wrap">
                 <select className="form-select form-select-sm" style={{ width: "auto" }} value={mois} onChange={(e) => setMois(+e.target.value)}>
                   {MOIS_LABELS.slice(1).map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                 </select>
                 <select className="form-select form-select-sm" style={{ width: "auto" }} value={annee} onChange={(e) => setAnnee(+e.target.value)}>
                   {annees.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
-                <button className="btn btn-primary btn-sm d-flex align-items-center gap-1" onClick={() => setShowForm(!showForm)}>
+                <button
+                  className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                  onClick={() => { setForm(initForm(now)); setShowModal(true); }}
+                >
                   <BsPlus size={16} /> Ajouter
                 </button>
               </div>
             </div>
-
-            {/* Formulaire ajout */}
-            {showForm && (
-              <div className="card-pro mb-4">
-                <h6 className="fw-bold mb-3">Nouvelle dépense — {MOIS_LABELS[mois]} {annee}</h6>
-                <form onSubmit={handleSubmit}>
-                  <div className="row g-3">
-                    <div className="col-sm-5">
-                      <label className="form-label">Description *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={form.description}
-                        onChange={(e) => setForm({ ...form, description: e.target.value })}
-                        placeholder="Ex: Réparation toiture"
-                      />
-                    </div>
-                    <div className="col-sm-3">
-                      <label className="form-label">Montant (Ar) *</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={form.montant}
-                        onChange={(e) => setForm({ ...form, montant: e.target.value })}
-                        min={0}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div className="col-sm-2">
-                      <label className="form-label">Catégorie</label>
-                      <select className="form-select" value={form.categorie} onChange={(e) => setForm({ ...form, categorie: e.target.value })}>
-                        {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-sm-2">
-                      <label className="form-label">Date</label>
-                      <input type="date" className="form-control" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-                    </div>
-                    <div className="col-12 d-flex justify-content-end gap-2">
-                      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowForm(false)}>Annuler</button>
-                      <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-                        {saving ? "..." : "Enregistrer"}
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            )}
 
             {/* Liste dépenses */}
             <div className="card-pro p-0">
@@ -167,14 +128,17 @@ export default function Depenses() {
                   <tbody>
                     {depenses.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center text-muted py-4">
-                          Aucune dépense pour ce mois
+                        <td colSpan={5} className="text-center text-muted py-5">
+                          <div className="mb-2">Aucune dépense pour ce mois</div>
+                          <button className="btn btn-sm btn-primary" onClick={() => { setForm(initForm(now)); setShowModal(true); }}>
+                            <BsPlus /> Ajouter
+                          </button>
                         </td>
                       </tr>
                     ) : (
                       depenses.map((d) => (
                         <tr key={d.id}>
-                          <td style={{ fontSize: "0.875rem" }}>{d.date}</td>
+                          <td style={{ fontSize: "0.875rem" }}>{formatDate(d.date)}</td>
                           <td style={{ fontSize: "0.875rem" }}>{d.description}</td>
                           <td>
                             <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", borderRadius: 6, padding: "2px 8px" }}>
@@ -200,6 +164,68 @@ export default function Depenses() {
           </main>
         </div>
       </div>
+
+      {/* ── Modal ajout dépense ── */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div
+            className="modal-content-pro"
+            style={{ maxWidth: 480 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header-pro">
+              <h6><BsCurrencyExchange className="me-2" />Nouvelle dépense — {MOIS_LABELS[mois]} {annee}</h6>
+              <button className="btn-close" onClick={() => setShowModal(false)} />
+            </div>
+            <form onSubmit={handleSubmit} className="p-4">
+              <div className="row g-3">
+                <div className="col-12">
+                  <label className="form-label">Description *</label>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="Ex: Réparation toiture"
+                    autoFocus
+                  />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Montant (Ar) *</label>
+                  <input
+                    type="number"
+                    className="form-control form-control-sm"
+                    value={form.montant}
+                    onChange={(e) => setForm({ ...form, montant: e.target.value })}
+                    min={0}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Catégorie</label>
+                  <select className="form-select form-select-sm" value={form.categorie}
+                    onChange={(e) => setForm({ ...form, categorie: e.target.value })}>
+                    {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Date</label>
+                  <input type="date" className="form-control form-control-sm"
+                    value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                </div>
+              </div>
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowModal(false)}>
+                  Annuler
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+                  {saving ? "Enregistrement..." : "Enregistrer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Template>
   );
 }

@@ -11,20 +11,117 @@ import {
   BsPencilSquare,
   BsFillTrashFill,
   BsPlus,
-  BsEye,
+  BsTelephone,
+  BsChatDots,
+  BsWhatsapp,
 } from "react-icons/bs";
 import "./loyer.css";
 
 const LOYER_RDC = 150000;
 const LOYER_1ER = 200000;
+const CHAMBRES_RDC = ["1","2","3","4","5","6","7","8","9","10"];
+const CHAMBRES_1ER = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+
+const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+function formatDate(str) {
+  if (!str) return "—";
+  const d = new Date(str);
+  if (isNaN(d)) return "—";
+  return `${d.getDate()} ${MOIS_FR[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function PhoneActions({ tel }) {
+  const [open, setOpen] = useState(false);
+  if (!tel) return <span className="text-muted">—</span>;
+
+  const clean = tel.replace(/\s+/g, "");
+  const waNum = clean.startsWith("+") ? clean.slice(1) : clean;
+
+  return (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <button
+        className="btn btn-link p-0 fw-semibold text-decoration-none"
+        style={{ fontSize: "0.85rem", color: "#2563eb" }}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {tel}
+      </button>
+      {open && (
+        <>
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 999 }}
+            onClick={() => setOpen(false)}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              zIndex: 1000,
+              background: "#fff",
+              border: "1px solid #e2e8f0",
+              borderRadius: 10,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+              minWidth: 155,
+              padding: "4px 0",
+            }}
+          >
+            <a
+              href={`tel:${clean}`}
+              className="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none text-dark"
+              style={{ fontSize: "0.83rem" }}
+              onClick={() => setOpen(false)}
+            >
+              <BsTelephone color="#2563eb" /> Appeler
+            </a>
+            <a
+              href={`sms:${clean}`}
+              className="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none text-dark"
+              style={{ fontSize: "0.83rem" }}
+              onClick={() => setOpen(false)}
+            >
+              <BsChatDots color="#475569" /> SMS
+            </a>
+            <a
+              href={`https://wa.me/${waNum}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none"
+              style={{ fontSize: "0.83rem", color: "#25D366" }}
+              onClick={() => setOpen(false)}
+            >
+              <BsWhatsapp /> WhatsApp
+            </a>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function initForm() {
+  return {
+    nom: "",
+    prenom: "",
+    etage: "RDC",
+    chambre: "1",
+    tel: "",
+    email: "",
+    dateEntree: new Date().toISOString().split("T")[0],
+    actif: true,
+  };
+}
 
 export default function Locataires() {
   const u_info = GetUserData();
   const navigate = useNavigate();
   const [locataires, setLocataires] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState(initForm());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchLocataires();
@@ -45,13 +142,50 @@ export default function Locataires() {
       .then(() => {
         toast.success("Locataire supprimé");
         fetchLocataires();
-        setShowModal(false);
+        setShowDeleteModal(false);
       })
       .catch(() => toast.error("Erreur lors de la suppression"));
   }
 
+  function handleAddChange(e) {
+    const { name, value } = e.target;
+    if (name === "etage") {
+      setAddForm((f) => ({ ...f, etage: value, chambre: value === "RDC" ? "1" : "I" }));
+    } else {
+      setAddForm((f) => ({ ...f, [name]: value }));
+    }
+  }
+
+  function handleAddSubmit(e) {
+    e.preventDefault();
+    if (!addForm.nom.trim()) return toast.warning("Le nom est requis");
+    setSaving(true);
+    const loyer = addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
+    axios
+      .post("loyer/locataires", { ...addForm, loyer }, u_info.opts)
+      .then(() => {
+        toast.success("Locataire ajouté !");
+        setAddForm(initForm());
+        setShowAddModal(false);
+        fetchLocataires();
+      })
+      .catch(() => toast.error("Erreur lors de l'ajout"))
+      .finally(() => setSaving(false));
+  }
+
+  function handleAjouter() {
+    if (window.innerWidth >= 768) {
+      setAddForm(initForm());
+      setShowAddModal(true);
+    } else {
+      navigate("/loyer/locataires/new");
+    }
+  }
+
   const rdcList = locataires.filter((l) => l.etage === "RDC");
   const etageList = locataires.filter((l) => l.etage === "1ER");
+  const chambres = addForm.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER;
+  const loyer = addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
 
   function LocataireTable({ list, label }) {
     if (list.length === 0) return null;
@@ -65,7 +199,9 @@ export default function Locataires() {
             <thead style={{ background: "#f8fafc" }}>
               <tr>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Chambre</th>
-                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Nom & Prénom</th>
+                <th style={{ fontSize: "0.73rem", color: "#64748b", width: "150px", maxWidth: "150px" }}>
+                  Nom & Prénom
+                </th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Téléphone</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Loyer</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Date entrée</th>
@@ -81,19 +217,31 @@ export default function Locataires() {
                       {loc.chambre}
                     </span>
                   </td>
-                  <td>
-                    <div className="fw-semibold" style={{ fontSize: "0.875rem" }}>
+                  <td style={{ width: "150px", maxWidth: "150px" }}>
+                    <div
+                      className="fw-semibold"
+                      style={{ fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                      title={`${loc.nom} ${loc.prenom}`}
+                    >
                       {loc.nom} {loc.prenom}
                     </div>
-                    <small className="text-muted">{loc.email}</small>
+                    <small
+                      className="text-muted"
+                      style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}
+                      title={loc.email}
+                    >
+                      {loc.email}
+                    </small>
                   </td>
-                  <td style={{ fontSize: "0.875rem" }}>{loc.tel || "—"}</td>
+                  <td>
+                    <PhoneActions tel={loc.tel} />
+                  </td>
                   <td>
                     <span className="fw-bold text-primary" style={{ fontSize: "0.875rem" }}>
                       {(loc.loyer || 0).toLocaleString()} Ar
                     </span>
                   </td>
-                  <td style={{ fontSize: "0.875rem" }}>{loc.dateEntree || "—"}</td>
+                  <td style={{ fontSize: "0.875rem" }}>{formatDate(loc.dateEntree)}</td>
                   <td>
                     <span className={loc.actif ? "badge-paye" : "badge-impaye"}>
                       {loc.actif ? "Actif" : "Inactif"}
@@ -108,7 +256,7 @@ export default function Locataires() {
                     </button>
                     <button
                       className="btn btn-outline-danger btn-sm"
-                      onClick={() => { setToDelete(loc); setShowModal(true); }}
+                      onClick={() => { setToDelete(loc); setShowDeleteModal(true); }}
                     >
                       <BsFillTrashFill />
                     </button>
@@ -129,7 +277,6 @@ export default function Locataires() {
         <div className="row g-0">
           <Sidebar />
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
-
             <div className="page-header">
               <div>
                 <h1 className="page-title">
@@ -139,12 +286,12 @@ export default function Locataires() {
                   {locataires.length} locataire(s) enregistré(s)
                 </p>
               </div>
-              <Link
-                to="/loyer/locataires/new"
+              <button
                 className="btn btn-primary d-flex align-items-center gap-1"
+                onClick={handleAjouter}
               >
                 <BsPlus size={18} /> Ajouter
-              </Link>
+              </button>
             </div>
 
             {loading ? (
@@ -152,9 +299,9 @@ export default function Locataires() {
             ) : locataires.length === 0 ? (
               <div className="card-pro text-center py-5">
                 <p className="text-muted mb-3">Aucun locataire enregistré.</p>
-                <Link to="/loyer/locataires/new" className="btn btn-primary">
+                <button className="btn btn-primary" onClick={handleAjouter}>
                   <BsPlus /> Ajouter le premier locataire
-                </Link>
+                </button>
               </div>
             ) : (
               <>
@@ -168,17 +315,21 @@ export default function Locataires() {
                 />
               </>
             )}
-
           </main>
         </div>
       </div>
 
-      {showModal && toDelete && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content-pro" style={{ maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
+      {/* ── Modal suppression ── */}
+      {showDeleteModal && toDelete && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div
+            className="modal-content-pro"
+            style={{ maxWidth: 360 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header-pro">
               <h6>Confirmer la suppression</h6>
-              <button className="btn-close" onClick={() => setShowModal(false)} />
+              <button className="btn-close" onClick={() => setShowDeleteModal(false)} />
             </div>
             <div className="p-4">
               <p className="mb-4">
@@ -187,7 +338,7 @@ export default function Locataires() {
                 <small className="text-danger">Cette action supprimera aussi tous ses paiements.</small>
               </p>
               <div className="d-flex justify-content-end gap-2">
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowModal(false)}>
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowDeleteModal(false)}>
                   Annuler
                 </button>
                 <button className="btn btn-danger btn-sm" onClick={() => handleDelete(toDelete.id)}>
@@ -195,6 +346,82 @@ export default function Locataires() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal ajout (PC uniquement) ── */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div
+            className="modal-content-pro"
+            style={{ maxWidth: 560 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header-pro">
+              <h6><BsPeople className="me-2" />Ajouter un locataire</h6>
+              <button className="btn-close" onClick={() => setShowAddModal(false)} />
+            </div>
+            <form onSubmit={handleAddSubmit} className="p-4">
+              <div className="row g-3">
+                <div className="col-sm-6">
+                  <label className="form-label">Nom *</label>
+                  <input type="text" name="nom" className="form-control form-control-sm"
+                    value={addForm.nom} onChange={handleAddChange} placeholder="Nom de famille" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Prénom</label>
+                  <input type="text" name="prenom" className="form-control form-control-sm"
+                    value={addForm.prenom} onChange={handleAddChange} placeholder="Prénom" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Étage</label>
+                  <select name="etage" className="form-select form-select-sm"
+                    value={addForm.etage} onChange={handleAddChange}>
+                    <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
+                    <option value="1ER">1er Étage (200 000 Ar)</option>
+                  </select>
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Chambre</label>
+                  <select name="chambre" className="form-select form-select-sm"
+                    value={addForm.chambre} onChange={handleAddChange}>
+                    {chambres.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="col-12">
+                  <div className="p-2 rounded-3 d-flex align-items-center gap-2"
+                    style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
+                    <span className="fw-bold text-primary" style={{ fontSize: "0.85rem" }}>
+                      Loyer : {loyer.toLocaleString()} Ar — Chambre {addForm.chambre} ({addForm.etage})
+                    </span>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Téléphone</label>
+                  <input type="tel" name="tel" className="form-control form-control-sm"
+                    value={addForm.tel} onChange={handleAddChange} placeholder="+261 ..." />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Email</label>
+                  <input type="email" name="email" className="form-control form-control-sm"
+                    value={addForm.email} onChange={handleAddChange} placeholder="email@exemple.com" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Date d'entrée</label>
+                  <input type="date" name="dateEntree" className="form-control form-control-sm"
+                    value={addForm.dateEntree} onChange={handleAddChange} />
+                </div>
+              </div>
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowAddModal(false)}>
+                  Annuler
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+                  {saving ? "Enregistrement..." : "Ajouter le locataire"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

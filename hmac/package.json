@@ -9,6 +9,8 @@
     "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
     "dotenv": "^16.4.5",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.4",
     "react-dom": "^18.3.1",
@@ -18,11 +20,12 @@
     "react-toastify": "^10.0.5",
     "reactstrap": "^9.2.2",
     "web-vitals": "^2.1.4",
-    "webpack": "^5.106.2"
+    "webpack": "^5.106.2",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

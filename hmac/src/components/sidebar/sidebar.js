@@ -44,7 +44,7 @@ export default function Sidebar() {
       id="sidebarMenu"
       className="col-md-3 col-lg-2 d-md-block sidebar collapse"
     >
-      <a
+      {/* <a
         className="carte-visite"
         href="https://trofel.vercel.app/"
         target="_blank"
@@ -55,7 +55,7 @@ export default function Sidebar() {
           <p>Bonjour</p>
           <b>{u_info.u_nom}</b>
         </div>
-      </a>
+      </a> */}
 
       <ul>
         <div className="sidebar-section-label">Principal</div>
