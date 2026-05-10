@@ -1,6 +1,6 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -38,96 +38,81 @@ import AddBoutique from "./pages/boutiques/add.boutique";
 import BoutiqueDetails from "./pages/boutiques/detail.boutique";
 import EditBoutique from "./pages/boutiques/edit.boutique";
 
+// ─── Loyer ────────────────────────────────────────────────────
+import Loyer from "./pages/loyer/loyer";
+import Locataires from "./pages/loyer/locataires";
+import AddLocataire from "./pages/loyer/add.locataire";
+import EditLocataire from "./pages/loyer/edit.locataire";
+import Factures from "./pages/loyer/factures";
+import Depenses from "./pages/loyer/depenses";
+import Benefices from "./pages/loyer/benefices";
+
+// ─── Vitrine ──────────────────────────────────────────────────
+import Vitrine from "./pages/vitrine/vitrine";
+import DetailBien from "./pages/vitrine/detail.bien";
+import AdminVitrine from "./pages/vitrine/admin.vitrine";
+import AddBien from "./pages/vitrine/add.bien";
+import EditBien from "./pages/vitrine/edit.bien";
+
 function App() {
   return (
     <div className="App">
-      <ToastContainer autoClose={3000} position={"bottom-right"} />
+      <ToastContainer autoClose={3000} position="bottom-right" />
       <BrowserRouter>
         <Routes>
+          {/* Auth */}
           <Route index element={<LogOutProtection Cmp={LogIn} />} />
-          {/* <Route index element={<LogIn/>} /> */}
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
           <Route path="home/" element={<SignInProtection Cmp={Home} />} />
           <Route path="about/" element={<SignInProtection Cmp={About} />} />
 
+          {/* Users */}
           <Route path="users/" element={<SignInProtection Cmp={User} />} />
           <Route path="newUser/" element={<SignIn />} />
-          <Route
-            path="aboutUser/:id"
-            element={<SignInProtection Cmp={UserDetails} />}
-          />
-          <Route
-            path="editUser/:id"
-            element={<SignInProtection Cmp={EditUser} />}
-          />
+          <Route path="aboutUser/:id" element={<SignInProtection Cmp={UserDetails} />} />
+          <Route path="editUser/:id" element={<SignInProtection Cmp={EditUser} />} />
 
-          <Route
-            path="services/"
-            element={<SignInProtection Cmp={Service} />}
-          />
-          <Route
-            path="newService/"
-            element={<SignInProtection Cmp={AddService} />}
-          />
-          <Route
-            path="aboutService/:id"
-            element={<SignInProtection Cmp={ServiceDetails} />}
-          />
-          <Route
-            path="editService/:id"
-            element={<SignInProtection Cmp={EditService} />}
-          />
+          {/* Services */}
+          <Route path="services/" element={<SignInProtection Cmp={Service} />} />
+          <Route path="newService/" element={<SignInProtection Cmp={AddService} />} />
+          <Route path="aboutService/:id" element={<SignInProtection Cmp={ServiceDetails} />} />
+          <Route path="editService/:id" element={<SignInProtection Cmp={EditService} />} />
 
-          <Route
-            path="inComing/"
-            element={<SignInProtection Cmp={InComing} />}
-          />
-          <Route
-            path="newInComing/"
-            element={<SignInProtection Cmp={AddInComing} />}
-          />
-          <Route
-            path="aboutInComing/:id"
-            element={<SignInProtection Cmp={InComingDetails} />}
-          />
-          <Route
-            path="editIncoming/:id"
-            element={<SignInProtection Cmp={EditInComing} />}
-          />
+          {/* InComing */}
+          <Route path="inComing/" element={<SignInProtection Cmp={InComing} />} />
+          <Route path="newInComing/" element={<SignInProtection Cmp={AddInComing} />} />
+          <Route path="aboutInComing/:id" element={<SignInProtection Cmp={InComingDetails} />} />
+          <Route path="editIncoming/:id" element={<SignInProtection Cmp={EditInComing} />} />
 
-          <Route
-            path="outGoing/"
-            element={<SignInProtection Cmp={OutGoing} />}
-          />
-          <Route
-            path="newOutGoing/"
-            element={<SignInProtection Cmp={AddOutGoing} />}
-          />
-          <Route
-            path="aboutOutGoing/:id"
-            element={<SignInProtection Cmp={OutGoingDetails} />}
-          />
-          <Route
-            path="editOutGoing/:id"
-            element={<SignInProtection Cmp={EditOutGoing} />}
-          />
-          
-          <Route
-            path="boutiques/"
-            element={<SignInProtection Cmp={Boutique} />}
-          />
-          <Route
-            path="newBoutique/"
-            element={<SignInProtection Cmp={AddBoutique} />}
-          />
-          <Route
-            path="aboutBoutique/:id"
-            element={<SignInProtection Cmp={BoutiqueDetails} />}
-          />
-          <Route
-            path="editBoutique/:id"
-            element={<SignInProtection Cmp={EditBoutique} />}
-          />
+          {/* OutGoing */}
+          <Route path="outGoing/" element={<SignInProtection Cmp={OutGoing} />} />
+          <Route path="newOutGoing/" element={<SignInProtection Cmp={AddOutGoing} />} />
+          <Route path="aboutOutGoing/:id" element={<SignInProtection Cmp={OutGoingDetails} />} />
+          <Route path="editOutGoing/:id" element={<SignInProtection Cmp={EditOutGoing} />} />
+
+          {/* Boutiques */}
+          <Route path="boutiques/" element={<SignInProtection Cmp={Boutique} />} />
+          <Route path="newBoutique/" element={<SignInProtection Cmp={AddBoutique} />} />
+          <Route path="aboutBoutique/:id" element={<SignInProtection Cmp={BoutiqueDetails} />} />
+          <Route path="editBoutique/:id" element={<SignInProtection Cmp={EditBoutique} />} />
+
+          {/* ── Loyer (protégé) ── */}
+          <Route path="loyer/" element={<SignInProtection Cmp={Loyer} />} />
+          <Route path="loyer/locataires/" element={<SignInProtection Cmp={Locataires} />} />
+          <Route path="loyer/locataires/new" element={<SignInProtection Cmp={AddLocataire} />} />
+          <Route path="loyer/locataires/edit/:id" element={<SignInProtection Cmp={EditLocataire} />} />
+          <Route path="loyer/factures/" element={<SignInProtection Cmp={Factures} />} />
+          <Route path="loyer/depenses/" element={<SignInProtection Cmp={Depenses} />} />
+          <Route path="loyer/benefices/" element={<SignInProtection Cmp={Benefices} />} />
+
+          {/* ── Vitrine (public) ── */}
+          <Route path="vitrine/" element={<Vitrine />} />
+          <Route path="vitrine/bien/:id" element={<DetailBien />} />
+
+          {/* ── Vitrine admin (protégé) ── */}
+          <Route path="vitrine/admin/" element={<SignInProtection Cmp={AdminVitrine} />} />
+          <Route path="vitrine/admin/new" element={<SignInProtection Cmp={AddBien} />} />
+          <Route path="vitrine/admin/edit/:id" element={<SignInProtection Cmp={EditBien} />} />
         </Routes>
       </BrowserRouter>
     </div>

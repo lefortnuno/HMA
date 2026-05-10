@@ -1,0 +1,163 @@
+/* ─── Tableau double entrée ───────────────────────────────── */
+.tableau-loyer {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableau-loyer table {
+  min-width: 1050px;
+  margin: 0;
+}
+
+.tableau-loyer thead th {
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 8px;
+  white-space: nowrap;
+  text-align: center;
+  border: none;
+}
+
+.tableau-loyer thead th:nth-child(1),
+.tableau-loyer thead th:nth-child(2) {
+  text-align: left;
+  background: #0f172a;
+  position: sticky;
+  z-index: 3;
+}
+
+.tableau-loyer thead th:nth-child(1) { left: 0; min-width: 64px; }
+.tableau-loyer thead th:nth-child(2) { left: 64px; min-width: 150px; }
+
+.tableau-loyer tbody td {
+  padding: 8px;
+  text-align: center;
+  font-size: 0.8rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #f1f5f9;
+}
+
+.tableau-loyer tbody td:nth-child(1),
+.tableau-loyer tbody td:nth-child(2) {
+  text-align: left;
+  background: #f8fafc;
+  position: sticky;
+  z-index: 1;
+}
+
+.tableau-loyer tbody td:nth-child(1) {
+  left: 0;
+  width: 64px;
+  font-weight: 600;
+}
+
+.tableau-loyer tbody td:nth-child(2) {
+  left: 64px;
+  min-width: 150px;
+}
+
+.tableau-loyer tbody tr:hover td {
+  background: #f0f9ff;
+}
+
+.tableau-loyer tbody tr:hover td:nth-child(1),
+.tableau-loyer tbody tr:hover td:nth-child(2) {
+  background: #e0f2fe;
+}
+
+/* ─── Cellules statut ─────────────────────────────────────── */
+.cell-paye {
+  background: #dcfce7;
+  color: #16a34a;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.cell-impaye {
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.cell-partiel {
+  background: #fef9c3;
+  color: #ca8a04;
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cell-vide {
+  color: #cbd5e1;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+
+.cell-vide:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+/* ─── Chambre badges ──────────────────────────────────────── */
+.badge-rdc {
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-1er {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ─── Légende ─────────────────────────────────────────────── */
+.legende {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.legende-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #64748b;
+}

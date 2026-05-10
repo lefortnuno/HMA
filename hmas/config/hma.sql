@@ -77,6 +77,105 @@ values
         0
     );
 
+-- ═══════════════════════════════════════════════════════════
+-- MODULE GESTION LOYER
+-- ═══════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS locataire (
+    id          INT(11)      NOT NULL AUTO_INCREMENT,
+    nom         VARCHAR(100) NOT NULL,
+    prenom      VARCHAR(100) DEFAULT NULL,
+    chambre     VARCHAR(10)  NOT NULL,
+    etage       ENUM('RDC','1ER') NOT NULL DEFAULT 'RDC',
+    loyer       INT(11)      NOT NULL,
+    tel         VARCHAR(30)  DEFAULT NULL,
+    email       VARCHAR(150) DEFAULT NULL,
+    dateEntree  DATE         DEFAULT NULL,
+    actif       TINYINT(1)   NOT NULL DEFAULT 1,
+    PRIMARY KEY (id),
+    UNIQUE INDEX id_unique (id DESC)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS facture_jirama (
+    id           INT(11)   NOT NULL AUTO_INCREMENT,
+    mois         TINYINT   NOT NULL,
+    annee        YEAR      NOT NULL,
+    prixUnitaire FLOAT     NOT NULL,
+    montantTotal FLOAT     DEFAULT 0,
+    dateFacture  DATE      DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY unique_mois_annee (mois, annee)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS consommation_locataire (
+    id           INT(11) NOT NULL AUTO_INCREMENT,
+    locataireId  INT(11) NOT NULL,
+    factureId    INT(11) NOT NULL,
+    indexPrev    FLOAT   DEFAULT 0,
+    indexCurr    FLOAT   DEFAULT 0,
+    consommation FLOAT   DEFAULT 0,
+    montantJIRAMA FLOAT  DEFAULT 0,
+    PRIMARY KEY (id),
+    FOREIGN KEY (locataireId) REFERENCES locataire(id)      ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (factureId)   REFERENCES facture_jirama(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS paiement_loyer (
+    id            INT(11)  NOT NULL AUTO_INCREMENT,
+    locataireId   INT(11)  NOT NULL,
+    mois          TINYINT  NOT NULL,
+    annee         YEAR     NOT NULL,
+    montantLoyer  INT(11)  NOT NULL DEFAULT 0,
+    montantJIRAMA FLOAT    DEFAULT 0,
+    statut        ENUM('PAYE','PARTIEL','IMPAYE') NOT NULL DEFAULT 'IMPAYE',
+    datePaiement  DATE     DEFAULT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (locataireId) REFERENCES locataire(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE IF NOT EXISTS depense_immo (
+    id          INT(11)      NOT NULL AUTO_INCREMENT,
+    description VARCHAR(300) NOT NULL,
+    montant     FLOAT        NOT NULL,
+    mois        TINYINT      NOT NULL,
+    annee       YEAR         NOT NULL,
+    categorie   VARCHAR(100) DEFAULT 'Autre',
+    date        DATE         DEFAULT NULL,
+    PRIMARY KEY (id)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
+
+-- ═══════════════════════════════════════════════════════════
+-- MODULE VITRINE
+-- ═══════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS bien_immo (
+    id               INT(11)      NOT NULL AUTO_INCREMENT,
+    type             ENUM('CHAMBRE','VILLA') NOT NULL DEFAULT 'CHAMBRE',
+    titre            VARCHAR(300) NOT NULL,
+    description      TEXT         DEFAULT NULL,
+    prix             FLOAT        NOT NULL DEFAULT 0,
+    surface          FLOAT        DEFAULT NULL,
+    localisation     VARCHAR(300) DEFAULT NULL,
+    disponible       TINYINT(1)   NOT NULL DEFAULT 1,
+    nbChambres       INT(11)      DEFAULT NULL,
+    nbPieces         INT(11)      DEFAULT NULL,
+    photos           TEXT         DEFAULT NULL,
+    caracteristiques TEXT         DEFAULT NULL,
+    createdAt        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE INDEX id_unique (id DESC)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4;
+
+-- ═══════════════════════════════════════════════════════════
+-- Requêtes de test (commentées)
+-- ═══════════════════════════════════════════════════════════
+
+-- SELECT * FROM locataire ORDER BY etage, chambre;
+-- SELECT * FROM facture_jirama ORDER BY annee DESC, mois DESC;
+-- SELECT * FROM paiement_loyer WHERE annee = 2026;
+-- SELECT * FROM depense_immo WHERE mois = 5 AND annee = 2026;
+-- SELECT * FROM bien_immo WHERE disponible = 1;
+
 SELECT
     hetsika.id as idh,
     hetsika.karazana as hk,

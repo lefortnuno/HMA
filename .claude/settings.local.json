@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(head *)",
+      "Bash(npm start *)",
+      "Bash(kill %1)",
+      "Bash(npm install *)",
+      "Bash(npx react-scripts *)",
+      "Bash(node_modules/.bin/react-scripts.cmd build *)",
+      "Bash(node_modules/.bin/react-scripts build *)",
+      "Bash(node -e \"require\\('./index.js'\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(node index.js)",
+      "Bash(Start-Sleep -Seconds 5)",
+      "Bash(Get-Content \"C:\\\\Users\\\\AC2I\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-AC2I-Desktop-TROFEL-HMA\\\\a2f0e11c-26b0-42d3-9fae-e3bcf53d8b56\\\\tasks\\\\buugj20y8.output\" -ErrorAction SilentlyContinue)",
+      "PowerShell(mysql *)"
+    ]
+  }
+}
