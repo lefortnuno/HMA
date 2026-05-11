@@ -3,26 +3,18 @@
   border-right: 1px solid #e2e8f0;
   overflow-y: auto;
   padding: 0;
-  min-height: calc(100vh - 64px);
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-  margin-top: 64px;
+  scrollbar-width: none;
 }
 
 .sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  display: none;
 }
 
 @media (min-width: 768px) {
   .sidebar {
     position: sticky;
-    top: 64px;
-    height: calc(100vh - 64px);
-    min-height: unset;
+    top: 0;
+    height: 100%;
   }
 }
 
@@ -133,10 +125,11 @@
 /* ─── Mobile collapse ─────────────────────────────────────── */
 @media (max-width: 767px) {
   .sidebar {
-    margin-top: 0;
     width: 100%;
-    min-height: unset;
     position: static;
+    padding-top: 64px;
     padding-bottom: 8px;
+    overflow-y: visible;
+    height: auto;
   }
 }

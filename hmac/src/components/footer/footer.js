@@ -1,98 +1,22 @@
-import hma from "../../assets/images/hma256.png";
-import trofel from "../../assets/images/trofel.jpg";
-import github from "../../assets/images/github.png";
-import facebook from "../../assets/images/facebook.png";
-import gmail from "../../assets/images/gmail.png";
-import linkedin from "../../assets/images/linkedin.png";
-
+import { BsGithub, BsFacebook, BsLinkedin, BsEnvelope } from "react-icons/bs";
 import "./footer.css";
 
 export default function Footer() {
   return (
-    <footer className="footer py-3 mt-auto">
-      <div className="footer-left">
-        <div className="fl-text">
-          <p>Suivez-moi sur :</p>
-        </div>
-        <div className="fl-no-text">
-          <div className="fl-img">
-            <a
-              href="https://github.com/lefortnuno?tab=repositories"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src={github}
-                alt="GitHub"
-                className="img-fluid logo rounded-square me-2"
-                style={{ width: "50px" }}
-              />
-            </a>
-          </div>
-          <div className="fl-img">
-            <a
-              href="https://www.facebook.com/tendo.lelouch.9/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src={facebook}
-                alt="Facebook"
-                className="img-fluid logo rounded-square me-2"
-                style={{ width: "50px" }}
-              />
-            </a>
-          </div>
-          <div className="fl-img">
-            <a
-              href="mailto:trofelnuno@gmail.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src={gmail}
-                alt="Gmail"
-                className="img-fluid logo rounded-square me-2"
-                style={{ width: "50px" }}
-              />
-            </a>
-          </div>
-          <div className="fl-img">
-            <a
-              href="https://www.linkedin.com/in/trofel-nuno-6bba76305/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src={linkedin}
-                alt="LinkedIn"
-                className="img-fluid logo rounded-square me-2"
-                style={{ width: "50px" }}
-              />
-            </a>
-          </div>
-        </div>
-      </div>
-      <div className="footer-right">
-        <div className="fr-img">
-          <img
-            src={hma}
-            alt="hma"
-            className="img-fluid logo rounded-square me-2"
-          />
-        </div>
-        <a
-          className="fr-img"
-          href="https://trofel.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ cursor: "pointer" }}
-        >
-          <img
-            src={trofel}
-            alt="trofel"
-            className="img-fluid logo rounded-square me-5"
-          />
+    <footer className="app-footer">
+      <span className="app-footer-copy">© {new Date().getFullYear()} HMA — Gestion Immobilière</span>
+      <div className="app-footer-links">
+        <a href="https://github.com/lefortnuno" target="_blank" rel="noopener noreferrer" title="GitHub">
+          <BsGithub />
+        </a>
+        <a href="https://www.facebook.com/tendo.lelouch.9/" target="_blank" rel="noopener noreferrer" title="Facebook">
+          <BsFacebook />
+        </a>
+        <a href="https://www.linkedin.com/in/trofel-nuno-6bba76305/" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+          <BsLinkedin />
+        </a>
+        <a href="mailto:trofelnuno@gmail.com" title="Email">
+          <BsEnvelope />
         </a>
       </div>
     </footer>

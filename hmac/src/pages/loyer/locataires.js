@@ -122,6 +122,10 @@ export default function Locataires() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState(initForm());
   const [saving, setSaving] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+  const [editForm, setEditForm] = useState(initForm());
+  const [editSaving, setEditSaving] = useState(false);
 
   useEffect(() => {
     fetchLocataires();
@@ -180,6 +184,50 @@ export default function Locataires() {
     } else {
       navigate("/loyer/locataires/new");
     }
+  }
+
+  function handleEditClick(loc) {
+    if (window.innerWidth >= 768) {
+      setEditTarget(loc);
+      setEditForm({
+        nom: loc.nom || "",
+        prenom: loc.prenom || "",
+        etage: loc.etage || "RDC",
+        chambre: loc.chambre || "1",
+        tel: loc.tel || "",
+        email: loc.email || "",
+        dateEntree: loc.dateEntree ? loc.dateEntree.split("T")[0] : new Date().toISOString().split("T")[0],
+        actif: loc.actif !== undefined ? loc.actif : true,
+      });
+      setShowEditModal(true);
+    } else {
+      navigate(`/loyer/locataires/edit/${loc.id}`, { state: { loc } });
+    }
+  }
+
+  function handleEditChange(e) {
+    const { name, value, type, checked } = e.target;
+    if (name === "etage") {
+      setEditForm((f) => ({ ...f, etage: value, chambre: value === "RDC" ? "1" : "I" }));
+    } else {
+      setEditForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+    }
+  }
+
+  function handleEditSubmit(e) {
+    e.preventDefault();
+    if (!editForm.nom.trim()) return toast.warning("Le nom est requis");
+    const loyer = editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
+    setEditSaving(true);
+    axios
+      .put(`loyer/locataires/${editTarget.id}`, { ...editForm, loyer }, u_info.opts)
+      .then(() => {
+        toast.success("Locataire modifié !");
+        setShowEditModal(false);
+        fetchLocataires();
+      })
+      .catch(() => toast.error("Erreur lors de la modification"))
+      .finally(() => setEditSaving(false));
   }
 
   const rdcList = locataires.filter((l) => l.etage === "RDC");
@@ -250,7 +298,7 @@ export default function Locataires() {
                   <td>
                     <button
                       className="btn btn-outline-primary btn-sm me-1"
-                      onClick={() => navigate(`/loyer/locataires/edit/${loc.id}`, { state: { loc } })}
+                      onClick={() => handleEditClick(loc)}
                     >
                       <BsPencilSquare />
                     </button>
@@ -346,6 +394,91 @@ export default function Locataires() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal édition (PC uniquement) ── */}
+      {showEditModal && editTarget && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div
+            className="modal-content-pro"
+            style={{ maxWidth: 560 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header-pro">
+              <h6><BsPencilSquare className="me-2" />Modifier — {editTarget.nom} {editTarget.prenom}</h6>
+              <button className="btn-close" onClick={() => setShowEditModal(false)} />
+            </div>
+            <form onSubmit={handleEditSubmit} className="p-4">
+              <div className="row g-3">
+                <div className="col-sm-6">
+                  <label className="form-label">Nom *</label>
+                  <input type="text" name="nom" className="form-control form-control-sm"
+                    value={editForm.nom} onChange={handleEditChange} placeholder="Nom de famille" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Prénom</label>
+                  <input type="text" name="prenom" className="form-control form-control-sm"
+                    value={editForm.prenom} onChange={handleEditChange} placeholder="Prénom" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Étage</label>
+                  <select name="etage" className="form-select form-select-sm"
+                    value={editForm.etage} onChange={handleEditChange}>
+                    <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
+                    <option value="1ER">1er Étage (200 000 Ar)</option>
+                  </select>
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Chambre</label>
+                  <select name="chambre" className="form-select form-select-sm"
+                    value={editForm.chambre} onChange={handleEditChange}>
+                    {(editForm.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-12">
+                  <div className="p-2 rounded-3 d-flex align-items-center gap-2"
+                    style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
+                    <span className="fw-bold text-primary" style={{ fontSize: "0.85rem" }}>
+                      Loyer : {(editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre {editForm.chambre} ({editForm.etage})
+                    </span>
+                  </div>
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Téléphone</label>
+                  <input type="tel" name="tel" className="form-control form-control-sm"
+                    value={editForm.tel} onChange={handleEditChange} placeholder="+261 ..." />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Email</label>
+                  <input type="email" name="email" className="form-control form-control-sm"
+                    value={editForm.email} onChange={handleEditChange} placeholder="email@exemple.com" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Date d'entrée</label>
+                  <input type="date" name="dateEntree" className="form-control form-control-sm"
+                    value={editForm.dateEntree} onChange={handleEditChange} />
+                </div>
+                <div className="col-sm-6 d-flex align-items-end pb-1">
+                  <div className="form-check">
+                    <input type="checkbox" name="actif" className="form-check-input" id="editActifCheck"
+                      checked={editForm.actif} onChange={handleEditChange} />
+                    <label className="form-check-label" htmlFor="editActifCheck">Locataire actif</label>
+                  </div>
+                </div>
+              </div>
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowEditModal(false)}>
+                  Annuler
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={editSaving}>
+                  {editSaving ? "Enregistrement..." : "Enregistrer"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
