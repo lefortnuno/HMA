@@ -429,8 +429,8 @@ export default function Loyer() {
                       <th>N°</th>
                       <th
                         style={{
-                          width: "150px",
-                          maxWidth: "150px",
+                          width: "75px",
+                          maxWidth: "75px",
                         }}
                       >
                         Locataire
