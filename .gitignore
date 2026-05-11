@@ -1,3 +1,18 @@
 # dependencies
 /hmac/node_modules
 /hmas/node_modules
+
+# env files
+hmac/.env
+hmas/.env
+.env
+
+# Claude Code settings
+.claude/
+
+# personal / temp files
+Trofel.png
+CLAUDE.md
+CONTEXT.md
+*.stackdump
+*.pdf
