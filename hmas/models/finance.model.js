@@ -74,6 +74,11 @@ Finance.createDepense = (data, result) => {
     else result(null, { id: res.insertId, success: true });
   });
 };
+Finance.updateDepense = (id, userId, data, result) => {
+  db.query("UPDATE finance_depenses SET ? WHERE id=? AND userId=?", [data, id, userId], (err) => {
+    if (err) result(err, null); else result(null, { success: true });
+  });
+};
 Finance.deleteDepense = (id, userId, result) => {
   db.query("DELETE FROM finance_depenses WHERE id=? AND userId=?", [id, userId], (err) => {
     if (err) result(err, null); else result(null, { success: true });
@@ -106,6 +111,11 @@ Finance.createCasuel = (data, result) => {
   db.query("INSERT INTO finance_casuel SET ?", data, (err, res) => {
     if (err) result(err, null);
     else result(null, { id: res.insertId, success: true });
+  });
+};
+Finance.updateCasuel = (id, userId, data, result) => {
+  db.query("UPDATE finance_casuel SET ? WHERE id=? AND userId=?", [data, id, userId], (err) => {
+    if (err) result(err, null); else result(null, { success: true });
   });
 };
 Finance.deleteCasuel = (id, userId, result) => {

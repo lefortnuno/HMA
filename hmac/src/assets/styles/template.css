@@ -158,9 +158,43 @@ body::-webkit-scrollbar {
 .table-pro {
   background: var(--white);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: clip; /* clip visuellement sans bloquer le scroll des enfants */
   box-shadow: var(--card-shadow);
   border: 1px solid var(--border);
+}
+
+/* ─── Scrollable table with sticky first column ───────────── */
+.tbl-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tbl-scroll-wrap table {
+  min-width: 420px;
+  margin: 0;
+}
+.tbl-scroll-wrap thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+  background: #f8fafc;
+}
+.tbl-scroll-wrap tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #fff;
+}
+.tbl-scroll-wrap tbody tr:hover td:first-child {
+  background: #f8fafc;
 }
 
 .table-pro table {
@@ -242,6 +276,20 @@ body::-webkit-scrollbar {
   margin: 0;
   font-weight: 700;
   color: var(--text-dark);
+}
+
+/* ─── Fix iOS auto-zoom on input focus ───────────────────── */
+@media screen and (max-width: 767px) {
+  input,
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* ─── Existing compatibility ──────────────────────────────── */

@@ -59,3 +59,68 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Responsive card headers ────────────────────────────────── */
+.card-header-finance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+.chf-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.chf-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: nowrap;
+}
+.chf-search {
+  width: 148px;
+}
+@media (max-width: 500px) {
+  .chf-left  { flex-basis: 100%; justify-content: space-between; }
+  .chf-right { margin-left: 0; flex-basis: 100%; justify-content: space-between; }
+  .chf-search { flex: 1; max-width: 180px; width: auto; }
+}
+
+/* ── Scrollable finance tables with sticky first column ─────── */
+.finance-tbl-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.finance-tbl-wrap table {
+  min-width: 460px;
+  margin: 0;
+}
+.finance-tbl-wrap thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+  background: #f8fafc;
+}
+.finance-tbl-wrap tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #fff;
+}
+.finance-tbl-wrap tbody tr:hover td:first-child {
+  background: #f0f9ff;
+}

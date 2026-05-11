@@ -1,6 +1,6 @@
 import GetUserData from "../../contexts/api/udata";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { BsGear, BsPower, BsChevronDown } from "react-icons/bs";
 import "./header.css";
 import hma from "../../assets/images/hma256.png";
@@ -37,10 +37,10 @@ export default function Header({ children }) {
           >
             ☰
           </button>
-          <a href="/home/" className="header-brand d-none d-md-flex">
+          <Link to="/home/" className="header-brand d-none d-md-flex">
             <img src={hma} alt="HMA" />
             <span>HMA</span>
-          </a>
+          </Link>
           <div className="inputRecherche">{children}</div>
         </div>
 

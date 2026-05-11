@@ -114,9 +114,9 @@ function App() {
 
           {/* ── Finance (protégé) ── */}
           <Route path="finance/revenus/"  element={<SignInProtection Cmp={FinanceRevenus}  />} />
+          <Route path="finance/charges/"  element={<SignInProtection Cmp={FinanceRevenus}  />} />
           <Route path="finance/casuel/"   element={<SignInProtection Cmp={FinanceCasuel}   />} />
-          <Route path="finance/charges/"  element={<SignInProtection Cmp={FinanceCharges}  />} />
-          <Route path="finance/depenses/" element={<SignInProtection Cmp={FinanceDepenses} />} />
+          <Route path="finance/depenses/" element={<SignInProtection Cmp={FinanceCasuel}   />} />
           <Route path="finance/bilan/"    element={<SignInProtection Cmp={FinanceBilan}    />} />
 
           {/* ── Vitrine (public) ── */}

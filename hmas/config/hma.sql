@@ -12,6 +12,7 @@ create table mpampiasa(
     idPS varchar(100) not null,
     karazana boolean default 0,
     -- 0 = False = USAGER -- 1 = TRUE = ADMIN
+    created_at timestamp default current_timestamp,
     primary key(id),
     unique index `id_unique` (`id` desc),
     unique index `idPS_unique` (`idPS`)

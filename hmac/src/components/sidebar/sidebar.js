@@ -1,22 +1,18 @@
+import { useEffect } from "react";
 import GetUserData from "../../contexts/api/udata";
 import { Link, useLocation } from "react-router-dom";
 import "./sidebar.css";
-import hma from "../../assets/images/hma256.png";
 
 import {
   BsHouse,
   BsPeople,
   BsGraphUp,
-  BsGraphDown,
-  BsGear,
-  BsGlobe2,
-  BsInfoCircle,
-  BsBuilding,
   BsClipboardData,
   BsCurrencyExchange,
-  BsImages,
+  BsBuilding,
+  BsInfoCircle,
   BsFileEarmarkText,
-  BsCashStack,
+  BsImages,
   BsStarFill,
 } from "react-icons/bs";
 
@@ -35,65 +31,52 @@ function NavItem({ to, Icon, label, location, exact }) {
 }
 
 export default function Sidebar() {
-  const u_info = GetUserData();
+  const u_info   = GetUserData();
   const location = useLocation();
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    const sidebar = document.getElementById("sidebarMenu");
+    if (sidebar && window.innerWidth < 768) {
+      sidebar.classList.remove("show");
+    }
+  }, [location.pathname]);
+
   const nav = (to, Icon, label, exact = true) => (
     <NavItem key={to} to={to} Icon={Icon} label={label} location={location} exact={exact} />
   );
 
   return (
-    <nav
-      id="sidebarMenu"
-      className="col-md-3 col-lg-2 d-md-block sidebar collapse"
-    >
-      {/* <a
-        className="carte-visite"
-        href="https://trofel.vercel.app/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <img src={hma} alt="HMA" className="logo" />
-        <div className="carte-visite-name">
-          <p>Bonjour</p>
-          <b>{u_info.u_nom}</b>
-        </div>
-      </a> */}
-
+    <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block sidebar collapse">
       <ul>
-        {/* <div className="sidebar-section-label">Principal</div>
+        <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
-        {nav("/inComing/", BsGraphUp, "Gains", true)}
-        {nav("/outGoing/", BsGraphDown, "Dépenses", true)}
-        {nav("/services/", BsGear, "Services", true)}
-        {nav("/boutiques/", BsGlobe2, "Boutiques", true)} */}
 
         <div className="separator" />
 
         <div className="sidebar-section-label">Immobilier</div>
-        {nav("/loyer/", BsBuilding, "Tableau Loyer", true)}
-        {nav("/loyer/locataires/", BsPeople, "Locataires", true)}
-        {nav("/loyer/factures/", BsFileEarmarkText, "Factures JIRAMA", true)}
-        {nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}
-        {nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
+        {nav("/loyer/",            BsBuilding,      "Tableau Loyer",    true)}
+        {nav("/loyer/locataires/", BsPeople,         "Locataires",       true)}
+        {nav("/loyer/factures/",   BsFileEarmarkText,"Factures JIRAMA",  true)}
+        {nav("/loyer/depenses/",   BsCurrencyExchange,"Dépenses Immo",   true)}
+        {nav("/loyer/benefices/",  BsClipboardData,  "Bénéfices",        true)}
 
         <div className="separator" />
 
         <div className="sidebar-section-label">Finance Personnelle</div>
-        {nav("/finance/revenus/",  BsGraphUp,      "Revenus",       true)}
-        {nav("/finance/casuel/",   BsStarFill,     "Casuel",        true)}
-        {nav("/finance/charges/",  BsGraphDown,    "Charges Fixes", true)}
-        {nav("/finance/depenses/", BsCashStack,    "Dépenses",      true)}
-        {nav("/finance/bilan/",    BsClipboardData,"Bilan Mensuel", true)}
+        {nav("/finance/revenus/", BsGraphUp,      "Revenus & Charges", true)}
+        {nav("/finance/casuel/",  BsStarFill,     "Casuel & Dépenses", true)}
+        {nav("/finance/bilan/",   BsClipboardData,"Bilan Mensuel",     true)}
 
         <div className="separator" />
-        {/* <div className="sidebar-section-label">Vitrine</div>
+
+        <div className="sidebar-section-label">Vitrine</div>
         {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
 
         <div className="separator" />
 
-        {u_info.u_karazana == 1 &&
-          nav("/users/", BsPeople, "Utilisateurs", true)}
-        {nav("/about/", BsInfoCircle, "À propos", true)} */}
+        {u_info.u_karazana == 1 && nav("/users/", BsPeople, "Utilisateurs", true)}
+        {nav("/about/", BsInfoCircle, "À propos", true)}
       </ul>
     </nav>
   );

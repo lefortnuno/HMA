@@ -79,6 +79,12 @@ module.exports.createDepense = (req, res) => {
     (err, result) => { if (err) res.status(500).send(err); else res.send(result); }
   );
 };
+module.exports.updateDepense = (req, res) => {
+  const { userId, nom, montant } = req.body;
+  Finance.updateDepense(req.params.id, userId, { nom, montant: +montant || 0 }, (err, result) => {
+    if (err) res.status(500).send(err); else res.send(result);
+  });
+};
 module.exports.deleteDepense = (req, res) => {
   const { userId } = req.query;
   Finance.deleteDepense(req.params.id, userId, (err, result) => {
@@ -99,6 +105,12 @@ module.exports.createCasuel = (req, res) => {
     { userId, nom, montant: +montant || 0, date_casuel, mois, annee },
     (err, result) => { if (err) res.status(500).send(err); else res.send(result); }
   );
+};
+module.exports.updateCasuel = (req, res) => {
+  const { userId, nom, montant } = req.body;
+  Finance.updateCasuel(req.params.id, userId, { nom, montant: +montant || 0 }, (err, result) => {
+    if (err) res.status(500).send(err); else res.send(result);
+  });
 };
 module.exports.deleteCasuel = (req, res) => {
   const { userId } = req.query;

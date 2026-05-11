@@ -1,293 +1,241 @@
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
-
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import More from "../../components/more/more";
 import Template from "../../components/template/template";
-import Pagination from "../../components/pagination/pagination";
 import DeleteModal from "../../components/modals/delete";
-import LoadingTable from "../../components/loading/loadingTable";
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-import { FaPlus } from "react-icons/fa";
 import {
-  BsFillTrashFill,
-  BsPencilSquare,
-  BsEye,
-  BsPersonPlusFill,
-  BsSearch,
+  BsFillTrashFill, BsPencilSquare, BsEye,
+  BsPeopleFill, BsShieldFill, BsPersonFill, BsSearch, BsPlus,
 } from "react-icons/bs";
 
-// import "./user.css";
+const url_req = "utilisateur/";
+const PER_PAGE = 8;
+const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4"];
+const MOIS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 
-const url_req = `utilisateur/`;
-const histoPerPage = 5;
+function fmtDate(dt) {
+  if (!dt) return "—";
+  const s = String(dt).replace(" ", "T");
+  const d = new Date(s.includes("T") ? s : s + "T12:00:00");
+  if (isNaN(d.getTime())) return "—";
+  return `${String(d.getDate()).padStart(2, "0")} ${MOIS[d.getMonth() + 1]} ${d.getFullYear()}`;
+}
+
+function UserAvatar({ nom, prenom }) {
+  const initials = `${(nom || "?")[0]}${(prenom || "?")[0]}`.toUpperCase();
+  const bg = COLORS[(nom?.charCodeAt(0) || 0) % COLORS.length];
+  return (
+    <div style={{
+      width: 34, height: 34, borderRadius: "50%", background: bg, color: "#fff",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: "0.75rem", fontWeight: 700, flexShrink: 0,
+    }}>
+      {initials}
+    </div>
+  );
+}
 
 export default function User() {
-  //#region //-variable
   const u_info = GetUserData();
-  const [histo, setHisto] = useState([]);
-  const [details, setDetails] = useState(null);
-  const [totaly, setTotaly] = useState([]);
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
-  const navigate = useNavigate();
-  const [searchVisible, setSearchVisible] = useState(false);
-  const searchInputRef = useRef(null);
 
-  useEffect(() => {
-    if (searchVisible && searchInputRef.current) {
-      searchInputRef.current.focus(); // Met l'auto-focus sur l'input quand il est visible
-      setCurrentPage(1);
-    }
-  }, [searchVisible]);
+  useEffect(() => { fetchUsers(); }, []);
 
-  useEffect(() => {
-    getHisto();
-    getTotaly();
-  }, []);
-  //#endregion
-
-  //#region //-histo
-  function getHisto() {
-    axios
-      .get(url_req, u_info.opts)
-      .then(function (response) {
-        if (response.status === 200) {
-          const allHisto = response.data;
-          setHisto(allHisto);
-          setTotalPages(Math.ceil(allHisto.length / histoPerPage)); // Calculer le nombre total de pages
-        } else {
-          toast.warning("Vous n'êtes pas autorisé à accéder à cette page!");
-        }
-      })
-      .catch((error) => { 
-        setHisto([]); // Gérer l'erreur en réinitialisant les histo à un tableau vide
-      });
+  function fetchUsers() {
+    setLoading(true);
+    axios.get(url_req, u_info.opts)
+      .then(r => { if (r.status === 200) setUsers(r.data); else toast.warning("Accès refusé"); })
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
   }
-  function getTotaly() {
-    axios
-      .get(url_req + `userTtl/`, u_info.opts)
-      .then(function (response) {
-        if (response.status === 200) {
-          const allHisto = response.data[0];
-          setTotaly(allHisto);
-          setDetails(allHisto);
-        } else {
-          toast.warning("Vous n'êtes pas autorisé à accéder à cette page!");
-        }
-      })
-      .catch((error) => { 
-        setTotaly([]);
-      });
-  }
-  //#endregion
 
-  //#region //-modals
-  const handleDeleteClick = (histo) => {
-    setSelectedEntity(histo);
-    setShowDeleteModal(true);
-  };
-  const handleDeleteConfirm = () => {
-    setShowDeleteModal(false);
-    getHisto();
-    getTotaly();
-  };
+  const filtered = users.filter(u =>
+    !search || `${u.nom} ${u.prenom}`.toLowerCase().includes(search.toLowerCase())
+  );
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const page = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  const totalAdmins = users.filter(u => u.karazana == 1).length;
+  const totalUsers  = users.filter(u => u.karazana != 1).length;
 
-  const handleEditClick = (entity) => {
-    // navigate(`/editUser/${entity.id}`, { state: { entity } });
-    navigate(`/users/`);
-  };
-
-  const handleDetailClick = (entity) => {
-    navigate(`/aboutUser/${entity.id}`, { state: { entity } });
-  };
-  //#endregion
-
-  //#region //-search
-  const indexOfLastService = currentPage * histoPerPage;
-  const indexOfFirstService = indexOfLastService - histoPerPage;
-  const currentHisto = histo.slice(indexOfFirstService, indexOfLastService);
-
-  const toggleSearch = () => {
-    setSearchVisible(!searchVisible);
-  };
-  const [contenuTab, setContenuTab] = useState(false);
-
-  function rechercheElement(event) {
-    const valeur = event.target.value;
-    if (!valeur) {
-      getHisto();
-      setContenuTab(false);
-    } else {
-      const finalInputs = {
-        val: valeur,
-      };
-
-      axios
-        .post(url_req + `recherche/`, finalInputs, u_info.opts)
-        .then((response) => {
-          if (response.data.success) {
-            setHisto(response.data.res);
-            setContenuTab(true);
-          } else {
-            setHisto(response.data.res);
-            setContenuTab(false);
-          }
-        });
-    }
-  }
-  //#endregion
-
-  //#region //-html
   return (
     <Template>
-      <Header>
-        {!searchVisible && (
-          <BsSearch className="searchIcon" onClick={toggleSearch} />
-        )}
-        {searchVisible && (
-          <input
-            type="text"
-            name="searchValue"
-            placeholder="Rechercher ...."
-            autoComplete="off"
-            className="form-control text-dark"
-            ref={searchInputRef}
-            onBlur={() => setSearchVisible(false)}
-            onChange={rechercheElement}
-          />
-        )}
-      </Header>
-
+      <Header />
       <div className="container-fluid flex-grow-1">
-        <div className="row">
+        <div className="row g-0">
           <Sidebar />
+          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
 
-          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 main">
-            <div className="pt-3 pb-2 mb-3">
-              {/* -------------------------- PAGE CONTENT -------------------------- */}
-              <div className="text-center my-3 mt-0">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div className="d-flex align-items-center">
-                    <h5 className="mb-0 me-2 position-relative d-inline-block">
-                      Liste des Utilisateurs :-
-                      <Link
-                        to={"/newUser/"}
-                        className="add-icon mx-1"
-                        title="Ajout"
-                      >
-                        <FaPlus />
-                      </Link>
-                      -:
-                      <span className="green-underline"></span>
-                    </h5>
+            <div className="page-header">
+              <div>
+                <h1 className="page-title"><BsPeopleFill /> Utilisateurs</h1>
+                <p className="text-muted small mb-0">
+                  {users.length} compte{users.length > 1 ? "s" : ""} enregistré{users.length > 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="d-flex gap-2 align-items-center flex-wrap">
+                <div className="input-group input-group-sm" style={{ width: 230 }}>
+                  <span className="input-group-text bg-white border-end-0">
+                    <BsSearch size={13} style={{ color: "#94a3b8" }} />
+                  </span>
+                  <input type="text" className="form-control border-start-0 ps-0"
+                    placeholder="Rechercher un utilisateur…"
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                    style={{ fontSize: "0.82rem" }} />
+                </div>
+                <Link to="/newUser/" className="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                  <BsPlus size={16} /> Ajouter
+                </Link>
+              </div>
+            </div>
+
+            {/* Stat cards */}
+            <div className="row g-3 mb-4">
+              <div className="col-sm-4">
+                <div className="stat-card">
+                  <div className="stat-icon blue"><BsPeopleFill /></div>
+                  <div className="stat-content">
+                    <h3>{users.length}</h3>
+                    <p>Total comptes</p>
                   </div>
-                  <h5 className="mb-0 me-2 position-relative d-inline-block">
-                    Total :{" "}
-                    <span className="totaly">
-                      {totaly.isaTtl !== null && totaly.isaTtl !== undefined
-                        ? totaly.isaTtl
-                        : "0"}
-                    </span>{" "}
-                    !
-                  </h5>
                 </div>
               </div>
+              <div className="col-sm-4">
+                <div className="stat-card">
+                  <div className="stat-icon purple"><BsShieldFill /></div>
+                  <div className="stat-content">
+                    <h3>{totalAdmins}</h3>
+                    <p>Administrateurs</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-sm-4">
+                <div className="stat-card">
+                  <div className="stat-icon slate"><BsPersonFill /></div>
+                  <div className="stat-content">
+                    <h3>{totalUsers}</h3>
+                    <p>Utilisateurs</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-              <div className="table-responsive text-nowrap">
-                <table className="table table-striped w-100">
+            {/* Table */}
+            <div className="table-pro">
+              {loading ? (
+                <div className="text-center py-5 text-muted" style={{ fontSize: "0.85rem" }}>
+                  Chargement…
+                </div>
+              ) : (
+                <div className="tbl-scroll-wrap">
+                <table className="table table-hover mb-0">
                   <thead>
                     <tr>
+                      <th>Utilisateur</th>
                       <th>ID</th>
-                      <th>Nom</th>
-                      <th>Prénom</th>
-                      <th>Type</th>
-                      <th>+Details</th>
-                      <th>Actions</th>
+                      <th>Rôle</th>
+                      <th>Créé le</th>
+                      <th style={{ width: 130 }}></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {!details ? (
-                      <LoadingTable />
-                    ) : (
-                      <>
-                        {currentHisto.length > 0 ? (
-                          currentHisto.map((s, key) => (
-                            <tr key={key}>
-                              <td>{s.idPS}</td>
-                              <td>{s.nom}</td>
-                              <td>{s.prenom}</td>
-                              <td>
-                                {s.karazana == 1
-                                  ? "Administrateur"
-                                  : "Utilisateur"}
-                              </td>
-                              <td>
-                                <span
-                                  className="btn btn-outline-success btn-sm pt-0 mx-1 waves-effect"
-                                  onClick={() => handleDetailClick(s)}
-                                >
-                                  <BsEye />
-                                </span>
-                              </td>
-                              <td>
-                                <span
-                                  className="btn btn-outline-primary btn-sm pt-0 mx-1 waves-effect"
-                                  onClick={() => handleEditClick(s)}
-                                  aria-disabled={true}
-                                >
-                                  <BsPencilSquare />
-                                </span>
-                                <span
-                                  className="btn btn-outline-danger btn-sm pt-0 mx-1 waves-effect"
-                                  onClick={() => handleDeleteClick(s)}
-                                >
-                                  <BsFillTrashFill />
-                                </span>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="10">Aucune donnée disponible</td>
-                          </tr>
-                        )}
-                      </>
-                    )}
+                    {page.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-4 text-muted" style={{ fontSize: "0.85rem" }}>
+                          {search ? "Aucun résultat pour cette recherche" : "Aucun utilisateur"}
+                        </td>
+                      </tr>
+                    ) : page.map(u => (
+                      <tr key={u.idPS}>
+                        <td title={`${u.nom} ${u.prenom}`}>
+                          <div className="d-flex align-items-center gap-2">
+                            <UserAvatar nom={u.nom || ""} prenom={u.prenom || ""} />
+                            <span className="fw-semibold text-truncate" style={{ fontSize: "0.875rem" }}>
+                              {u.nom} {u.prenom}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: "0.78rem", color: "#94a3b8" }}>#{u.idPS}</td>
+                        <td>
+                          {u.karazana == 1
+                            ? <span style={{ background: "#eff6ff", color: "#2563eb", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
+                                Admin
+                              </span>
+                            : <span style={{ background: "#f8fafc", color: "#475569", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
+                                Utilisateur
+                              </span>
+                          }
+                        </td>
+                        <td style={{ fontSize: "0.78rem", color: "#64748b", whiteSpace: "nowrap" }}>
+                          {fmtDate(u.created_at || u.createdAt || u.date_creation)}
+                        </td>
+                        <td>
+                          <div className="d-flex gap-1 justify-content-end">
+                            <button className="btn btn-outline-primary btn-sm" title="Voir"
+                              onClick={() => navigate(`/aboutUser/${u.id}`, { state: { entity: u } })}>
+                              <BsEye />
+                            </button>
+                            <button className="btn btn-outline-secondary btn-sm" title="Modifier"
+                              onClick={() => navigate(`/editUser/${u.id}`, { state: { entity: u } })}>
+                              <BsPencilSquare />
+                            </button>
+                            <button className="btn btn-outline-danger btn-sm" title="Supprimer"
+                              onClick={() => { setSelectedEntity(u); setShowDeleteModal(true); }}>
+                              <BsFillTrashFill />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
-              </div>
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-
-              {selectedEntity && (
-                <DeleteModal
-                  show={showDeleteModal}
-                  onClose={() => setShowDeleteModal(false)}
-                  onConfirm={handleDeleteConfirm}
-                  entity={selectedEntity}
-                  entityName={"utilisateur"}
-                  auth={u_info.opts}
-                />
+                </div>
               )}
-              {/* -------------------------- FIN -------------------------- */}
             </div>
-            <More />
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-end align-items-center gap-1 mt-3">
+                <button className="btn btn-outline-secondary btn-sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}>‹</button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button key={i}
+                    className={`btn btn-sm ${currentPage === i + 1 ? "btn-primary" : "btn-outline-secondary"}`}
+                    onClick={() => setCurrentPage(i + 1)}>
+                    {i + 1}
+                  </button>
+                ))}
+                <button className="btn btn-outline-secondary btn-sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}>›</button>
+              </div>
+            )}
+
           </main>
         </div>
       </div>
+
+      {selectedEntity && (
+        <DeleteModal
+          show={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={() => { setShowDeleteModal(false); fetchUsers(); }}
+          entity={selectedEntity}
+          entityName="utilisateur"
+          auth={u_info.opts}
+        />
+      )}
     </Template>
   );
-  //#endregion
 }

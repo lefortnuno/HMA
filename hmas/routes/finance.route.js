@@ -14,10 +14,12 @@ router.delete("/charges/:id",  user.checkUtilisateur, ctrl.deleteCharge);
 
 router.get("/depenses",        user.checkUtilisateur, ctrl.getDepenses);
 router.post("/depenses",       user.checkUtilisateur, ctrl.createDepense);
+router.put("/depenses/:id",    user.checkUtilisateur, ctrl.updateDepense);
 router.delete("/depenses/:id", user.checkUtilisateur, ctrl.deleteDepense);
 
 router.get("/casuel",          user.checkUtilisateur, ctrl.getCasuel);
 router.post("/casuel",         user.checkUtilisateur, ctrl.createCasuel);
+router.put("/casuel/:id",      user.checkUtilisateur, ctrl.updateCasuel);
 router.delete("/casuel/:id",   user.checkUtilisateur, ctrl.deleteCasuel);
 
 router.get("/annuel",          user.checkUtilisateur, ctrl.getAnnuel);

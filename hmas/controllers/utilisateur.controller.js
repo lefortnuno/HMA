@@ -78,21 +78,15 @@ module.exports.getIdUtilisateur = (req, res) => {
 };
 
 module.exports.updateUtilisateur = (req, res) => {
-  let { nom, prenom, idPS, pwd } = req.body;
-  pwd = bcrypt.hashSync(pwd, 10);
-  const updateUtilisateur = { nom, prenom, idPS, pwd };
+  let { nom, prenom, idPS, karazana, pwd } = req.body;
+  const updateData = { nom, prenom, idPS };
+  if (karazana !== undefined && karazana !== "") updateData.karazana = karazana;
+  if (pwd) updateData.pwd = bcrypt.hashSync(pwd, 10);
 
-  Utilisateur.updateUtilisateur(
-    updateUtilisateur,
-    req.params.id,
-    (err, resp) => {
-      if (!err) {
-        res.send(resp);
-      } else {
-        res.send(err);
-      }
-    }
-  );
+  Utilisateur.updateUtilisateur(updateData, req.params.id, (err, resp) => {
+    if (!err) res.send(resp);
+    else res.send(err);
+  });
 };
 
 module.exports.deleteUtilisateur = (req, res) => {

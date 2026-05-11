@@ -6,9 +6,20 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, Link, useParams, useLocation } from "react-router-dom";
-import { BsImages, BsArrowLeft, BsPlus, BsX } from "react-icons/bs";
+import { BsImages, BsArrowLeft, BsX, BsCloudUpload } from "react-icons/bs";
 
 const FEATURES = ["Eau","Électricité","Parking","Jardin","Sécurité","Meublé","Wifi","Climatisation","Cuisine équipée"];
+
+const API_ORIGIN =
+  process.env.REACT_APP_OFFLINE_API_HEAD +
+  process.env.REACT_APP_OFFLINE_API_IP_ADRESS +
+  process.env.REACT_APP_OFFLINE_API_PORT;
+
+function imgSrc(p) {
+  if (!p) return "";
+  if (p.startsWith("http")) return p;
+  return API_ORIGIN + p;
+}
 
 export default function EditBien() {
   const u_info = GetUserData();
@@ -18,43 +29,57 @@ export default function EditBien() {
   const existing = location.state?.bien || {};
 
   const [form, setForm] = useState({
-    titre: existing.titre || "",
-    type: existing.type || "CHAMBRE",
-    description: existing.description || "",
-    prix: existing.prix || "",
-    surface: existing.surface || "",
-    localisation: existing.localisation || "",
-    nbChambres: existing.nbChambres || "",
-    nbPieces: existing.nbPieces || "",
-    disponible: existing.disponible !== undefined ? existing.disponible : true,
-    photos: existing.photos || [],
-    caracteristiques: existing.caracteristiques || [],
+    titre:           existing.titre || "",
+    type:            existing.type || "CHAMBRE",
+    description:     existing.description || "",
+    prix:            existing.prix || "",
+    surface:         existing.surface || "",
+    localisation:    existing.localisation || "",
+    nbChambres:      existing.nbChambres || "",
+    nbPieces:        existing.nbPieces || "",
+    disponible:      existing.disponible !== undefined ? existing.disponible : true,
+    photos:          existing.photos || [],
+    caracteristiques:existing.caracteristiques || [],
   });
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
-    setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+    setForm(f => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
 
   function toggleFeature(feat) {
-    setForm((f) => ({
+    setForm(f => ({
       ...f,
       caracteristiques: f.caracteristiques.includes(feat)
-        ? f.caracteristiques.filter((c) => c !== feat)
+        ? f.caracteristiques.filter(c => c !== feat)
         : [...f.caracteristiques, feat],
     }));
   }
 
-  function addPhoto() {
-    if (!photoUrl.trim()) return;
-    setForm((f) => ({ ...f, photos: [...f.photos, photoUrl.trim()] }));
-    setPhotoUrl("");
+  async function handleFileUpload(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    const authHeader = u_info.opts?.headers?.Authorization;
+    const cfg = authHeader ? { headers: { Authorization: authHeader } } : {};
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("photo", file);
+      try {
+        const r = await axios.post("vitrine/upload", fd, cfg);
+        setForm(f => ({ ...f, photos: [...f.photos, r.data.url] }));
+      } catch {
+        toast.error("Erreur upload : " + file.name);
+      }
+    }
+    setUploading(false);
+    e.target.value = "";
   }
 
   function removePhoto(i) {
-    setForm((f) => ({ ...f, photos: f.photos.filter((_, idx) => idx !== i) }));
+    setForm(f => ({ ...f, photos: f.photos.filter((_, idx) => idx !== i) }));
   }
 
   function handleSubmit(e) {
@@ -65,15 +90,10 @@ export default function EditBien() {
     axios
       .put(`vitrine/biens/${id}`, {
         ...form,
-        prix: +form.prix,
-        surface: +form.surface || null,
-        nbChambres: +form.nbChambres || null,
-        nbPieces: +form.nbPieces || null,
+        prix: +form.prix, surface: +form.surface || null,
+        nbChambres: +form.nbChambres || null, nbPieces: +form.nbPieces || null,
       }, u_info.opts)
-      .then(() => {
-        toast.success("Bien mis à jour !");
-        navigate("/vitrine/admin/");
-      })
+      .then(() => { toast.success("Bien mis à jour !"); navigate("/vitrine/admin/"); })
       .catch(() => toast.error("Erreur lors de la mise à jour"))
       .finally(() => setSaving(false));
   }
@@ -87,9 +107,7 @@ export default function EditBien() {
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
 
             <div className="page-header">
-              <h1 className="page-title">
-                <BsImages /> Modifier le bien
-              </h1>
+              <h1 className="page-title"><BsImages /> Modifier le bien</h1>
               <Link to="/vitrine/admin/" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
                 <BsArrowLeft /> Retour
               </Link>
@@ -98,6 +116,7 @@ export default function EditBien() {
             <div className="card-pro" style={{ maxWidth: 720 }}>
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
+
                   <div className="col-12">
                     <label className="form-label">Titre *</label>
                     <input type="text" name="titre" className="form-control" value={form.titre} onChange={handleChange} />
@@ -134,17 +153,19 @@ export default function EditBien() {
                     <textarea name="description" className="form-control" rows={3} value={form.description} onChange={handleChange} />
                   </div>
 
+                  {/* File upload */}
                   <div className="col-12">
-                    <label className="form-label">Photos (URLs)</label>
-                    <div className="d-flex gap-2 mb-2">
-                      <input type="url" className="form-control" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPhoto())} />
-                      <button type="button" className="btn btn-outline-primary" onClick={addPhoto}><BsPlus size={18} /></button>
-                    </div>
+                    <label className="form-label">Photos</label>
+                    <label className="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" style={{ cursor: "pointer" }}>
+                      <BsCloudUpload />
+                      {uploading ? "Upload en cours…" : "Ajouter des photos"}
+                      <input type="file" accept="image/*" multiple hidden onChange={handleFileUpload} disabled={uploading} />
+                    </label>
                     {form.photos.length > 0 && (
-                      <div className="d-flex flex-wrap gap-2">
+                      <div className="d-flex flex-wrap gap-2 mt-2">
                         {form.photos.map((p, i) => (
                           <div key={i} style={{ position: "relative" }}>
-                            <img src={p} alt="" style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                            <img src={imgSrc(p)} alt="" style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 8, border: "1px solid #e2e8f0" }} />
                             <button type="button" onClick={() => removePhoto(i)} style={{ position: "absolute", top: -6, right: -6, background: "#ef4444", color: "#fff", border: "none", borderRadius: "50%", width: 18, height: 18, fontSize: "0.65rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <BsX />
                             </button>
@@ -157,7 +178,7 @@ export default function EditBien() {
                   <div className="col-12">
                     <label className="form-label">Caractéristiques</label>
                     <div className="d-flex flex-wrap gap-2">
-                      {FEATURES.map((f) => (
+                      {FEATURES.map(f => (
                         <button key={f} type="button" onClick={() => toggleFeature(f)} className="btn btn-sm"
                           style={{ background: form.caracteristiques.includes(f) ? "#2563eb" : "#f1f5f9", color: form.caracteristiques.includes(f) ? "#fff" : "#475569", border: "none", borderRadius: 8, fontSize: "0.8rem" }}>
                           {f}
@@ -175,8 +196,8 @@ export default function EditBien() {
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">
                     <Link to="/vitrine/admin/" className="btn btn-outline-secondary">Annuler</Link>
-                    <button type="submit" className="btn btn-primary" disabled={saving}>
-                      {saving ? "Enregistrement..." : "Enregistrer"}
+                    <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
+                      {saving ? "Enregistrement…" : "Enregistrer"}
                     </button>
                   </div>
                 </div>
