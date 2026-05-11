@@ -58,12 +58,12 @@ export default function Sidebar() {
       </a> */}
 
       <ul>
-        <div className="sidebar-section-label">Principal</div>
+        {/* <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
         {nav("/inComing/", BsGraphUp, "Gains", true)}
         {nav("/outGoing/", BsGraphDown, "Dépenses", true)}
         {nav("/services/", BsGear, "Services", true)}
-        {nav("/boutiques/", BsGlobe2, "Boutiques", true)}
+        {nav("/boutiques/", BsGlobe2, "Boutiques", true)} */}
 
         <div className="separator" />
 
@@ -76,14 +76,14 @@ export default function Sidebar() {
 
         <div className="separator" />
 
-        <div className="sidebar-section-label">Vitrine</div>
+        {/* <div className="sidebar-section-label">Vitrine</div>
         {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
 
         <div className="separator" />
 
         {u_info.u_karazana == 1 &&
           nav("/users/", BsPeople, "Utilisateurs", true)}
-        {nav("/about/", BsInfoCircle, "À propos", true)}
+        {nav("/about/", BsInfoCircle, "À propos", true)} */}
       </ul>
     </nav>
   );
