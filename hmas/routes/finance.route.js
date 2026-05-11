@@ -20,6 +20,7 @@ router.get("/casuel",          user.checkUtilisateur, ctrl.getCasuel);
 router.post("/casuel",         user.checkUtilisateur, ctrl.createCasuel);
 router.delete("/casuel/:id",   user.checkUtilisateur, ctrl.deleteCasuel);
 
+router.get("/annuel",          user.checkUtilisateur, ctrl.getAnnuel);
 router.get("/bilan",           user.checkUtilisateur, ctrl.getBilan);
 
 module.exports = router;

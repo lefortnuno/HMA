@@ -107,6 +107,27 @@ module.exports.deleteCasuel = (req, res) => {
   });
 };
 
+// ─── Annuel (graphique) ────────────────────────────────────────
+module.exports.getAnnuel = (req, res) => {
+  const { annee, userId } = req.query;
+  Finance.getAnnuelRevenus(userId, annee, (err, revData) => {
+    if (err) return res.status(500).send(err);
+    Finance.getAnnuelDepenses(userId, annee, (err2, depData) => {
+      if (err2) return res.status(500).send(err2);
+      const revMap = {};
+      const depMap = {};
+      revData.forEach(r => { revMap[r.mois] = +r.total; });
+      depData.forEach(d => { depMap[d.mois] = +d.total; });
+      const chart = Array.from({ length: 12 }, (_, i) => ({
+        mois: i + 1,
+        revenus:  revMap[i + 1] || 0,
+        depenses: depMap[i + 1] || 0,
+      }));
+      res.send(chart);
+    });
+  });
+};
+
 // ─── Bilan ─────────────────────────────────────────────────────
 module.exports.getBilan = (req, res) => {
   const { mois, annee, userId } = req.query;

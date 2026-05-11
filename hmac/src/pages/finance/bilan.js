@@ -4,30 +4,61 @@ import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
 import { BsClipboardData, BsGraphUp, BsGraphDown, BsCashStack, BsTrophyFill, BsStarFill } from "react-icons/bs";
 import { SkBenefices } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
 import "./finance.css";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const ANNEES = [2023, 2024, 2025, 2026, 2027];
+const MOIS_LABELS  = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const ANNEES       = [2023, 2024, 2025, 2026, 2027];
+
+function fmtK(v) { return v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v; }
+
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 14px", fontSize: "0.8rem" }}>
+      <p className="fw-semibold mb-1" style={{ color: "#475569" }}>{MOIS_LABELS[label]}</p>
+      {payload.map(p => (
+        <p key={p.name} className="mb-0" style={{ color: p.color }}>
+          {p.name === "revenus" ? "Revenus" : "Dépenses"} : {(+p.value).toLocaleString()} Ar
+        </p>
+      ))}
+    </div>
+  );
+}
 
 export default function FinanceBilan() {
   const u_info = GetUserData();
   const now    = new Date();
-  const [mois,    setMois]    = useState(now.getMonth() + 1);
-  const [annee,   setAnnee]   = useState(now.getFullYear());
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [mois,       setMois]       = useState(now.getMonth() + 1);
+  const [annee,      setAnnee]      = useState(now.getFullYear());
+  const [data,       setData]       = useState(null);
+  const [loading,    setLoading]    = useState(true);
+  const [chartData,  setChartData]  = useState([]);
+  const [chartLoad,  setChartLoad]  = useState(true);
 
-  useEffect(() => { fetch(); }, [mois, annee]);
+  useEffect(() => { fetchBilan(); }, [mois, annee]);
+  useEffect(() => { fetchChart(); }, [annee]);
 
-  function fetch() {
+  function fetchBilan() {
     setLoading(true);
     axios.get(`finance/bilan?mois=${mois}&annee=${annee}&userId=${u_info.u_id}`, u_info.opts)
       .then(r  => setData(r.data || null))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
+  }
+
+  function fetchChart() {
+    setChartLoad(true);
+    axios.get(`finance/annuel?annee=${annee}&userId=${u_info.u_id}`, u_info.opts)
+      .then(r  => setChartData(r.data || []))
+      .catch(() => setChartData([]))
+      .finally(() => setChartLoad(false));
   }
 
   const tr  = data?.totalRevenus   || 0;
@@ -59,16 +90,67 @@ export default function FinanceBilan() {
               </div>
             </div>
 
+            {/* ── Graphique annuel ── */}
+            <div className="card-pro mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0">Revenus vs Dépenses — {annee}</h6>
+              </div>
+              {chartLoad ? (
+                <div style={{ height: 220, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span className="text-muted" style={{ fontSize: "0.85rem" }}>Chargement…</span>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="mois"
+                      tickFormatter={m => MOIS_LABELS[m]}
+                      tick={{ fontSize: 11, fill: "#94a3b8" }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tickFormatter={fmtK}
+                      tick={{ fontSize: 11, fill: "#94a3b8" }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={42}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      formatter={v => v === "revenus" ? "Revenus" : "Dépenses"}
+                      iconType="circle"
+                      iconSize={8}
+                      wrapperStyle={{ fontSize: "0.78rem" }}
+                    />
+                    <Line
+                      type="monotone" dataKey="revenus"
+                      stroke="#3b82f6" strokeWidth={2.5}
+                      dot={{ r: 3, fill: "#3b82f6", strokeWidth: 0 }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line
+                      type="monotone" dataKey="depenses"
+                      stroke="#ef4444" strokeWidth={2.5}
+                      dot={{ r: 3, fill: "#ef4444", strokeWidth: 0 }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
             {loading ? <SkBenefices /> : (
               <>
                 {/* KPI cards */}
                 <div className="row g-3 mb-4">
                   {[
-                    { label: "Revenus",    val: tr,  icon: <BsGraphUp />,    color: "green"  },
-                    { label: "Casuel",     val: tca, icon: <BsStarFill />,   color: "amber"  },
-                    { label: "Charges",    val: tc,  icon: <BsGraphDown />,  color: "red"    },
-                    { label: "Dépenses",   val: td,  icon: <BsCashStack />,  color: "red"    },
-                    { label: "Solde net",  val: sol, icon: <BsTrophyFill />, color: sol >= 0 ? "blue" : "red" },
+                    { label: "Revenus",   val: tr,  icon: <BsGraphUp />,    color: "green"  },
+                    { label: "Casuel",    val: tca, icon: <BsStarFill />,   color: "amber"  },
+                    { label: "Charges",   val: tc,  icon: <BsGraphDown />,  color: "red"    },
+                    { label: "Dépenses",  val: td,  icon: <BsCashStack />,  color: "red"    },
+                    { label: "Solde net", val: sol, icon: <BsTrophyFill />, color: sol >= 0 ? "blue" : "red" },
                   ].map(({ label, val, icon, color }) => (
                     <div className="col-sm-6 col-lg-3" key={label}>
                       <div className="stat-card">
@@ -158,7 +240,7 @@ export default function FinanceBilan() {
                 )}
 
                 {/* Solde final */}
-                <div className="card-pro" style={{ borderLeft: `4px solid ${sol >= 0 ? "#10b981" : "#ef4444"}` }}>
+                <div className="card-pro mb-4" style={{ borderLeft: `4px solid ${sol >= 0 ? "#10b981" : "#ef4444"}` }}>
                   <div className="d-flex justify-content-between align-items-center">
                     <div>
                       <p className="text-muted small mb-1">Revenus + Casuel − Charges − Dépenses</p>

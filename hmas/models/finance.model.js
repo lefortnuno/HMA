@@ -121,4 +121,20 @@ Finance.sumCasuel = (userId, mois, annee, result) => {
   );
 };
 
+// ─── Agrégats annuels (pour graphique) ────────────────────────
+Finance.getAnnuelRevenus = (userId, annee, result) => {
+  db.query(
+    "SELECT mois, COALESCE(SUM(montant), 0) AS total FROM finance_revenus WHERE userId=? AND annee=? GROUP BY mois",
+    [userId, annee],
+    (err, res) => { if (err) result(err, null); else result(null, res); }
+  );
+};
+Finance.getAnnuelDepenses = (userId, annee, result) => {
+  db.query(
+    "SELECT mois, COALESCE(SUM(montant), 0) AS total FROM finance_depenses WHERE userId=? AND annee=? GROUP BY mois",
+    [userId, annee],
+    (err, res) => { if (err) result(err, null); else result(null, res); }
+  );
+};
+
 module.exports = Finance;

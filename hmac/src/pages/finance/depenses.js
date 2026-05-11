@@ -33,12 +33,12 @@ function semaineDuMois(day) { return Math.min(Math.ceil(day / 7), 5); }
 
 export default function FinanceDepenses() {
   const u_info = GetUserData();
-  const [refDate,   setRefDate]   = useState(new Date());
-  const [depenses,  setDepenses]  = useState([]);
-  const [loading,   setLoading]   = useState(true);
-  const [showForm,  setShowForm]  = useState(false);
-  const [form,      setForm]      = useState({ nom: "", montant: "" });
-  const [saving,    setSaving]    = useState(false);
+  const [refDate,    setRefDate]   = useState(new Date());
+  const [depenses,   setDepenses]  = useState([]);
+  const [loading,    setLoading]   = useState(true);
+  const [showModal,  setShowModal] = useState(false);
+  const [form,       setForm]      = useState({ nom: "", montant: "" });
+  const [saving,     setSaving]    = useState(false);
 
   const { start, end } = getWeekBounds(refDate);
 
@@ -60,6 +60,8 @@ export default function FinanceDepenses() {
 
   function goToday() { setRefDate(new Date()); }
 
+  function openModal() { setForm({ nom: "", montant: "" }); setShowModal(true); }
+
   function handleAdd(e) {
     e.preventDefault();
     if (!form.nom.trim())    return toast.warning("Nom de la dépense requis");
@@ -69,11 +71,11 @@ export default function FinanceDepenses() {
     const pad = n => String(n).padStart(2, "0");
     const date_depense  = toISO(now);
     const heure_depense = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    const mois   = now.getMonth() + 1;
-    const annee  = now.getFullYear();
+    const mois    = now.getMonth() + 1;
+    const annee   = now.getFullYear();
     const semaine = semaineDuMois(now.getDate());
     axios.post("finance/depenses", { userId: u_info.u_id, nom: form.nom, montant: +form.montant, date_depense, heure_depense, semaine, mois, annee }, u_info.opts)
-      .then(() => { toast.success("Dépense ajoutée"); setForm({ nom: "", montant: "" }); setShowForm(false); fetch(); })
+      .then(() => { toast.success("Dépense ajoutée"); setShowModal(false); fetch(); })
       .catch(() => toast.error("Erreur"))
       .finally(() => setSaving(false));
   }
@@ -110,37 +112,11 @@ export default function FinanceDepenses() {
                   </button>
                   <button className="week-nav-btn" onClick={() => goWeek(1)}><BsChevronRight size={12} /></button>
                 </div>
-                <button className="btn btn-primary btn-sm d-flex align-items-center gap-1" onClick={() => setShowForm(v => !v)}>
+                <button className="btn btn-primary btn-sm d-flex align-items-center gap-1" onClick={openModal}>
                   <BsPlus size={16} /> Ajouter
                 </button>
               </div>
             </div>
-
-            {/* Formulaire inline */}
-            {showForm && (
-              <div className="card-pro mb-3">
-                <form onSubmit={handleAdd}>
-                  <div className="row g-3 align-items-end">
-                    <div className="col-sm-5">
-                      <label className="form-label">Nom de la dépense *</label>
-                      <input type="text" className="form-control form-control-sm" value={form.nom}
-                        onChange={e => setForm({ ...form, nom: e.target.value })} placeholder="Ex: Courses, Transport…" autoFocus />
-                    </div>
-                    <div className="col-sm-4">
-                      <label className="form-label">Montant (Ar) *</label>
-                      <input type="number" className="form-control form-control-sm" value={form.montant}
-                        onChange={e => setForm({ ...form, montant: e.target.value })} min={1} placeholder="0" />
-                    </div>
-                    <div className="col-sm-3 d-flex gap-2">
-                      <button type="submit" className="btn btn-primary btn-sm w-100" disabled={saving}>
-                        {saving ? "…" : "Enregistrer"}
-                      </button>
-                      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowForm(false)}>✕</button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            )}
 
             <div className="card-pro p-0">
               <div className="week-header d-flex justify-content-between align-items-center">
@@ -155,7 +131,7 @@ export default function FinanceDepenses() {
               ) : depenses.length === 0 ? (
                 <div className="text-center py-5 text-muted">
                   <p className="mb-2">Aucune dépense cette semaine</p>
-                  <button className="btn btn-sm btn-primary" onClick={() => setShowForm(true)}><BsPlus /> Ajouter</button>
+                  <button className="btn btn-sm btn-primary" onClick={openModal}><BsPlus /> Ajouter</button>
                 </div>
               ) : (
                 <div className="table-responsive">
@@ -194,6 +170,38 @@ export default function FinanceDepenses() {
           </main>
         </div>
       </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content-pro" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header-pro">
+              <h6><BsCashStack className="me-2" />Nouvelle dépense</h6>
+              <button className="btn-close" onClick={() => setShowModal(false)} />
+            </div>
+            <form onSubmit={handleAdd} className="p-4">
+              <div className="row g-3">
+                <div className="col-12">
+                  <label className="form-label">Nom de la dépense *</label>
+                  <input type="text" className="form-control form-control-sm" value={form.nom}
+                    onChange={e => setForm({ ...form, nom: e.target.value })}
+                    placeholder="Ex: Courses, Transport, Restaurant…" autoFocus />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">Montant (Ar) *</label>
+                  <input type="number" className="form-control form-control-sm" value={form.montant}
+                    onChange={e => setForm({ ...form, montant: e.target.value })} min={1} placeholder="0" />
+                </div>
+              </div>
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+                  {saving ? "Enregistrement..." : "Ajouter"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Template>
   );
 }

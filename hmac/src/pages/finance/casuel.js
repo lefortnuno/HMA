@@ -16,19 +16,19 @@ const ANNEES = [2023, 2024, 2025, 2026, 2027];
 function toISO(d) { return d.toISOString().split("T")[0]; }
 
 export default function FinanceCasuel() {
-  const u_info = GetUserData();
-  const now    = new Date();
-  const [mois,     setMois]     = useState(now.getMonth() + 1);
-  const [annee,    setAnnee]    = useState(now.getFullYear());
-  const [casuel,   setCasuel]   = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [form,     setForm]     = useState({ nom: "", montant: "" });
-  const [saving,   setSaving]   = useState(false);
+  const u_info  = GetUserData();
+  const now     = new Date();
+  const [mois,      setMois]      = useState(now.getMonth() + 1);
+  const [annee,     setAnnee]     = useState(now.getFullYear());
+  const [casuel,    setCasuel]    = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [form,      setForm]      = useState({ nom: "", montant: "" });
+  const [saving,    setSaving]    = useState(false);
 
-  useEffect(() => { fetch(); }, [mois, annee]);
+  useEffect(() => { fetchData(); }, [mois, annee]);
 
-  function fetch() {
+  function fetchData() {
     setLoading(true);
     axios.get(`finance/casuel?mois=${mois}&annee=${annee}&userId=${u_info.u_id}`, u_info.opts)
       .then(r  => setCasuel(r.data || []))
@@ -36,24 +36,26 @@ export default function FinanceCasuel() {
       .finally(() => setLoading(false));
   }
 
+  function openModal() { setForm({ nom: "", montant: "" }); setShowModal(true); }
+
   function handleAdd(e) {
     e.preventDefault();
     if (!form.nom.trim())   return toast.warning("Nom requis");
     if (!form.montant || +form.montant <= 0) return toast.warning("Montant invalide");
     setSaving(true);
-    const date_casuel = toISO(now);
+    const date_casuel = toISO(new Date());
     axios.post("finance/casuel", {
       userId: u_info.u_id, nom: form.nom, montant: +form.montant,
       date_casuel, mois, annee
     }, u_info.opts)
-      .then(() => { toast.success("Casuel ajouté"); setForm({ nom: "", montant: "" }); setShowForm(false); fetch(); })
+      .then(() => { toast.success("Casuel ajouté"); setShowModal(false); fetchData(); })
       .catch(() => toast.error("Erreur"))
       .finally(() => setSaving(false));
   }
 
   function handleDelete(id) {
     axios.delete(`finance/casuel/${id}?userId=${u_info.u_id}`, u_info.opts)
-      .then(() => { toast.success("Supprimé"); fetch(); })
+      .then(() => { toast.success("Supprimé"); fetchData(); })
       .catch(() => toast.error("Erreur"));
   }
 
@@ -81,37 +83,11 @@ export default function FinanceCasuel() {
                 <select className="form-select form-select-sm" style={{ width: "auto" }} value={annee} onChange={e => setAnnee(+e.target.value)}>
                   {ANNEES.map(a => <option key={a} value={a}>{a}</option>)}
                 </select>
-                <button className="btn btn-warning btn-sm d-flex align-items-center gap-1 text-white" onClick={() => setShowForm(v => !v)}>
+                <button className="btn btn-warning btn-sm d-flex align-items-center gap-1 text-white" onClick={openModal}>
                   <BsPlus size={16} /> Ajouter
                 </button>
               </div>
             </div>
-
-            {showForm && (
-              <div className="card-pro mb-3">
-                <form onSubmit={handleAdd}>
-                  <div className="row g-3 align-items-end">
-                    <div className="col-sm-5">
-                      <label className="form-label">Source du casuel *</label>
-                      <input type="text" className="form-control form-control-sm" value={form.nom}
-                        onChange={e => setForm({ ...form, nom: e.target.value })}
-                        placeholder="Ex: Bonus, Vente, Cadeau…" autoFocus />
-                    </div>
-                    <div className="col-sm-4">
-                      <label className="form-label">Montant (Ar) *</label>
-                      <input type="number" className="form-control form-control-sm" value={form.montant}
-                        onChange={e => setForm({ ...form, montant: e.target.value })} min={1} placeholder="0" />
-                    </div>
-                    <div className="col-sm-3 d-flex gap-2">
-                      <button type="submit" className="btn btn-warning btn-sm w-100 text-white" disabled={saving}>
-                        {saving ? "…" : "Enregistrer"}
-                      </button>
-                      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowForm(false)}>✕</button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            )}
 
             {loading ? <SkLocataires /> : (
               <div className="card-pro p-0">
@@ -122,7 +98,7 @@ export default function FinanceCasuel() {
                 {casuel.length === 0 ? (
                   <div className="text-center py-5 text-muted">
                     <p className="mb-2">Aucun casuel pour ce mois</p>
-                    <button className="btn btn-sm btn-warning text-white" onClick={() => setShowForm(true)}><BsPlus /> Ajouter</button>
+                    <button className="btn btn-sm btn-warning text-white" onClick={openModal}><BsPlus /> Ajouter</button>
                   </div>
                 ) : (
                   <div className="table-responsive">
@@ -161,6 +137,38 @@ export default function FinanceCasuel() {
           </main>
         </div>
       </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content-pro" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header-pro">
+              <h6><BsStarFill className="me-2" />Nouveau casuel — {MOIS_LABELS[mois]} {annee}</h6>
+              <button className="btn-close" onClick={() => setShowModal(false)} />
+            </div>
+            <form onSubmit={handleAdd} className="p-4">
+              <div className="row g-3">
+                <div className="col-12">
+                  <label className="form-label">Source *</label>
+                  <input type="text" className="form-control form-control-sm" value={form.nom}
+                    onChange={e => setForm({ ...form, nom: e.target.value })}
+                    placeholder="Ex: Bonus, Vente, Cadeau…" autoFocus />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">Montant (Ar) *</label>
+                  <input type="number" className="form-control form-control-sm" value={form.montant}
+                    onChange={e => setForm({ ...form, montant: e.target.value })} min={1} placeholder="0" />
+                </div>
+              </div>
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-warning btn-sm text-white" disabled={saving}>
+                  {saving ? "Enregistrement..." : "Ajouter"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Template>
   );
 }
