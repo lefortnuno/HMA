@@ -16,6 +16,8 @@ import {
   BsCurrencyExchange,
   BsImages,
   BsFileEarmarkText,
+  BsCashStack,
+  BsStarFill,
 } from "react-icons/bs";
 
 function NavItem({ to, Icon, label, location, exact }) {
@@ -76,6 +78,14 @@ export default function Sidebar() {
 
         <div className="separator" />
 
+        <div className="sidebar-section-label">Finance Personnelle</div>
+        {nav("/finance/revenus/",  BsGraphUp,      "Revenus",       true)}
+        {nav("/finance/casuel/",   BsStarFill,     "Casuel",        true)}
+        {nav("/finance/charges/",  BsGraphDown,    "Charges Fixes", true)}
+        {nav("/finance/depenses/", BsCashStack,    "Dépenses",      true)}
+        {nav("/finance/bilan/",    BsClipboardData,"Bilan Mensuel", true)}
+
+        <div className="separator" />
         {/* <div className="sidebar-section-label">Vitrine</div>
         {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
 

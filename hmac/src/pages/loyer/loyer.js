@@ -19,6 +19,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import trofelLImg from "../../assets/images/trofel-l.png";
+import { SkLoyerRows } from "../../components/skeleton/skeleton";
 import "./loyer.css";
 
 const MOIS = [
@@ -443,14 +444,7 @@ export default function Loyer() {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr>
-                        <td
-                          colSpan={15}
-                          className="text-center py-4 text-muted"
-                        >
-                          Chargement...
-                        </td>
-                      </tr>
+                      <SkLoyerRows cols={15} />
                     ) : locataires.length === 0 ? (
                       <tr>
                         <td
@@ -484,6 +478,8 @@ export default function Loyer() {
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
                                 cursor: "pointer",
+                                width: "75px",
+                                maxWidth: "75px",
                               }}
                               title={`${loc.nom} ${loc.prenom}`}
                             >

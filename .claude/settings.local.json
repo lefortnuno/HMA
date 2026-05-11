@@ -17,7 +17,13 @@
       "Skill(update-config)",
       "Bash(python3 -c ' *)",
       "Bash(python -c ' *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(mysql *)",
+      "Bash(where mysql *)",
+      "Bash(where mysql.exe)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Bash(node *)"
     ]
   }
 }

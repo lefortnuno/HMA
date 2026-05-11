@@ -204,3 +204,54 @@ WHERE
     and '2024-08-17'
 ORDER BY
     idh DESC;
+
+-- ─── Module Finance (VOLA) ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS finance_revenus (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  userId      INT            NOT NULL DEFAULT 0,
+  nom         VARCHAR(64)    NOT NULL,
+  montant     DECIMAL(12,2)  NOT NULL DEFAULT 0,
+  mois        TINYINT        NOT NULL,
+  annee       SMALLINT       NOT NULL,
+  est_epargne TINYINT(1)     DEFAULT 0,
+  created_at  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS finance_charges (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  userId     INT           NOT NULL DEFAULT 0,
+  nom        VARCHAR(64)   NOT NULL,
+  montant    DECIMAL(12,2) NOT NULL DEFAULT 0,
+  mois       TINYINT       NOT NULL,
+  annee      SMALLINT      NOT NULL,
+  created_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS finance_depenses (
+  id             INT AUTO_INCREMENT PRIMARY KEY,
+  userId         INT           NOT NULL DEFAULT 0,
+  nom            VARCHAR(64)   NOT NULL,
+  montant        DECIMAL(12,2) NOT NULL,
+  date_depense   DATE          NOT NULL,
+  heure_depense  TIME          NOT NULL,
+  semaine        TINYINT       NOT NULL,
+  mois           TINYINT       NOT NULL,
+  annee          SMALLINT      NOT NULL,
+  created_at     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS finance_casuel (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  userId       INT           NOT NULL DEFAULT 0,
+  nom          VARCHAR(64)   NOT NULL,
+  montant      DECIMAL(12,2) NOT NULL DEFAULT 0,
+  date_casuel  DATE          NOT NULL,
+  mois         TINYINT       NOT NULL,
+  annee        SMALLINT      NOT NULL,
+  created_at   TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Migration : ajouter userId si les tables existent déjà sans cette colonne
+ALTER TABLE finance_revenus  ADD COLUMN IF NOT EXISTS userId INT NOT NULL DEFAULT 0;
+ALTER TABLE finance_charges  ADD COLUMN IF NOT EXISTS userId INT NOT NULL DEFAULT 0;
+ALTER TABLE finance_depenses ADD COLUMN IF NOT EXISTS userId INT NOT NULL DEFAULT 0;

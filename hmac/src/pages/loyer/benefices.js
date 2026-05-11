@@ -5,6 +5,7 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { BsClipboardData, BsGraphUp, BsGraphDown, BsCurrencyExchange, BsTrophyFill } from "react-icons/bs";
+import { SkBenefices } from "../../components/skeleton/skeleton";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -65,7 +66,7 @@ export default function Benefices() {
             </div>
 
             {loading ? (
-              <div className="text-center py-5 text-muted">Chargement...</div>
+              <SkBenefices />
             ) : (
               <>
                 {/* KPI cards */}

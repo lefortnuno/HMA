@@ -1,0 +1,60 @@
+/* ── Shimmer base ─────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position:  800px 0; }
+}
+
+.sk {
+  background: linear-gradient(90deg,
+    #e8f5e9 25%,
+    #f1faf2 50%,
+    #e8f5e9 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 6px;
+  display: block;
+}
+
+/* ── Size helpers ─────────────────────────────────────────── */
+.sk-h1  { height: 28px; }
+.sk-h2  { height: 18px; }
+.sk-h3  { height: 14px; }
+.sk-h4  { height: 10px; }
+.sk-btn { height: 32px; border-radius: 8px; }
+.sk-circle { border-radius: 50%; }
+.sk-badge  { height: 22px; border-radius: 12px; }
+
+/* ── Card container ───────────────────────────────────────── */
+.sk-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Table rows ───────────────────────────────────────────── */
+.sk-table-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sk-table-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Stat card ────────────────────────────────────────────── */
+.sk-stat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}

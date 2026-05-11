@@ -47,6 +47,13 @@ import Factures from "./pages/loyer/factures";
 import Depenses from "./pages/loyer/depenses";
 import Benefices from "./pages/loyer/benefices";
 
+// ─── Finance (VOLA) ───────────────────────────────────────────
+import FinanceRevenus  from "./pages/finance/revenus";
+import FinanceCasuel   from "./pages/finance/casuel";
+import FinanceCharges  from "./pages/finance/charges";
+import FinanceDepenses from "./pages/finance/depenses";
+import FinanceBilan    from "./pages/finance/bilan";
+
 // ─── Vitrine ──────────────────────────────────────────────────
 import Vitrine from "./pages/vitrine/vitrine";
 import DetailBien from "./pages/vitrine/detail.bien";
@@ -104,6 +111,13 @@ function App() {
           <Route path="loyer/factures/" element={<SignInProtection Cmp={Factures} />} />
           <Route path="loyer/depenses/" element={<SignInProtection Cmp={Depenses} />} />
           <Route path="loyer/benefices/" element={<SignInProtection Cmp={Benefices} />} />
+
+          {/* ── Finance (protégé) ── */}
+          <Route path="finance/revenus/"  element={<SignInProtection Cmp={FinanceRevenus}  />} />
+          <Route path="finance/casuel/"   element={<SignInProtection Cmp={FinanceCasuel}   />} />
+          <Route path="finance/charges/"  element={<SignInProtection Cmp={FinanceCharges}  />} />
+          <Route path="finance/depenses/" element={<SignInProtection Cmp={FinanceDepenses} />} />
+          <Route path="finance/bilan/"    element={<SignInProtection Cmp={FinanceBilan}    />} />
 
           {/* ── Vitrine (public) ── */}
           <Route path="vitrine/" element={<Vitrine />} />

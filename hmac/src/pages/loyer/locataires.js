@@ -15,6 +15,7 @@ import {
   BsChatDots,
   BsWhatsapp,
 } from "react-icons/bs";
+import { SkLocataires } from "../../components/skeleton/skeleton";
 import "./loyer.css";
 
 const LOYER_RDC = 150000;
@@ -343,7 +344,7 @@ export default function Locataires() {
             </div>
 
             {loading ? (
-              <div className="text-center py-5 text-muted">Chargement...</div>
+              <SkLocataires />
             ) : locataires.length === 0 ? (
               <div className="card-pro text-center py-5">
                 <p className="text-muted mb-3">Aucun locataire enregistré.</p>
