@@ -7,9 +7,24 @@ import {
   BsHouseDoor,
   BsSearch,
   BsWhatsapp,
+  BsGithub,
+  BsFacebook,
+  BsLinkedin,
+  BsEnvelope,
 } from "react-icons/bs";
 import "./vitrine.css";
 import hma from "../../assets/images/hma256.png";
+
+const API_ORIGIN =
+  (process.env.REACT_APP_OFFLINE_API_HEAD || "") +
+  (process.env.REACT_APP_OFFLINE_API_IP_ADRESS || "") +
+  (process.env.REACT_APP_OFFLINE_API_PORT || "");
+
+function imgSrc(p) {
+  if (!p) return "";
+  if (p.startsWith("http")) return p;
+  return API_ORIGIN + p;
+}
 
 export default function Vitrine() {
   const [biens, setBiens] = useState([]);
@@ -130,12 +145,23 @@ export default function Vitrine() {
 
       {/* Footer */}
       <footer className="vitrine-footer">
-        <p className="mb-1">
-          <strong style={{ color: "#f1f5f9" }}>HMA Immobilier</strong> — Madagascar
-        </p>
-        <p className="mb-0">
-          &copy; {new Date().getFullYear()} — Tous droits réservés
-        </p>
+        <span className="vitrine-footer-copy">
+          © {new Date().getFullYear()} <strong>HMA Immobilier</strong> — Madagascar
+        </span>
+        <div className="vitrine-footer-links">
+          <a href="https://github.com/lefortnuno" target="_blank" rel="noopener noreferrer" title="GitHub">
+            <BsGithub />
+          </a>
+          <a href="https://www.facebook.com/tendo.lelouch.9/" target="_blank" rel="noopener noreferrer" title="Facebook">
+            <BsFacebook />
+          </a>
+          <a href="https://www.linkedin.com/in/trofel-nuno-6bba76305/" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+            <BsLinkedin />
+          </a>
+          <a href="mailto:trofelnuno@gmail.com" title="Email">
+            <BsEnvelope />
+          </a>
+        </div>
       </footer>
     </div>
   );
@@ -145,7 +171,7 @@ function BienCard({ bien }) {
   return (
     <Link to={`/vitrine/bien/${bien.id}`} className="bien-card">
       {bien.photos?.[0] ? (
-        <img src={bien.photos[0]} alt={bien.titre} className="bien-card-img" />
+        <img src={imgSrc(bien.photos[0])} alt={bien.titre} className="bien-card-img" />
       ) : (
         <div className="bien-card-img-placeholder">
           {bien.type === "VILLA" ? "🏡" : "🏠"}

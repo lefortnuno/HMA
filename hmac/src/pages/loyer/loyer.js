@@ -69,14 +69,17 @@ export default function Loyer() {
   const [annee, setAnnee] = useState(new Date().getFullYear());
   const [locataires, setLocataires] = useState([]);
   const [paiements, setPaiements] = useState({});
+  const [jiramaMap, setJiramaMap] = useState({}); // jiramaMap[locId][mois] = montantCalculé
   const [loading, setLoading] = useState(true);
   const [modalCell, setModalCell] = useState(null);
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchLocataires(), fetchPaiements()]).finally(() =>
-      setLoading(false),
-    );
+    Promise.all([
+      fetchLocataires(),
+      fetchPaiements(),
+      fetchJiramaMap(),
+    ]).finally(() => setLoading(false));
   }, [annee]);
 
   function fetchLocataires() {
@@ -98,6 +101,25 @@ export default function Loyer() {
         setPaiements(map);
       })
       .catch(() => setPaiements({}));
+  }
+
+  // Récupère toutes les factures JIRAMA de l'année et construit
+  // une map [locataireId][mois] = montantJIRAMA calculé.
+  // Utilisée pour pré-remplir le champ JIRAMA dans la modal de paiement.
+  function fetchJiramaMap() {
+    return axios
+      .get(`loyer/factures?annee=${annee}`, u_info.opts)
+      .then((r) => {
+        const map = {};
+        (r.data || []).forEach((f) => {
+          (f.consommations || []).forEach((c) => {
+            if (!map[c.locataireId]) map[c.locataireId] = {};
+            map[c.locataireId][f.mois] = c.montantJIRAMA || 0;
+          });
+        });
+        setJiramaMap(map);
+      })
+      .catch(() => setJiramaMap({}));
   }
 
   function getCellData(locataireId, mois) {
@@ -524,19 +546,21 @@ export default function Loyer() {
           }}
           u_info={u_info}
           paiements={paiements}
+          jiramaCalcule={jiramaMap[modalCell.loc.id]?.[modalCell.mois] || 0}
         />
       )}
     </Template>
   );
 }
 
-function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
+function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule = 0 }) {
   const moisNom = MOIS[cell.mois - 1];
   const moisNomFull = MOIS_FULL[cell.mois - 1];
   const [form, setForm] = useState({
     statut: cell.existing?.statut || "PAYE",
     montantLoyer: cell.existing?.montantLoyer ?? cell.loc?.loyer ?? 0,
-    montantJIRAMA: cell.existing?.montantJIRAMA ?? 0,
+    // Pré-remplit avec le montant calculé dans Factures JIRAMA si pas de paiement existant
+    montantJIRAMA: cell.existing?.montantJIRAMA ?? jiramaCalcule ?? 0,
     datePaiement: cell.existing?.datePaiement
       ? cell.existing.datePaiement.split("T")[0]
       : new Date().toISOString().split("T")[0],
@@ -900,7 +924,30 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
               />
             </div>
             <div className="col">
-              <label className="form-label small mb-1">JIRAMA (Ar)</label>
+              <label className="form-label small mb-1 d-flex align-items-center justify-content-between gap-1">
+                <span>JIRAMA (Ar)</span>
+                {jiramaCalcule > 0 && (
+                  <button
+                    type="button"
+                    title="Utiliser le montant calculé dans Factures JIRAMA"
+                    onClick={() =>
+                      setForm({ ...form, montantJIRAMA: jiramaCalcule })
+                    }
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      fontSize: "0.7rem",
+                      color: "#2563eb",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    ↻ {jiramaCalcule.toLocaleString()} Ar
+                  </button>
+                )}
+              </label>
               <input
                 type="number"
                 className="form-control form-control-sm"
@@ -920,6 +967,14 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
                   setForm({ ...form, montantJIRAMA: +e.target.value })
                 }
               />
+              {jiramaCalcule === 0 && form.statut !== "IMPAYE" && (
+                <small className="text-muted" style={{ fontSize: "0.7rem" }}>
+                  Aucune facture JIRAMA saisie pour {moisNom} —{" "}
+                  <a href="/loyer/factures/" style={{ color: "#2563eb" }}>
+                    saisir
+                  </a>
+                </small>
+              )}
             </div>
           </div>
           <div className="mb-3">
