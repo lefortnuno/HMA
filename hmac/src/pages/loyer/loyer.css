@@ -98,8 +98,8 @@
 }
 
 .cell-partiel {
-  background: #fef9c3;
-  color: #ca8a04;
+  background: #fde047;
+  color: #713f12;
   border-radius: 6px;
   padding: 3px 7px;
   font-size: 0.68rem;
@@ -144,6 +144,37 @@
   font-size: 0.72rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* ─── Rotation visuelle 90° (ofatrano.js, mobile uniquement) ─ */
+/* Desktop : pas de rotation, mise en page normale */
+.tableau-rot90-outer,
+.tableau-rot90-inner {
+  width: 100%;
+}
+
+/* Mobile : tout le contenu pivote de 90° vers la droite */
+@media (max-width: 768px) {
+  .tableau-rot90-outer {
+    position: relative;
+    width: 100%;
+    min-height: 1150px;
+    overflow: auto;
+    padding: 24px 0;
+  }
+
+  .tableau-rot90-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+  }
+
+  .tableau-rot90-inner .tableau-loyer {
+    overflow: visible;
+  }
 }
 
 /* ─── Légende ─────────────────────────────────────────────── */

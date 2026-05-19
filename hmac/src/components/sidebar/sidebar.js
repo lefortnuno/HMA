@@ -5,6 +5,7 @@ import "./sidebar.css";
 
 import {
   BsHouse,
+  BsCashCoin,
   BsPeople,
   BsGraphUp,
   BsClipboardData,
@@ -31,7 +32,7 @@ function NavItem({ to, Icon, label, location, exact }) {
 }
 
 export default function Sidebar() {
-  const u_info   = GetUserData();
+  const u_info = GetUserData();
   const location = useLocation();
 
   // Close mobile sidebar on route change
@@ -43,30 +44,41 @@ export default function Sidebar() {
   }, [location.pathname]);
 
   const nav = (to, Icon, label, exact = true) => (
-    <NavItem key={to} to={to} Icon={Icon} label={label} location={location} exact={exact} />
+    <NavItem
+      key={to}
+      to={to}
+      Icon={Icon}
+      label={label}
+      location={location}
+      exact={exact}
+    />
   );
 
   return (
-    <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block sidebar collapse">
+    <nav
+      id="sidebarMenu"
+      className="col-md-3 col-lg-2 d-md-block sidebar collapse"
+    >
       <ul>
         <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
+        {nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
 
         <div className="separator" />
 
         <div className="sidebar-section-label">Immobilier</div>
-        {nav("/loyer/",            BsBuilding,      "Tableau Loyer",    true)}
-        {nav("/loyer/locataires/", BsPeople,         "Locataires",       true)}
-        {nav("/loyer/factures/",   BsFileEarmarkText,"Factures JIRAMA",  true)}
-        {nav("/loyer/depenses/",   BsCurrencyExchange,"Dépenses Immo",   true)}
-        {nav("/loyer/benefices/",  BsClipboardData,  "Bénéfices",        true)}
+        {nav("/loyer/", BsBuilding, "Tableau Loyer", true)}
+        {nav("/loyer/locataires/", BsPeople, "Locataires", true)}
+        {nav("/loyer/factures/", BsFileEarmarkText, "Factures JIRAMA", true)}
+        {nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}
+        {nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
 
         <div className="separator" />
 
         <div className="sidebar-section-label">Finance Personnelle</div>
-        {nav("/finance/revenus/", BsGraphUp,      "Revenus & Charges", true)}
-        {nav("/finance/casuel/",  BsStarFill,     "Casuel & Dépenses", true)}
-        {nav("/finance/bilan/",   BsClipboardData,"Bilan Mensuel",     true)}
+        {nav("/finance/revenus/", BsGraphUp, "Revenus & Charges", true)}
+        {nav("/finance/casuel/", BsStarFill, "Casuel & Dépenses", true)}
+        {nav("/finance/bilan/", BsClipboardData, "Bilan Mensuel", true)}
 
         <div className="separator" />
 
@@ -75,7 +87,8 @@ export default function Sidebar() {
 
         <div className="separator" />
 
-        {u_info.u_karazana == 1 && nav("/users/", BsPeople, "Utilisateurs", true)}
+        {u_info.u_karazana == 1 &&
+          nav("/users/", BsPeople, "Utilisateurs", true)}
         {nav("/about/", BsInfoCircle, "À propos", true)}
       </ul>
     </nav>
