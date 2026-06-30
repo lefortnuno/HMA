@@ -1,0 +1,26 @@
+name: Keep Render Alive
+
+# Empeche le backend Render (plan gratuit) de s'endormir.
+# Render coupe le service apres 15 min sans requete -> on ping toutes les 10 min.
+
+on:
+  schedule:
+    # Toutes les 10 min (marge de securite avant les 15 min de Render).
+    # Note: le cron GitHub peut etre retarde de quelques minutes sous charge.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # permet de lancer le ping manuellement depuis l'onglet Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend /ping
+        run: |
+          echo "Ping de $TARGET_URL a $(date -u)"
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$TARGET_URL")
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::warning::Reponse inattendue ($code) - le serveur etait peut-etre en train de redemarrer."
+          fi
+        env:
+          TARGET_URL: https://hmaos.onrender.com/ping

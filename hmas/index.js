@@ -32,6 +32,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Route de "keep-alive" : reponse instantanee, aucune requete DB.
+// Utilisee par le cron GitHub Actions pour empecher Render de s'endormir.
+app.get("/ping", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 app.use("/api/utilisateur", utilisateurRoute);
 app.use("/api/service", serviceRoute);
 app.use("/api/histo", histoRoute);
