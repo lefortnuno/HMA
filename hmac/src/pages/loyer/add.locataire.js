@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
@@ -26,18 +26,38 @@ export default function AddLocataire() {
     actif: true,
   });
   const [saving, setSaving] = useState(false);
+  const [locataires, setLocataires] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("loyer/locataires", u_info.opts)
+      .then((r) => {
+        const list = r.data || [];
+        setLocataires(list);
+        // Pré-règle sur un étage/chambre réellement libre.
+        const freeOf = (etage) => {
+          const occ = new Set(list.filter((l) => l.actif).map((l) => `${l.chambre}|${l.etage}`));
+          return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter((c) => !occ.has(`${c}|${etage}`));
+        };
+        const etage = freeOf("RDC").length ? "RDC" : "1ER";
+        setForm((f) => ({ ...f, etage, chambre: freeOf(etage)[0] || "" }));
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loyer = form.etage === "RDC" ? 150000 : 200000;
-  const chambres = form.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER;
+
+  function freeChambresFor(etage) {
+    const occ = new Set(locataires.filter((l) => l.actif).map((l) => `${l.chambre}|${l.etage}`));
+    return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter((c) => !occ.has(`${c}|${etage}`));
+  }
+  const chambres = freeChambresFor(form.etage);
 
   function handleChange(e) {
     const { name, value } = e.target;
     if (name === "etage") {
-      setForm((f) => ({
-        ...f,
-        etage: value,
-        chambre: value === "RDC" ? "1" : "I",
-      }));
+      setForm((f) => ({ ...f, etage: value, chambre: freeChambresFor(value)[0] || "" }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -53,7 +73,13 @@ export default function AddLocataire() {
         toast.success("Locataire ajouté !");
         navigate("/loyer/locataires/");
       })
-      .catch(() => toast.error("Erreur lors de l'ajout"))
+      .catch((err) =>
+        toast.error(
+          err.response?.status === 409
+            ? err.response.data.message || "Chambre déjà occupée"
+            : "Erreur lors de l'ajout"
+        )
+      )
       .finally(() => setSaving(false));
   }
 
@@ -121,10 +147,15 @@ export default function AddLocataire() {
                       className="form-select"
                       value={form.chambre}
                       onChange={handleChange}
+                      disabled={chambres.length === 0}
                     >
-                      {chambres.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
+                      {chambres.length === 0 ? (
+                        <option value="">Aucune chambre libre</option>
+                      ) : (
+                        chambres.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))
+                      )}
                     </select>
                   </div>
 
@@ -186,7 +217,7 @@ export default function AddLocataire() {
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={saving}
+                      disabled={saving || !form.chambre}
                     >
                       {saving ? "Enregistrement..." : "Ajouter le locataire"}
                     </button>

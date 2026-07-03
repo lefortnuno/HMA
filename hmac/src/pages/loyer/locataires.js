@@ -132,6 +132,16 @@ export default function Locataires() {
     fetchLocataires();
   }, []);
 
+  // Liste des chambres LIBRES d'un étage (aucun locataire actif dedans).
+  function freeChambresFor(etage) {
+    const occ = new Set(
+      locataires.filter((l) => l.actif).map((l) => `${l.chambre}|${l.etage}`)
+    );
+    return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter(
+      (c) => !occ.has(`${c}|${etage}`)
+    );
+  }
+
   function fetchLocataires() {
     setLoading(true);
     axios
@@ -155,7 +165,8 @@ export default function Locataires() {
   function handleAddChange(e) {
     const { name, value } = e.target;
     if (name === "etage") {
-      setAddForm((f) => ({ ...f, etage: value, chambre: value === "RDC" ? "1" : "I" }));
+      const free = freeChambresFor(value);
+      setAddForm((f) => ({ ...f, etage: value, chambre: free[0] || "" }));
     } else {
       setAddForm((f) => ({ ...f, [name]: value }));
     }
@@ -174,13 +185,22 @@ export default function Locataires() {
         setShowAddModal(false);
         fetchLocataires();
       })
-      .catch(() => toast.error("Erreur lors de l'ajout"))
+      .catch((err) =>
+        toast.error(
+          err.response?.status === 409
+            ? err.response.data.message || "Chambre déjà occupée"
+            : "Erreur lors de l'ajout"
+        )
+      )
       .finally(() => setSaving(false));
   }
 
   function handleAjouter() {
+    // Ouvre le formulaire pré-réglé sur un étage qui a au moins une chambre libre.
+    const etage = freeChambresFor("RDC").length ? "RDC" : "1ER";
+    const free = freeChambresFor(etage);
     if (window.innerWidth >= 768) {
-      setAddForm(initForm());
+      setAddForm({ ...initForm(), etage, chambre: free[0] || "" });
       setShowAddModal(true);
     } else {
       navigate("/loyer/locataires/new");
@@ -209,10 +229,19 @@ export default function Locataires() {
   function handleEditChange(e) {
     const { name, value, type, checked } = e.target;
     if (name === "etage") {
-      setEditForm((f) => ({ ...f, etage: value, chambre: value === "RDC" ? "1" : "I" }));
+      const free = freeChambresFor(value);
+      setEditForm((f) => ({ ...f, etage: value, chambre: free[0] || "" }));
     } else {
       setEditForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
     }
+  }
+
+  // Chambres proposables en édition : les libres + celle actuellement occupée par ce locataire.
+  function editChambreOptions() {
+    const free = freeChambresFor(editForm.etage);
+    const current = editTarget && editTarget.etage === editForm.etage ? editTarget.chambre : null;
+    const all = current && !free.includes(current) ? [current, ...free] : free;
+    return (editForm.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter((c) => all.includes(c));
   }
 
   function handleEditSubmit(e) {
@@ -227,13 +256,19 @@ export default function Locataires() {
         setShowEditModal(false);
         fetchLocataires();
       })
-      .catch(() => toast.error("Erreur lors de la modification"))
+      .catch((err) =>
+        toast.error(
+          err.response?.status === 409
+            ? err.response.data.message || "Chambre déjà occupée"
+            : "Erreur lors de la modification"
+        )
+      )
       .finally(() => setEditSaving(false));
   }
 
   const rdcList = locataires.filter((l) => l.etage === "RDC");
   const etageList = locataires.filter((l) => l.etage === "1ER");
-  const chambres = addForm.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER;
+  const chambres = freeChambresFor(addForm.etage); // uniquement les chambres libres
   const loyer = addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
 
   function LocataireTable({ list, label }) {
@@ -435,7 +470,7 @@ export default function Locataires() {
                   <label className="form-label">Chambre</label>
                   <select name="chambre" className="form-select form-select-sm"
                     value={editForm.chambre} onChange={handleEditChange}>
-                    {(editForm.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).map((c) => (
+                    {editChambreOptions().map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
@@ -519,8 +554,13 @@ export default function Locataires() {
                 <div className="col-sm-6">
                   <label className="form-label">Chambre</label>
                   <select name="chambre" className="form-select form-select-sm"
-                    value={addForm.chambre} onChange={handleAddChange}>
-                    {chambres.map((c) => <option key={c} value={c}>{c}</option>)}
+                    value={addForm.chambre} onChange={handleAddChange}
+                    disabled={chambres.length === 0}>
+                    {chambres.length === 0 ? (
+                      <option value="">Aucune chambre libre</option>
+                    ) : (
+                      chambres.map((c) => <option key={c} value={c}>{c}</option>)
+                    )}
                   </select>
                 </div>
                 <div className="col-12">
@@ -551,7 +591,7 @@ export default function Locataires() {
                 <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowAddModal(false)}>
                   Annuler
                 </button>
-                <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={saving || !addForm.chambre}>
                   {saving ? "Enregistrement..." : "Ajouter le locataire"}
                 </button>
               </div>

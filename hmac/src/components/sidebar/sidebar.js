@@ -11,6 +11,7 @@ import {
   BsClipboardData,
   BsCurrencyExchange,
   BsBuilding,
+  BsDoorOpen,
   BsInfoCircle,
   BsFileEarmarkText,
   BsImages,
@@ -68,6 +69,7 @@ export default function Sidebar() {
 
         <div className="sidebar-section-label">Immobilier</div>
         {nav("/loyer/", BsBuilding, "Tableau Loyer", true)}
+        {nav("/loyer/chambres/", BsDoorOpen, "Chambres", true)}
         {nav("/loyer/locataires/", BsPeople, "Locataires", true)}
         {nav("/loyer/factures/", BsFileEarmarkText, "Factures JIRAMA", true)}
         {nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}

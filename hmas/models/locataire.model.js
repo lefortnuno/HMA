@@ -17,6 +17,22 @@ Locataire.getById = (id, result) => {
   });
 };
 
+// Renvoie le locataire ACTIF occupant deja une chambre/etage (hors excludeId).
+// Sert a interdire 2 locataires actifs dans la meme chambre.
+Locataire.findActiveInChambre = (chambre, etage, excludeId, result) => {
+  let sql =
+    "SELECT id, nom FROM locataire WHERE chambre = ? AND etage = ? AND actif = 1";
+  const params = [chambre, etage];
+  if (excludeId) {
+    sql += " AND id <> ?";
+    params.push(excludeId);
+  }
+  db.query(sql, params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res[0] || null);
+  });
+};
+
 Locataire.create = (data, result) => {
   db.query("INSERT INTO locataire SET ?", data, (err, res) => {
     if (err) result(err, null);

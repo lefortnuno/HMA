@@ -15,19 +15,52 @@ module.exports.getAllLocataires = (req, res) => {
 module.exports.createLocataire = (req, res) => {
   const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif } = req.body;
   const data = { nom, prenom, chambre, etage, loyer, tel, email, dateEntree: dateEntree || null, actif: actif ? 1 : 0 };
-  Locataire.create(data, (err, result) => {
-    if (err) res.status(500).send(err);
-    else res.send(result);
-  });
+
+  const insert = () =>
+    Locataire.create(data, (err, result) => {
+      if (err) res.status(500).send(err);
+      else res.send(result);
+    });
+
+  // Une chambre occupee (locataire actif) ne peut pas recevoir un 2e actif.
+  if (data.actif) {
+    Locataire.findActiveInChambre(chambre, etage, null, (err, occupant) => {
+      if (err) return res.status(500).send(err);
+      if (occupant)
+        return res.status(409).send({
+          success: false,
+          message: `La chambre ${chambre} (${etage}) est déjà occupée par ${occupant.nom}.`,
+        });
+      insert();
+    });
+  } else {
+    insert();
+  }
 };
 
 module.exports.updateLocataire = (req, res) => {
   const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif } = req.body;
   const data = { nom, prenom, chambre, etage, loyer, tel, email, dateEntree: dateEntree || null, actif: actif ? 1 : 0 };
-  Locataire.update(req.params.id, data, (err, result) => {
-    if (err) res.status(500).send(err);
-    else res.send(result);
-  });
+
+  const doUpdate = () =>
+    Locataire.update(req.params.id, data, (err, result) => {
+      if (err) res.status(500).send(err);
+      else res.send(result);
+    });
+
+  if (data.actif) {
+    Locataire.findActiveInChambre(chambre, etage, req.params.id, (err, occupant) => {
+      if (err) return res.status(500).send(err);
+      if (occupant)
+        return res.status(409).send({
+          success: false,
+          message: `La chambre ${chambre} (${etage}) est déjà occupée par ${occupant.nom}.`,
+        });
+      doUpdate();
+    });
+  } else {
+    doUpdate();
+  }
 };
 
 module.exports.deleteLocataire = (req, res) => {

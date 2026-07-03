@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
@@ -32,18 +32,35 @@ export default function EditLocataire() {
     actif: existing.actif !== undefined ? existing.actif : true,
   });
   const [saving, setSaving] = useState(false);
+  const [locataires, setLocataires] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("loyer/locataires", u_info.opts)
+      .then((r) => setLocataires(r.data || []))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loyer = form.etage === "RDC" ? 150000 : 200000;
-  const chambres = form.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER;
+
+  // Chambres libres de l'étage + celle actuellement occupée par ce locataire.
+  function chambreOptions(etage) {
+    const occ = new Set(
+      locataires
+        .filter((l) => l.actif && String(l.id) !== String(id))
+        .map((l) => `${l.chambre}|${l.etage}`)
+    );
+    return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter(
+      (c) => !occ.has(`${c}|${etage}`)
+    );
+  }
+  const chambres = chambreOptions(form.etage);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     if (name === "etage") {
-      setForm((f) => ({
-        ...f,
-        etage: value,
-        chambre: value === "RDC" ? "1" : "I",
-      }));
+      setForm((f) => ({ ...f, etage: value, chambre: chambreOptions(value)[0] || "" }));
     } else {
       setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
     }
@@ -59,7 +76,13 @@ export default function EditLocataire() {
         toast.success("Locataire modifié !");
         navigate("/loyer/locataires/");
       })
-      .catch(() => toast.error("Erreur lors de la modification"))
+      .catch((err) =>
+        toast.error(
+          err.response?.status === 409
+            ? err.response.data.message || "Chambre déjà occupée"
+            : "Erreur lors de la modification"
+        )
+      )
       .finally(() => setSaving(false));
   }
 
