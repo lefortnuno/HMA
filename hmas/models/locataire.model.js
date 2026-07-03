@@ -4,10 +4,17 @@ const db = require("../config/db");
 const Locataire = {};
 
 Locataire.getAll = (result) => {
-  db.query("SELECT * FROM locataire ORDER BY etage ASC, chambre ASC", (err, res) => {
-    if (err) result(err, null);
-    else result(null, res);
-  });
+  // Ordre "chambre" reel (1..10 puis I..X) et non alphabetique ("1","10","2"...).
+  const ordre =
+    "'1','2','3','4','5','6','7','8','9','10'," +
+    "'I','II','III','IV','V','VI','VII','VIII','IX','X'";
+  db.query(
+    `SELECT * FROM locataire ORDER BY etage ASC, FIELD(chambre, ${ordre})`,
+    (err, res) => {
+      if (err) result(err, null);
+      else result(null, res);
+    }
+  );
 };
 
 Locataire.getById = (id, result) => {
