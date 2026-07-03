@@ -7,12 +7,22 @@ import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { BsFileEarmarkText, BsLightningCharge, BsCheckCircle, BsExclamationTriangle } from "react-icons/bs";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 
 export default function Factures() {
   const u_info = GetUserData();
+  const apparts = useAppartements();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
+  const mono = bienId !== 0; // appart "loyer seul" : pas de JIRAMA
   const now = new Date();
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee, setAnnee] = useState(now.getFullYear());
@@ -24,13 +34,20 @@ export default function Factures() {
   const [factureId, setFactureId] = useState(null);
 
   useEffect(() => {
+    if (mono) return; // pas de JIRAMA pour un appart loyer seul
     fetchLocataires();
     fetchFacture();
-  }, [mois, annee]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mois, annee, bienId]);
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
+  }
 
   function fetchLocataires() {
     axios
-      .get("loyer/locataires", u_info.opts)
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => {
         const list = (r.data || []).filter((l) => l.actif);
         setLocataires(list);
@@ -47,7 +64,7 @@ export default function Factures() {
 
   function fetchFacture() {
     axios
-      .get(`loyer/factures?mois=${mois}&annee=${annee}`, u_info.opts)
+      .get(`loyer/factures?mois=${mois}&annee=${annee}&bienId=${bienId}`, u_info.opts)
       .then((r) => {
         const f = r.data?.[0];
         if (f) {
@@ -94,6 +111,7 @@ export default function Factures() {
     const data = {
       mois,
       annee,
+      bienId,
       prixUnitaire,
       montantTotal: montantFacture,
       consommations: locataires.map((l) => ({
@@ -132,10 +150,23 @@ export default function Factures() {
                   <BsFileEarmarkText /> Factures JIRAMA
                 </h1>
                 <p className="text-muted small mb-0">
-                  Saisie des consommations eau &amp; électricité
+                  {current.nom} · saisie des consommations eau &amp; électricité
                 </p>
               </div>
+              <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
             </div>
+
+            {mono ? (
+              <div className="card-pro text-center py-5">
+                <BsLightningCharge size={38} color="#f59e0b" className="mb-2" />
+                <h6 className="fw-bold">{current.nom} — loyer seul</h6>
+                <p className="text-muted mb-0">
+                  Cet appartement ne gère pas la JIRAMA : le locataire paie l'eau &amp;
+                  l'électricité lui-même (compteur personnel).
+                </p>
+              </div>
+            ) : (
+              <>
 
             {/* Sélection mois/année + paramètres JIRAMA */}
             <div className="card-pro mb-4">
@@ -307,6 +338,8 @@ export default function Factures() {
                 </button>
               </div>
             </form>
+              </>
+            )}
 
           </main>
         </div>

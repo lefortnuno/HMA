@@ -20,6 +20,12 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import trofelLImg from "../../assets/images/trofel-l.png";
 import { SkLoyerRows } from "../../components/skeleton/skeleton";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
 import "./loyer.css";
 
 const MOIS = [
@@ -66,6 +72,9 @@ async function imgToBase64(url) {
 
 export default function Loyer() {
   const u_info = GetUserData();
+  const apparts = useAppartements();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
   const [annee, setAnnee] = useState(new Date().getFullYear());
   const [locataires, setLocataires] = useState([]);
   const [paiements, setPaiements] = useState({});
@@ -80,11 +89,17 @@ export default function Loyer() {
       fetchPaiements(),
       fetchJiramaMap(),
     ]).finally(() => setLoading(false));
-  }, [annee]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [annee, bienId]);
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
+  }
 
   function fetchLocataires() {
     return axios
-      .get("loyer/locataires", u_info.opts)
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))
       .catch(() => setLocataires([]));
   }
@@ -108,7 +123,7 @@ export default function Loyer() {
   // Utilisée pour pré-remplir le champ JIRAMA dans la modal de paiement.
   function fetchJiramaMap() {
     return axios
-      .get(`loyer/factures?annee=${annee}`, u_info.opts)
+      .get(`loyer/factures?annee=${annee}&bienId=${bienId}`, u_info.opts)
       .then((r) => {
         const map = {};
         (r.data || []).forEach((f) => {
@@ -325,10 +340,11 @@ export default function Loyer() {
                   <BsBuilding /> Gestion des Loyers
                 </h1>
                 <p className="text-muted small mb-0">
-                  Suivi des paiements — {annee}
+                  {current.nom} · suivi des paiements — {annee}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
+                <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
                 <select
                   className="form-select form-select-sm"
                   style={{ width: "auto" }}

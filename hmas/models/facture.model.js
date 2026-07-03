@@ -3,7 +3,18 @@ const db = require("../config/db");
 
 const Facture = {};
 
-Facture.getByMoisAnnee = (mois, annee, result) => {
+// mois optionnel (si absent -> toute l'annee). bienId optionnel (defaut 0 = KINYA).
+Facture.getByMoisAnnee = (mois, annee, bienId, result) => {
+  let where = "f.annee = ?";
+  const params = [annee];
+  if (mois !== undefined && mois !== null && mois !== "") {
+    where += " AND f.mois = ?";
+    params.push(mois);
+  }
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    where += " AND f.bienId = ?";
+    params.push(Number(bienId));
+  }
   db.query(
     `SELECT f.*,
       (SELECT JSON_ARRAYAGG(JSON_OBJECT(
@@ -11,8 +22,8 @@ Facture.getByMoisAnnee = (mois, annee, result) => {
         'indexPrev', c.indexPrev, 'indexCurr', c.indexCurr,
         'consommation', c.consommation, 'montantJIRAMA', c.montantJIRAMA
       )) FROM consommation_locataire c WHERE c.factureId = f.id) AS consommations
-     FROM facture_jirama f WHERE f.mois = ? AND f.annee = ?`,
-    [mois, annee],
+     FROM facture_jirama f WHERE ${where}`,
+    params,
     (err, res) => {
       if (err) result(err, null);
       else {
@@ -27,10 +38,10 @@ Facture.getByMoisAnnee = (mois, annee, result) => {
 };
 
 Facture.create = (data, result) => {
-  const { mois, annee, prixUnitaire, montantTotal, dateFacture } = data;
+  const { mois, annee, prixUnitaire, montantTotal, dateFacture, bienId } = data;
   db.query(
-    "INSERT INTO facture_jirama (mois, annee, prixUnitaire, montantTotal, dateFacture) VALUES (?,?,?,?,?)",
-    [mois, annee, prixUnitaire, montantTotal || 0, dateFacture || null],
+    "INSERT INTO facture_jirama (mois, annee, prixUnitaire, montantTotal, dateFacture, bienId) VALUES (?,?,?,?,?,?)",
+    [mois, annee, prixUnitaire, montantTotal || 0, dateFacture || null, Number(bienId) || 0],
     (err, res) => {
       if (err) result(err, null);
       else result(null, { id: res.insertId, success: true });

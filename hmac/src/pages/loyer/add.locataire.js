@@ -7,14 +7,18 @@ import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import { BsPeople, BsArrowLeft } from "react-icons/bs";
+import { getSelectedBienId } from "../../components/appart/apart.select";
 import "./loyer.css";
 
 const CHAMBRES_RDC = ["1","2","3","4","5","6","7","8","9","10"];
 const CHAMBRES_1ER = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+const MONO_CHAMBRE = "Villa";
 
 export default function AddLocataire() {
   const u_info = GetUserData();
   const navigate = useNavigate();
+  const bienId = getSelectedBienId();
+  const mono = bienId !== 0;
   const [form, setForm] = useState({
     nom: "",
     prenom: "",
@@ -30,10 +34,15 @@ export default function AddLocataire() {
 
   useEffect(() => {
     axios
-      .get("loyer/locataires", u_info.opts)
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => {
         const list = r.data || [];
         setLocataires(list);
+        if (mono) {
+          const libre = !list.some((l) => l.actif);
+          setForm((f) => ({ ...f, etage: "RDC", chambre: libre ? MONO_CHAMBRE : "" }));
+          return;
+        }
         // Pré-règle sur un étage/chambre réellement libre.
         const freeOf = (etage) => {
           const occ = new Set(list.filter((l) => l.actif).map((l) => `${l.chambre}|${l.etage}`));
@@ -46,9 +55,10 @@ export default function AddLocataire() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loyer = form.etage === "RDC" ? 150000 : 200000;
+  const loyer = mono ? 200000 : form.etage === "RDC" ? 150000 : 200000;
 
   function freeChambresFor(etage) {
+    if (mono) return locataires.some((l) => l.actif) ? [] : [MONO_CHAMBRE];
     const occ = new Set(locataires.filter((l) => l.actif).map((l) => `${l.chambre}|${l.etage}`));
     return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter((c) => !occ.has(`${c}|${etage}`));
   }
@@ -68,7 +78,7 @@ export default function AddLocataire() {
     if (!form.nom.trim()) return toast.warning("Le nom est requis");
     setSaving(true);
     axios
-      .post("loyer/locataires", { ...form, loyer }, u_info.opts)
+      .post("loyer/locataires", { ...form, loyer, bienId }, u_info.opts)
       .then(() => {
         toast.success("Locataire ajouté !");
         navigate("/loyer/locataires/");

@@ -8,10 +8,17 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { BsBuilding, BsDoorOpen, BsDoorClosedFill, BsPlus, BsPencilSquare } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
 import "./loyer.css";
 
 const LOYER_RDC = 150000;
 const LOYER_1ER = 200000;
+const MONO_CHAMBRE = "Villa";
 const CHAMBRES_RDC = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const CHAMBRES_1ER = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
@@ -31,6 +38,11 @@ function initForm(etage, chambre) {
 export default function Chambres() {
   const u_info = GetUserData();
   const navigate = useNavigate();
+  const apparts = useAppartements();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
+  const mono = bienId !== 0;
+  const monoLoyer = current.prix || 200000;
   const [locataires, setLocataires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -39,15 +51,21 @@ export default function Chambres() {
 
   useEffect(() => {
     fetchLocataires();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bienId]);
 
   function fetchLocataires() {
     setLoading(true);
     axios
-      .get("loyer/locataires", u_info.opts)
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))
       .catch(() => setLocataires([]))
       .finally(() => setLoading(false));
+  }
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
   }
 
   // Map "chambre|etage" -> locataire actif qui l'occupe
@@ -71,9 +89,9 @@ export default function Chambres() {
     e.preventDefault();
     if (!form.nom.trim()) return toast.warning("Le nom est requis");
     setSaving(true);
-    const loyer = form.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
+    const loyer = mono ? monoLoyer : form.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
     axios
-      .post("loyer/locataires", { ...form, loyer }, u_info.opts)
+      .post("loyer/locataires", { ...form, loyer, bienId }, u_info.opts)
       .then(() => {
         toast.success(`Locataire attribué à la chambre ${form.chambre} !`);
         setShowAdd(false);
@@ -167,6 +185,52 @@ export default function Chambres() {
     );
   }
 
+  // ── Vue mono-unité (villa entière louée à 1 personne) ──
+  function MonoUnit() {
+    const occ = occupantOf(MONO_CHAMBRE, "RDC");
+    return (
+      <>
+        <div className="d-flex flex-wrap gap-2 mb-4">
+          <StatCard label="Unité" value={1} sub="villa entière" color="#0f172a" />
+          <StatCard label="Statut" value={occ ? "Occupée" : "Libre"} sub={`${monoLoyer.toLocaleString()} Ar/mois`} color={occ ? "#2563eb" : "#16a34a"} />
+        </div>
+        <div className="card-pro p-4" style={{ maxWidth: 460 }}>
+          <div
+            className="rounded-3 p-3 d-flex flex-column"
+            style={{
+              border: occ ? "1px solid #e2e8f0" : "1.5px dashed #86efac",
+              background: occ ? "#fff" : "#f0fdf4",
+              cursor: "pointer",
+            }}
+            onClick={() =>
+              occ
+                ? navigate(`/loyer/locataires/edit/${occ.id}`, { state: { loc: occ } })
+                : handleAttribuer("RDC", MONO_CHAMBRE)
+            }
+          >
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <span className="badge-1er">Villa entière</span>
+              {occ ? <BsDoorClosedFill color="#94a3b8" /> : <BsDoorOpen color="#22c55e" />}
+            </div>
+            {occ ? (
+              <>
+                <div className="fw-bold" style={{ fontSize: "1rem" }}>{occ.nom} {occ.prenom}</div>
+                {occ.tel && <div className="text-muted" style={{ fontSize: "0.82rem" }}>{occ.tel}</div>}
+                <div className="mt-2 d-flex align-items-center gap-1 text-primary" style={{ fontSize: "0.78rem" }}>
+                  <BsPencilSquare size={12} /> Modifier le locataire
+                </div>
+              </>
+            ) : (
+              <div className="d-flex align-items-center gap-1 fw-semibold" style={{ color: "#16a34a" }}>
+                <BsPlus size={18} /> Attribuer le locataire
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <Template>
       <Header />
@@ -177,16 +241,19 @@ export default function Chambres() {
             <div className="page-header">
               <div>
                 <h1 className="page-title">
-                  <BsBuilding /> Gestion des Chambres
+                  <BsBuilding /> {mono ? "Occupation" : "Gestion des Chambres"}
                 </h1>
                 <p className="text-muted small mb-0">
-                  Occupation en temps réel · chambres libres · attribution
+                  {current.nom} · occupation en temps réel · attribution
                 </p>
               </div>
+              <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
             </div>
 
             {loading ? (
               <SkLocataires />
+            ) : mono ? (
+              <MonoUnit />
             ) : (
               <>
                 {/* ── Récap occupation ── */}
@@ -211,14 +278,16 @@ export default function Chambres() {
             <div className="modal-header-pro">
               <h6>
                 <BsDoorOpen className="me-2" />
-                Attribuer la chambre {form.chambre} ({form.etage})
+                {mono ? `Attribuer ${current.nom} (Villa entière)` : `Attribuer la chambre ${form.chambre} (${form.etage})`}
               </h6>
               <button className="btn-close" onClick={() => setShowAdd(false)} />
             </div>
             <form onSubmit={handleSubmit} className="p-4">
               <div className="p-2 rounded-3 mb-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
                 <span className="fw-bold" style={{ color: "#16a34a", fontSize: "0.85rem" }}>
-                  Loyer : {(form.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre {form.chambre}
+                  {mono
+                    ? `Loyer : ${monoLoyer.toLocaleString()} Ar — ${current.nom} (Villa entière)`
+                    : `Loyer : ${(form.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre ${form.chambre}`}
                 </span>
               </div>
               <div className="row g-3">

@@ -18,6 +18,7 @@ export default function EditLocataire() {
   const location = useLocation();
   const { id } = useParams();
   const existing = location.state?.loc || {};
+  const bienId = existing.bienId !== undefined ? Number(existing.bienId) : 0;
 
   const [form, setForm] = useState({
     nom: existing.nom || "",
@@ -36,7 +37,7 @@ export default function EditLocataire() {
 
   useEffect(() => {
     axios
-      .get("loyer/locataires", u_info.opts)
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +72,7 @@ export default function EditLocataire() {
     if (!form.nom.trim()) return toast.warning("Le nom est requis");
     setSaving(true);
     axios
-      .put(`loyer/locataires/${id}`, { ...form, loyer }, u_info.opts)
+      .put(`loyer/locataires/${id}`, { ...form, loyer, bienId }, u_info.opts)
       .then(() => {
         toast.success("Locataire modifié !");
         navigate("/loyer/locataires/");

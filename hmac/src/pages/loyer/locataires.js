@@ -16,7 +16,15 @@ import {
   BsWhatsapp,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
 import "./loyer.css";
+
+const MONO_CHAMBRE = "Villa"; // slot unique d'un appart mono-locataire
 
 const LOYER_RDC = 150000;
 const LOYER_1ER = 200000;
@@ -116,6 +124,11 @@ function initForm() {
 export default function Locataires() {
   const u_info = GetUserData();
   const navigate = useNavigate();
+  const apparts = useAppartements();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
+  const mono = bienId !== 0; // appart mono-locataire (villa entiere)
+  const monoLoyer = current.prix || 200000;
   const [locataires, setLocataires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -130,13 +143,14 @@ export default function Locataires() {
 
   useEffect(() => {
     fetchLocataires();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bienId]);
 
-  // Liste des chambres LIBRES d'un étage (aucun locataire actif dedans).
+  // Liste des "slots" LIBRES. En mono : une seule unité "Villa".
   function freeChambresFor(etage) {
-    const occ = new Set(
-      locataires.filter((l) => l.actif).map((l) => `${l.chambre}|${l.etage}`)
-    );
+    const actifs = locataires.filter((l) => l.actif);
+    if (mono) return actifs.length ? [] : [MONO_CHAMBRE];
+    const occ = new Set(actifs.map((l) => `${l.chambre}|${l.etage}`));
     return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter(
       (c) => !occ.has(`${c}|${etage}`)
     );
@@ -145,10 +159,15 @@ export default function Locataires() {
   function fetchLocataires() {
     setLoading(true);
     axios
-      .get("loyer/locataires", u_info.opts)
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))
       .catch(() => setLocataires([]))
       .finally(() => setLoading(false));
+  }
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
   }
 
   function handleDelete(id) {
@@ -176,9 +195,9 @@ export default function Locataires() {
     e.preventDefault();
     if (!addForm.nom.trim()) return toast.warning("Le nom est requis");
     setSaving(true);
-    const loyer = addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
+    const loyer = mono ? monoLoyer : addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
     axios
-      .post("loyer/locataires", { ...addForm, loyer }, u_info.opts)
+      .post("loyer/locataires", { ...addForm, loyer, bienId }, u_info.opts)
       .then(() => {
         toast.success("Locataire ajouté !");
         setAddForm(initForm());
@@ -196,8 +215,8 @@ export default function Locataires() {
   }
 
   function handleAjouter() {
-    // Ouvre le formulaire pré-réglé sur un étage qui a au moins une chambre libre.
-    const etage = freeChambresFor("RDC").length ? "RDC" : "1ER";
+    // Ouvre le formulaire pré-réglé sur un slot libre (mono = unité "Villa").
+    const etage = mono ? "RDC" : freeChambresFor("RDC").length ? "RDC" : "1ER";
     const free = freeChambresFor(etage);
     if (window.innerWidth >= 768) {
       setAddForm({ ...initForm(), etage, chambre: free[0] || "" });
@@ -247,10 +266,10 @@ export default function Locataires() {
   function handleEditSubmit(e) {
     e.preventDefault();
     if (!editForm.nom.trim()) return toast.warning("Le nom est requis");
-    const loyer = editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
+    const loyer = mono ? monoLoyer : editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
     setEditSaving(true);
     axios
-      .put(`loyer/locataires/${editTarget.id}`, { ...editForm, loyer }, u_info.opts)
+      .put(`loyer/locataires/${editTarget.id}`, { ...editForm, loyer, bienId }, u_info.opts)
       .then(() => {
         toast.success("Locataire modifié !");
         setShowEditModal(false);
@@ -370,23 +389,28 @@ export default function Locataires() {
                   {locataires.length} locataire(s) enregistré(s)
                 </p>
               </div>
-              <button
-                className="btn btn-primary d-flex align-items-center gap-1"
-                onClick={handleAjouter}
-              >
-                <BsPlus size={18} /> Ajouter
-              </button>
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
+                <button
+                  className="btn btn-primary d-flex align-items-center gap-1"
+                  onClick={handleAjouter}
+                >
+                  <BsPlus size={18} /> Ajouter
+                </button>
+              </div>
             </div>
 
             {loading ? (
               <SkLocataires />
             ) : locataires.length === 0 ? (
               <div className="card-pro text-center py-5">
-                <p className="text-muted mb-3">Aucun locataire enregistré.</p>
+                <p className="text-muted mb-3">Aucun locataire enregistré pour {current.nom}.</p>
                 <button className="btn btn-primary" onClick={handleAjouter}>
                   <BsPlus /> Ajouter le premier locataire
                 </button>
               </div>
+            ) : mono ? (
+              <LocataireTable list={locataires} label={`${current.nom} — Villa entière (${monoLoyer.toLocaleString()} Ar/mois)`} />
             ) : (
               <>
                 <LocataireTable
@@ -458,28 +482,34 @@ export default function Locataires() {
                   <input type="text" name="prenom" className="form-control form-control-sm"
                     value={editForm.prenom} onChange={handleEditChange} placeholder="Prénom" />
                 </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Étage</label>
-                  <select name="etage" className="form-select form-select-sm"
-                    value={editForm.etage} onChange={handleEditChange}>
-                    <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
-                    <option value="1ER">1er Étage (200 000 Ar)</option>
-                  </select>
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Chambre</label>
-                  <select name="chambre" className="form-select form-select-sm"
-                    value={editForm.chambre} onChange={handleEditChange}>
-                    {editChambreOptions().map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
+                {!mono && (
+                  <>
+                    <div className="col-sm-6">
+                      <label className="form-label">Étage</label>
+                      <select name="etage" className="form-select form-select-sm"
+                        value={editForm.etage} onChange={handleEditChange}>
+                        <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
+                        <option value="1ER">1er Étage (200 000 Ar)</option>
+                      </select>
+                    </div>
+                    <div className="col-sm-6">
+                      <label className="form-label">Chambre</label>
+                      <select name="chambre" className="form-select form-select-sm"
+                        value={editForm.chambre} onChange={handleEditChange}>
+                        {editChambreOptions().map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
                 <div className="col-12">
                   <div className="p-2 rounded-3 d-flex align-items-center gap-2"
                     style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
                     <span className="fw-bold text-primary" style={{ fontSize: "0.85rem" }}>
-                      Loyer : {(editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre {editForm.chambre} ({editForm.etage})
+                      {mono
+                        ? `Loyer : ${monoLoyer.toLocaleString()} Ar — ${current.nom} (Villa entière)`
+                        : `Loyer : ${(editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre ${editForm.chambre} (${editForm.etage})`}
                     </span>
                   </div>
                 </div>
@@ -543,31 +573,37 @@ export default function Locataires() {
                   <input type="text" name="prenom" className="form-control form-control-sm"
                     value={addForm.prenom} onChange={handleAddChange} placeholder="Prénom" />
                 </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Étage</label>
-                  <select name="etage" className="form-select form-select-sm"
-                    value={addForm.etage} onChange={handleAddChange}>
-                    <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
-                    <option value="1ER">1er Étage (200 000 Ar)</option>
-                  </select>
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Chambre</label>
-                  <select name="chambre" className="form-select form-select-sm"
-                    value={addForm.chambre} onChange={handleAddChange}
-                    disabled={chambres.length === 0}>
-                    {chambres.length === 0 ? (
-                      <option value="">Aucune chambre libre</option>
-                    ) : (
-                      chambres.map((c) => <option key={c} value={c}>{c}</option>)
-                    )}
-                  </select>
-                </div>
+                {!mono && (
+                  <>
+                    <div className="col-sm-6">
+                      <label className="form-label">Étage</label>
+                      <select name="etage" className="form-select form-select-sm"
+                        value={addForm.etage} onChange={handleAddChange}>
+                        <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
+                        <option value="1ER">1er Étage (200 000 Ar)</option>
+                      </select>
+                    </div>
+                    <div className="col-sm-6">
+                      <label className="form-label">Chambre</label>
+                      <select name="chambre" className="form-select form-select-sm"
+                        value={addForm.chambre} onChange={handleAddChange}
+                        disabled={chambres.length === 0}>
+                        {chambres.length === 0 ? (
+                          <option value="">Aucune chambre libre</option>
+                        ) : (
+                          chambres.map((c) => <option key={c} value={c}>{c}</option>)
+                        )}
+                      </select>
+                    </div>
+                  </>
+                )}
                 <div className="col-12">
                   <div className="p-2 rounded-3 d-flex align-items-center gap-2"
                     style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
                     <span className="fw-bold text-primary" style={{ fontSize: "0.85rem" }}>
-                      Loyer : {loyer.toLocaleString()} Ar — Chambre {addForm.chambre} ({addForm.etage})
+                      {mono
+                        ? `Loyer : ${monoLoyer.toLocaleString()} Ar — ${current.nom} (Villa entière)`
+                        : `Loyer : ${loyer.toLocaleString()} Ar — Chambre ${addForm.chambre} (${addForm.etage})`}
                     </span>
                   </div>
                 </div>

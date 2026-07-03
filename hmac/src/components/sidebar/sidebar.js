@@ -35,6 +35,7 @@ function NavItem({ to, Icon, label, location, exact }) {
 export default function Sidebar() {
   const u_info = GetUserData();
   const location = useLocation();
+  const isAdmin = String(u_info.u_karazana) === "1";
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function Sidebar() {
       <ul>
         <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
-        {nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
+        {isAdmin && nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
 
         <div className="separator" />
 
@@ -75,22 +76,25 @@ export default function Sidebar() {
         {nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}
         {nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
 
-        <div className="separator" />
+        {isAdmin && (
+          <>
+            <div className="separator" />
 
-        <div className="sidebar-section-label">Finance Personnelle</div>
-        {nav("/finance/revenus/", BsGraphUp, "Revenus & Charges", true)}
-        {nav("/finance/casuel/", BsStarFill, "Casuel & Dépenses", true)}
-        {nav("/finance/bilan/", BsClipboardData, "Bilan Mensuel", true)}
+            <div className="sidebar-section-label">Finance Personnelle</div>
+            {nav("/finance/revenus/", BsGraphUp, "Revenus & Charges", true)}
+            {nav("/finance/casuel/", BsStarFill, "Casuel & Dépenses", true)}
+            {nav("/finance/bilan/", BsClipboardData, "Bilan Mensuel", true)}
 
-        <div className="separator" />
+            <div className="separator" />
 
-        <div className="sidebar-section-label">Vitrine</div>
-        {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
+            <div className="sidebar-section-label">Vitrine</div>
+            {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
 
-        <div className="separator" />
+            <div className="separator" />
 
-        {u_info.u_karazana == 1 &&
-          nav("/users/", BsPeople, "Utilisateurs", true)}
+            {nav("/users/", BsPeople, "Utilisateurs", true)}
+          </>
+        )}
         {nav("/about/", BsInfoCircle, "À propos", true)}
       </ul>
     </nav>

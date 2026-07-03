@@ -6,15 +6,15 @@ const Depense   = require("../models/depense.model");
 
 // ─── Locataires ───────────────────────────────────────────────
 module.exports.getAllLocataires = (req, res) => {
-  Locataire.getAll((err, data) => {
+  Locataire.getAll(req.query.bienId, (err, data) => {
     if (err) res.status(500).send(err);
     else res.send(data);
   });
 };
 
 module.exports.createLocataire = (req, res) => {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif } = req.body;
-  const data = { nom, prenom, chambre, etage, loyer, tel, email, dateEntree: dateEntree || null, actif: actif ? 1 : 0 };
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId } = req.body;
+  const data = { nom, prenom, chambre, etage, loyer, tel, email, dateEntree: dateEntree || null, actif: actif ? 1 : 0, bienId: Number(bienId) || 0 };
 
   const insert = () =>
     Locataire.create(data, (err, result) => {
@@ -22,9 +22,9 @@ module.exports.createLocataire = (req, res) => {
       else res.send(result);
     });
 
-  // Une chambre occupee (locataire actif) ne peut pas recevoir un 2e actif.
+  // Une chambre occupee (locataire actif) ne peut pas recevoir un 2e actif (dans le meme appart).
   if (data.actif) {
-    Locataire.findActiveInChambre(chambre, etage, null, (err, occupant) => {
+    Locataire.findActiveInChambre(chambre, etage, data.bienId, null, (err, occupant) => {
       if (err) return res.status(500).send(err);
       if (occupant)
         return res.status(409).send({
@@ -39,8 +39,8 @@ module.exports.createLocataire = (req, res) => {
 };
 
 module.exports.updateLocataire = (req, res) => {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif } = req.body;
-  const data = { nom, prenom, chambre, etage, loyer, tel, email, dateEntree: dateEntree || null, actif: actif ? 1 : 0 };
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId } = req.body;
+  const data = { nom, prenom, chambre, etage, loyer, tel, email, dateEntree: dateEntree || null, actif: actif ? 1 : 0, bienId: Number(bienId) || 0 };
 
   const doUpdate = () =>
     Locataire.update(req.params.id, data, (err, result) => {
@@ -49,7 +49,7 @@ module.exports.updateLocataire = (req, res) => {
     });
 
   if (data.actif) {
-    Locataire.findActiveInChambre(chambre, etage, req.params.id, (err, occupant) => {
+    Locataire.findActiveInChambre(chambre, etage, data.bienId, req.params.id, (err, occupant) => {
       if (err) return res.status(500).send(err);
       if (occupant)
         return res.status(409).send({
@@ -72,17 +72,17 @@ module.exports.deleteLocataire = (req, res) => {
 
 // ─── Factures JIRAMA ──────────────────────────────────────────
 module.exports.getFacture = (req, res) => {
-  const { mois, annee } = req.query;
-  Facture.getByMoisAnnee(mois, annee, (err, data) => {
+  const { mois, annee, bienId } = req.query;
+  Facture.getByMoisAnnee(mois, annee, bienId, (err, data) => {
     if (err) res.status(500).send(err);
     else res.send(data);
   });
 };
 
 module.exports.createFacture = (req, res) => {
-  const { mois, annee, prixUnitaire, montantTotal, dateFacture, consommations } = req.body;
+  const { mois, annee, prixUnitaire, montantTotal, dateFacture, consommations, bienId } = req.body;
 
-  Facture.create({ mois, annee, prixUnitaire, montantTotal, dateFacture }, (err, fact) => {
+  Facture.create({ mois, annee, prixUnitaire, montantTotal, dateFacture, bienId }, (err, fact) => {
     if (err) {
       if (err.code === "ER_DUP_ENTRY") {
         return res.status(409).send({ message: "Une facture existe déjà pour ce mois/année. Utilisez la mise à jour.", success: false });
