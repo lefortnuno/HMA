@@ -14,6 +14,7 @@ import {
   BsFileEarmarkExcel,
   BsFileEarmarkPdf,
   BsShare,
+  BsWhatsapp,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -445,48 +446,83 @@ export default function Loyer() {
                 return !p || p.statut === "IMPAYE" || p.statut === "PARTIEL";
               });
               if (impayes.length === 0) return null;
+              const totalDu = impayes.reduce((s, loc) => {
+                const p = getCellData(loc.id, moisCourant);
+                return s + (loc.loyer || 0) - (p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0);
+              }, 0);
               return (
-                <div className="card-pro p-0 mb-4" style={{ borderLeft: "4px solid #ef4444" }}>
-                  <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h6 className="mb-0 fw-bold" style={{ color: "#b91c1c" }}>
-                      Impayés — {MOIS_FULL[moisCourant - 1]} {anneeCourante} ({impayes.length})
+                <div className="card-pro p-0 mb-4" style={{ borderLeft: "4px solid #ef4444", overflow: "hidden" }}>
+                  <div
+                    className="px-3 py-2 d-flex justify-content-between align-items-center flex-wrap gap-1"
+                    style={{ background: "#fef2f2", borderBottom: "1px solid #fecaca" }}
+                  >
+                    <h6 className="mb-0 fw-bold" style={{ color: "#b91c1c", fontSize: "0.9rem" }}>
+                      Impayés — {MOIS_FULL[moisCourant - 1]} {anneeCourante}
+                      <span
+                        className="ms-2 rounded-pill px-2"
+                        style={{ background: "#dc2626", color: "#fff", fontSize: "0.72rem", padding: "2px 0" }}
+                      >
+                        {impayes.length}
+                      </span>
                     </h6>
+                    <span className="fw-bold" style={{ color: "#b91c1c", fontSize: "0.85rem" }}>
+                      Total dû : {totalDu.toLocaleString()} Ar
+                    </span>
                   </div>
-                  <div className="p-3 d-flex flex-wrap gap-2">
-                    {impayes.map((loc) => {
-                      const p = getCellData(loc.id, moisCourant);
-                      const du =
-                        (loc.loyer || 0) -
-                        (p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0);
-                      const lien = lienRelanceWhatsApp(loc, MOIS_FULL[moisCourant - 1], anneeCourante, du);
-                      return (
-                        <div
-                          key={loc.id}
-                          className="d-flex align-items-center gap-2 rounded-3 px-2 py-1"
-                          style={{ background: "#fef2f2", border: "1px solid #fecaca", fontSize: "0.82rem" }}
-                        >
-                          <span className="fw-semibold">
-                            {loc.chambre} · {loc.nom}
-                          </span>
-                          <span className="text-muted">{du.toLocaleString()} Ar</span>
-                          {lien ? (
-                            <a
-                              href={lien}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="btn btn-sm py-0 px-2 fw-semibold"
-                              style={{ background: "#25D366", color: "#fff", fontSize: "0.75rem" }}
+                  <div className="p-2">
+                    <div className="row g-2">
+                      {impayes.map((loc) => {
+                        const p = getCellData(loc.id, moisCourant);
+                        const du =
+                          (loc.loyer || 0) -
+                          (p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0);
+                        const lien = lienRelanceWhatsApp(loc, MOIS_FULL[moisCourant - 1], anneeCourante, du);
+                        return (
+                          <div className="col-6 col-md-4 col-xl-3" key={loc.id}>
+                            <div
+                              className="h-100 rounded-3 p-2 d-flex flex-column"
+                              style={{ border: "1px solid #e2e8f0", background: "#fff" }}
                             >
-                              Relancer
-                            </a>
-                          ) : (
-                            <span className="text-muted" style={{ fontSize: "0.72rem" }}>
-                              (pas de n°)
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
+                              <div className="d-flex align-items-center gap-2 mb-1">
+                                <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
+                                  {loc.chambre}
+                                </span>
+                                <span
+                                  className="fw-semibold text-truncate"
+                                  style={{ fontSize: "0.83rem" }}
+                                  title={loc.nom}
+                                >
+                                  {loc.nom}
+                                </span>
+                              </div>
+                              <div className="d-flex align-items-center justify-content-between mt-auto gap-1">
+                                <span className="fw-bold" style={{ color: "#b91c1c", fontSize: "0.8rem" }}>
+                                  {du.toLocaleString()} Ar
+                                </span>
+                                {lien ? (
+                                  <a
+                                    href={lien}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-sm py-0 px-2 fw-semibold d-flex align-items-center gap-1"
+                                    style={{ background: "#25D366", color: "#fff", fontSize: "0.72rem" }}
+                                  >
+                                    <BsWhatsapp size={11} /> Relancer
+                                  </a>
+                                ) : (
+                                  <span
+                                    className="rounded-pill px-2"
+                                    style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.68rem" }}
+                                  >
+                                    pas de n°
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               );

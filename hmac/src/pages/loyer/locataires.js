@@ -157,13 +157,17 @@ export default function Locataires() {
     );
   }
 
-  function fetchLocataires() {
-    setLoading(true);
+  // silent = true : rafraichit sans afficher le skeleton
+  // (utilise apres ajout/modif/suppression pour rester fluide).
+  function fetchLocataires(silent = false) {
+    if (!silent) setLoading(true);
     axios
       .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))
       .catch(() => setLocataires([]))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   }
 
   function changeAppart(id) {
@@ -176,8 +180,10 @@ export default function Locataires() {
       .delete(`loyer/locataires/${id}`, u_info.opts)
       .then(() => {
         toast.success("Locataire supprimé");
-        fetchLocataires();
+        // Retrait immediat de la ligne, sans skeleton ni "rechargement".
+        setLocataires((prev) => prev.filter((l) => l.id !== id));
         setShowDeleteModal(false);
+        fetchLocataires(true);
       })
       .catch(() => toast.error("Erreur lors de la suppression"));
   }
@@ -203,7 +209,7 @@ export default function Locataires() {
         toast.success("Locataire ajouté !");
         setAddForm(initForm());
         setShowAddModal(false);
-        fetchLocataires();
+        fetchLocataires(true);
       })
       .catch((err) =>
         toast.error(
@@ -275,7 +281,7 @@ export default function Locataires() {
       .then(() => {
         toast.success("Locataire modifié !");
         setShowEditModal(false);
-        fetchLocataires();
+        fetchLocataires(true);
       })
       .catch((err) =>
         toast.error(

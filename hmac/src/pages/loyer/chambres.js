@@ -55,13 +55,15 @@ export default function Chambres() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bienId]);
 
-  function fetchLocataires() {
-    setLoading(true);
+  function fetchLocataires(silent = false) {
+    if (!silent) setLoading(true);
     axios
       .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))
       .catch(() => setLocataires([]))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   }
 
   function changeAppart(id) {
@@ -96,7 +98,7 @@ export default function Chambres() {
       .then(() => {
         toast.success(`Locataire attribué à la chambre ${form.chambre} !`);
         setShowAdd(false);
-        fetchLocataires();
+        fetchLocataires(true);
       })
       .catch((err) => {
         if (err.response && err.response.status === 409) {

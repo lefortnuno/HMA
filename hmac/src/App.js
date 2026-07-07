@@ -115,9 +115,9 @@ function App() {
           <Route path="loyer/locataires/new" element={<SignInProtection Cmp={AddLocataire} />} />
           <Route path="loyer/locataires/edit/:id" element={<SignInProtection Cmp={EditLocataire} />} />
           <Route path="loyer/factures/" element={<SignInProtection Cmp={Factures} />} />
-          <Route path="loyer/depenses/" element={<SignInProtection Cmp={Depenses} />} />
-          <Route path="loyer/benefices/" element={<SignInProtection Cmp={Benefices} />} />
-          <Route path="loyer/historique/" element={<SignInProtection Cmp={Historique} />} />
+          <Route path="loyer/depenses/" element={<AdminProtection Cmp={Depenses} />} />
+          <Route path="loyer/benefices/" element={<AdminProtection Cmp={Benefices} />} />
+          <Route path="loyer/historique/" element={<AdminProtection Cmp={Historique} />} />
 
           {/* ── Finance (admin) ── */}
           <Route path="finance/revenus/"  element={<AdminProtection Cmp={FinanceRevenus}  />} />
