@@ -1,15 +1,29 @@
 import GetUserData from "../../contexts/api/udata";
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { BsGear, BsPower, BsChevronDown } from "react-icons/bs";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { BsGear, BsPower, BsChevronDown, BsBell } from "react-icons/bs";
+import axios from "../../contexts/api/axios";
 import "./header.css";
 import hma from "../../assets/images/hma256.png";
 
 export default function Header({ children }) {
   const u_info = GetUserData();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [nbNotifs, setNbNotifs] = useState(0);
+  const isAdmin = String(u_info.u_karazana) === "1";
+
+  // Cloche : nombre de demandes en attente de validation (admin).
+  useEffect(() => {
+    if (!u_info.u_token || !isAdmin) return;
+    axios
+      .get("loyer/validations/count", u_info.opts)
+      .then((r) => setNbNotifs(r.data?.nb || 0))
+      .catch(() => setNbNotifs(0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const scrollToTop = () => {
     document.getElementById("sidebarMenu")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -45,6 +59,49 @@ export default function Header({ children }) {
         </div>
 
         <div className="header-right">
+          {/* Cloche notifications (a gauche du profil) */}
+          <button
+            type="button"
+            title="Notifications"
+            aria-label="Notifications"
+            onClick={() => navigate("/notifications/")}
+            style={{
+              position: "relative",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: "6px 10px",
+              borderRadius: 10,
+              color: "#475569",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            <BsBell size={18} />
+            {isAdmin && nbNotifs > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 2,
+                  background: "#dc2626",
+                  color: "#fff",
+                  borderRadius: 999,
+                  fontSize: "0.62rem",
+                  fontWeight: 700,
+                  minWidth: 16,
+                  height: 16,
+                  lineHeight: "16px",
+                  textAlign: "center",
+                  padding: "0 4px",
+                  border: "2px solid #fff",
+                }}
+              >
+                {nbNotifs > 99 ? "99+" : nbNotifs}
+              </span>
+            )}
+          </button>
+
           <button className="user-btn" onClick={() => setOpen(!open)}>
             <img src={hma} alt="avatar" className="user-avatar" />
             <div className="d-none d-sm-flex flex-column text-start">
