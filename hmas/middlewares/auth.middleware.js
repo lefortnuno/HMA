@@ -19,6 +19,14 @@ module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
             resultat[0].karazana == myUserRole.admin ||
             resultat[0].karazana == myUserRole.user
           ) {
+            // Utilisateur courant (role verifie en DB) mis a disposition
+            // des controleurs pour le workflow de validation.
+            req.user = {
+              id: resultat[0].id,
+              nom: resultat[0].nom,
+              prenom: resultat[0].prenom,
+              karazana: resultat[0].karazana,
+            };
             next();
           } else {
             res.status(403).send({

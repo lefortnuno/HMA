@@ -1,6 +1,7 @@
 const router  = require("express").Router();
 const ctrl    = require("../controllers/loyer.controller");
 const user    = require("../middlewares/user.middleware");
+const admin   = require("../middlewares/admin.middleware");
 
 // ── Locataires ────────────────────────────────────────────────
 router.get("/locataires",        user.checkUtilisateur, ctrl.getAllLocataires);
@@ -30,5 +31,10 @@ router.get("/benefices/annee", user.checkUtilisateur, ctrl.getBeneficesAnnee);
 
 // ── Historique d'occupation ───────────────────────────────────
 router.get("/historique", user.checkUtilisateur, ctrl.getHistorique);
+
+// ── Demandes de validation (workflow admin) ───────────────────
+router.get("/validations",        user.checkUtilisateur,  ctrl.getValidations);
+router.get("/validations/count",  user.checkUtilisateur,  ctrl.countValidations);
+router.post("/validations/:id/decision", admin.checkUtilisateur, ctrl.decideValidation);
 
 module.exports = router;

@@ -74,7 +74,12 @@ export default function EditLocataire() {
     setSaving(true);
     axios
       .put(`loyer/locataires/${id}`, { ...form, loyer, bienId }, u_info.opts)
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          navigate("/loyer/locataires/");
+          return;
+        }
         toast.success("Locataire modifié !");
         navigate("/loyer/locataires/");
       })

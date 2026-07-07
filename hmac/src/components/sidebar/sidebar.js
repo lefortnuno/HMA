@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import { Link, useLocation } from "react-router-dom";
 import "./sidebar.css";
@@ -17,9 +18,10 @@ import {
   BsFileEarmarkText,
   BsImages,
   BsStarFill,
+  BsBell,
 } from "react-icons/bs";
 
-function NavItem({ to, Icon, label, location, exact }) {
+function NavItem({ to, Icon, label, location, exact, badge }) {
   const isActive = exact
     ? location.pathname === to
     : location.pathname.startsWith(to);
@@ -27,7 +29,25 @@ function NavItem({ to, Icon, label, location, exact }) {
     <li className={isActive ? "active" : ""}>
       <Link to={to}>
         <Icon />
-        <p>{label}</p>
+        <p>
+          {label}
+          {badge > 0 && (
+            <span
+              style={{
+                marginLeft: 8,
+                background: "#dc2626",
+                color: "#fff",
+                borderRadius: 999,
+                fontSize: "0.68rem",
+                fontWeight: 700,
+                padding: "1px 7px",
+                verticalAlign: "middle",
+              }}
+            >
+              {badge > 99 ? "99+" : badge}
+            </span>
+          )}
+        </p>
       </Link>
     </li>
   );
@@ -37,6 +57,7 @@ export default function Sidebar() {
   const u_info = GetUserData();
   const location = useLocation();
   const isAdmin = String(u_info.u_karazana) === "1";
+  const [nbPending, setNbPending] = useState(0);
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -46,7 +67,17 @@ export default function Sidebar() {
     }
   }, [location.pathname]);
 
-  const nav = (to, Icon, label, exact = true) => (
+  // Badge notifications : nombre de demandes en attente de validation.
+  useEffect(() => {
+    if (!u_info.u_token) return;
+    axios
+      .get("loyer/validations/count", u_info.opts)
+      .then((r) => setNbPending(r.data?.nb || 0))
+      .catch(() => setNbPending(0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  const nav = (to, Icon, label, exact = true, badge = 0) => (
     <NavItem
       key={to}
       to={to}
@@ -54,6 +85,7 @@ export default function Sidebar() {
       label={label}
       location={location}
       exact={exact}
+      badge={badge}
     />
   );
 
@@ -66,6 +98,7 @@ export default function Sidebar() {
         <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
         {nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
+        {nav("/notifications/", BsBell, "Notifications", true, isAdmin ? nbPending : 0)}
 
         <div className="separator" />
 

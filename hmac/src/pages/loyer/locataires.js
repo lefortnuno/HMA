@@ -178,7 +178,12 @@ export default function Locataires() {
   function handleDelete(id) {
     axios
       .delete(`loyer/locataires/${id}`, u_info.opts)
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          setShowDeleteModal(false);
+          return;
+        }
         toast.success("Locataire supprimé");
         // Retrait immediat de la ligne, sans skeleton ni "rechargement".
         setLocataires((prev) => prev.filter((l) => l.id !== id));
@@ -205,7 +210,13 @@ export default function Locataires() {
     const loyer = mono ? monoLoyer : addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
     axios
       .post("loyer/locataires", { ...addForm, loyer, bienId }, u_info.opts)
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          setAddForm(initForm());
+          setShowAddModal(false);
+          return;
+        }
         toast.success("Locataire ajouté !");
         setAddForm(initForm());
         setShowAddModal(false);
@@ -278,7 +289,12 @@ export default function Locataires() {
     setEditSaving(true);
     axios
       .put(`loyer/locataires/${editTarget.id}`, { ...editForm, loyer, bienId }, u_info.opts)
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          setShowEditModal(false);
+          return;
+        }
         toast.success("Locataire modifié !");
         setShowEditModal(false);
         fetchLocataires(true);

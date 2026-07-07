@@ -80,7 +80,12 @@ export default function AddLocataire() {
     setSaving(true);
     axios
       .post("loyer/locataires", { ...form, loyer, bienId }, u_info.opts)
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          navigate("/loyer/locataires/");
+          return;
+        }
         toast.success("Locataire ajouté !");
         navigate("/loyer/locataires/");
       })

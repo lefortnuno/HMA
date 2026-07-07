@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const UtilisateurController = require("../controllers/utilisateur.controller");
 const admin = require("../middlewares/admin.middleware");
+const user = require("../middlewares/user.middleware");
 
 
 router.post("/", UtilisateurController.addUtilisateur);
@@ -21,6 +22,14 @@ router.get(
   "/:id",
   admin.checkUtilisateur,
   UtilisateurController.getIdUtilisateur
+);
+
+// Self-service : chaque utilisateur modifie SON propre compte
+// (déclaré avant /:id pour ne pas être capturé par le paramètre).
+router.put(
+  "/me",
+  user.checkUtilisateur,
+  UtilisateurController.updateMonCompte
 );
 
 router.put(

@@ -95,7 +95,12 @@ export default function Chambres() {
     const loyer = mono ? monoLoyer : form.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
     axios
       .post("loyer/locataires", { ...form, loyer, bienId }, u_info.opts)
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          setShowAdd(false);
+          return;
+        }
         toast.success(`Locataire attribué à la chambre ${form.chambre} !`);
         setShowAdd(false);
         fetchLocataires(true);

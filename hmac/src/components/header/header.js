@@ -66,7 +66,10 @@ export default function Header({ children }) {
                   {u_info.u_karazana == 1 ? "Administrateur" : "Utilisateur"}
                 </small>
               </li>
-              <li className="drop-item">
+              <li
+                className="drop-item"
+                onClick={() => { setOpen(false); navigate("/parametres/"); }}
+              >
                 <BsGear /> Paramètres
               </li>
               <li

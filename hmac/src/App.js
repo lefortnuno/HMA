@@ -45,6 +45,8 @@ import Ofatrano from "./pages/loyer/ofatrano";
 import Locataires from "./pages/loyer/locataires";
 import Chambres from "./pages/loyer/chambres";
 import Historique from "./pages/loyer/historique";
+import Notifications from "./pages/notifications/notifications";
+import Parametres from "./pages/parametres/parametres";
 import AddLocataire from "./pages/loyer/add.locataire";
 import EditLocataire from "./pages/loyer/edit.locataire";
 import Factures from "./pages/loyer/factures";
@@ -76,6 +78,8 @@ function App() {
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
           <Route path="home/" element={<SignInProtection Cmp={Home} />} />
           <Route path="about/" element={<SignInProtection Cmp={About} />} />
+          <Route path="notifications/" element={<SignInProtection Cmp={Notifications} />} />
+          <Route path="parametres/" element={<SignInProtection Cmp={Parametres} />} />
 
           {/* Users (admin) */}
           <Route path="users/" element={<AdminProtection Cmp={User} />} />

@@ -4,8 +4,15 @@ const Facture    = require("../models/facture.model");
 const Paiement   = require("../models/paiement.model");
 const Depense    = require("../models/depense.model");
 const Occupation = require("../models/occupation.model");
+const Validation = require("../models/validation.model");
 const { sendErr, badRequest } = require("../utils/http");
 const V = require("../utils/calc");
+
+const isAdmin = (req) => req.user && Number(req.user.karazana) === 1;
+const auteurDe = (req) => ({
+  auteurId: req.user ? req.user.id : 0,
+  auteurNom: req.user ? `${req.user.nom} ${req.user.prenom || ""}`.trim() : "?",
+});
 
 // ─── Locataires ───────────────────────────────────────────────
 module.exports.getAllLocataires = (req, res) => {
@@ -27,101 +34,159 @@ function valideLocataire(body) {
   return null;
 }
 
-module.exports.createLocataire = (req, res) => {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution } = req.body;
-  const erreur = valideLocataire(req.body);
-  if (erreur) return badRequest(res, erreur);
+// Execution reelle d'un ajout (utilisee en direct par l'admin,
+// ou au moment de l'approbation d'une demande de simple user).
+function execCreateLocataire(data, cb) {
+  Locataire.create(data, (err, result) => {
+    if (err) return cb(err);
+    Occupation.log({
+      locataireId: result.id, nom: data.nom, prenom: data.prenom,
+      chambre: data.chambre, etage: data.etage, bienId: data.bienId,
+      action: "ENTREE", details: `Entrée — chambre ${data.chambre} (${data.etage})`,
+    });
+    cb(null, result);
+  });
+}
 
-  const data = {
+function normaliseLocataire(body) {
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution } = body;
+  return {
     nom, prenom, chambre, etage, loyer, tel, email,
     dateEntree: dateEntree || null,
     actif: actif ? 1 : 0,
     bienId: Number(bienId) || 0,
     caution: Number(caution) || 0,
   };
+}
 
-  const insert = () =>
-    Locataire.create(data, (err, result) => {
-      if (err) return sendErr(res, err);
-      Occupation.log({
-        locataireId: result.id, nom: data.nom, prenom: data.prenom,
-        chambre: data.chambre, etage: data.etage, bienId: data.bienId,
-        action: "ENTREE", details: `Entrée — chambre ${data.chambre} (${data.etage})`,
+module.exports.createLocataire = (req, res) => {
+  const erreur = valideLocataire(req.body);
+  if (erreur) return badRequest(res, erreur);
+  const data = normaliseLocataire(req.body);
+
+  const proceed = () => {
+    if (isAdmin(req)) {
+      execCreateLocataire(data, (err, result) => {
+        if (err) return sendErr(res, err);
+        res.send(result);
       });
-      res.send(result);
-    });
+    } else {
+      // Simple user : la demande part en validation admin.
+      Validation.create(
+        { entite: "LOCATAIRE", action: "AJOUT", entiteId: null, avant: null, apres: data, ...auteurDe(req) },
+        (err, result) => {
+          if (err) return sendErr(res, err);
+          res.status(202).send({
+            ...result,
+            message: "Demande d'ajout envoyée à l'admin pour validation.",
+          });
+        }
+      );
+    }
+  };
 
   // Une chambre occupee (locataire actif) ne peut pas recevoir un 2e actif (dans le meme appart).
   if (data.actif) {
-    Locataire.findActiveInChambre(chambre, etage, data.bienId, null, (err, occupant) => {
+    Locataire.findActiveInChambre(data.chambre, data.etage, data.bienId, null, (err, occupant) => {
       if (err) return sendErr(res, err);
       if (occupant)
         return res.status(409).send({
           success: false,
-          message: `La chambre ${chambre} (${etage}) est déjà occupée par ${occupant.nom}.`,
+          message: `La chambre ${data.chambre} (${data.etage}) est déjà occupée par ${occupant.nom}.`,
         });
-      insert();
+      proceed();
     });
   } else {
-    insert();
+    proceed();
   }
 };
 
+// Execution reelle d'une modification (+ log occupation).
+function execUpdateLocataire(id, data, avant, cb) {
+  Locataire.update(id, data, (err, result) => {
+    if (err) return cb(err);
+    if (avant) {
+      if (avant.actif && !data.actif) {
+        Occupation.log({
+          locataireId: +id, nom: data.nom, prenom: data.prenom,
+          chambre: avant.chambre, etage: avant.etage, bienId: data.bienId,
+          action: "SORTIE", details: `Sortie — chambre ${avant.chambre} (${avant.etage})`,
+        });
+      } else if (avant.chambre !== data.chambre || avant.etage !== data.etage) {
+        Occupation.log({
+          locataireId: +id, nom: data.nom, prenom: data.prenom,
+          chambre: data.chambre, etage: data.etage, bienId: data.bienId,
+          action: "MODIFICATION",
+          details: `Changement : ${avant.chambre} (${avant.etage}) → ${data.chambre} (${data.etage})`,
+        });
+      } else if (!avant.actif && data.actif) {
+        Occupation.log({
+          locataireId: +id, nom: data.nom, prenom: data.prenom,
+          chambre: data.chambre, etage: data.etage, bienId: data.bienId,
+          action: "ENTREE", details: `Réactivation — chambre ${data.chambre} (${data.etage})`,
+        });
+      }
+    }
+    cb(null, result);
+  });
+}
+
+// Execution reelle d'une suppression (+ log occupation).
+function execDeleteLocataire(id, avant, cb) {
+  Locataire.delete(id, (err, result) => {
+    if (err) return cb(err);
+    if (avant) {
+      Occupation.log({
+        locataireId: +id, nom: avant.nom, prenom: avant.prenom,
+        chambre: avant.chambre, etage: avant.etage, bienId: avant.bienId || 0,
+        action: "SORTIE", details: `Suppression — chambre ${avant.chambre} (${avant.etage})`,
+      });
+    }
+    cb(null, result);
+  });
+}
+
 module.exports.updateLocataire = (req, res) => {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution } = req.body;
   const erreur = valideLocataire(req.body);
   if (erreur) return badRequest(res, erreur);
+  const data = normaliseLocataire(req.body);
 
-  const data = {
-    nom, prenom, chambre, etage, loyer, tel, email,
-    dateEntree: dateEntree || null,
-    actif: actif ? 1 : 0,
-    bienId: Number(bienId) || 0,
-    caution: Number(caution) || 0,
-  };
-
-  const doUpdate = (avant) =>
-    Locataire.update(req.params.id, data, (err, result) => {
-      if (err) return sendErr(res, err);
-      // Historique : changement de chambre ou depart (actif -> inactif)
-      if (avant) {
-        if (avant.actif && !data.actif) {
-          Occupation.log({
-            locataireId: +req.params.id, nom: data.nom, prenom: data.prenom,
-            chambre: avant.chambre, etage: avant.etage, bienId: data.bienId,
-            action: "SORTIE", details: `Sortie — chambre ${avant.chambre} (${avant.etage})`,
-          });
-        } else if (avant.chambre !== data.chambre || avant.etage !== data.etage) {
-          Occupation.log({
-            locataireId: +req.params.id, nom: data.nom, prenom: data.prenom,
-            chambre: data.chambre, etage: data.etage, bienId: data.bienId,
-            action: "MODIFICATION",
-            details: `Changement : ${avant.chambre} (${avant.etage}) → ${data.chambre} (${data.etage})`,
-          });
-        } else if (!avant.actif && data.actif) {
-          Occupation.log({
-            locataireId: +req.params.id, nom: data.nom, prenom: data.prenom,
-            chambre: data.chambre, etage: data.etage, bienId: data.bienId,
-            action: "ENTREE", details: `Réactivation — chambre ${data.chambre} (${data.etage})`,
+  const proceed = (avant) => {
+    if (isAdmin(req)) {
+      execUpdateLocataire(req.params.id, data, avant, (err, result) => {
+        if (err) return sendErr(res, err);
+        res.send(result);
+      });
+    } else {
+      Validation.create(
+        {
+          entite: "LOCATAIRE", action: "MODIFICATION", entiteId: +req.params.id,
+          avant: avant || null, apres: data, ...auteurDe(req),
+        },
+        (err, result) => {
+          if (err) return sendErr(res, err);
+          res.status(202).send({
+            ...result,
+            message: "Demande de modification envoyée à l'admin pour validation.",
           });
         }
-      }
-      res.send(result);
-    });
+      );
+    }
+  };
 
   const verifier = (avant) => {
     if (data.actif) {
-      Locataire.findActiveInChambre(chambre, etage, data.bienId, req.params.id, (err, occupant) => {
+      Locataire.findActiveInChambre(data.chambre, data.etage, data.bienId, req.params.id, (err, occupant) => {
         if (err) return sendErr(res, err);
         if (occupant)
           return res.status(409).send({
             success: false,
-            message: `La chambre ${chambre} (${etage}) est déjà occupée par ${occupant.nom}.`,
+            message: `La chambre ${data.chambre} (${data.etage}) est déjà occupée par ${occupant.nom}.`,
           });
-        doUpdate(avant);
+        proceed(avant);
       });
     } else {
-      doUpdate(avant);
+      proceed(avant);
     }
   };
 
@@ -132,17 +197,116 @@ module.exports.updateLocataire = (req, res) => {
 
 module.exports.deleteLocataire = (req, res) => {
   Locataire.getById(req.params.id, (errAvant, avant) => {
-    Locataire.delete(req.params.id, (err, result) => {
-      if (err) return sendErr(res, err);
-      if (avant) {
-        Occupation.log({
-          locataireId: +req.params.id, nom: avant.nom, prenom: avant.prenom,
-          chambre: avant.chambre, etage: avant.etage, bienId: avant.bienId || 0,
-          action: "SORTIE", details: `Suppression — chambre ${avant.chambre} (${avant.etage})`,
+    if (isAdmin(req)) {
+      execDeleteLocataire(req.params.id, errAvant ? null : avant, (err, result) => {
+        if (err) return sendErr(res, err);
+        res.send(result);
+      });
+    } else {
+      Validation.create(
+        {
+          entite: "LOCATAIRE", action: "SUPPRESSION", entiteId: +req.params.id,
+          avant: errAvant ? null : avant, apres: null, ...auteurDe(req),
+        },
+        (err, result) => {
+          if (err) return sendErr(res, err);
+          res.status(202).send({
+            ...result,
+            message: "Demande de suppression envoyée à l'admin pour validation.",
+          });
+        }
+      );
+    }
+  });
+};
+
+// ─── Demandes de validation (workflow admin) ─────────────────
+module.exports.getValidations = (req, res) => {
+  // Admin : tout voir. Simple user : uniquement ses demandes.
+  const auteurId = isAdmin(req) ? null : req.user.id;
+  Validation.getAll(auteurId, (err, data) => {
+    if (err) sendErr(res, err);
+    else res.send(data);
+  });
+};
+
+module.exports.countValidations = (req, res) => {
+  Validation.countPending((err, data) => {
+    if (err) sendErr(res, err);
+    else res.send(data);
+  });
+};
+
+module.exports.decideValidation = (req, res) => {
+  const decision = req.body.decision; // "APPROUVE" | "REFUSE"
+  if (!["APPROUVE", "REFUSE"].includes(decision))
+    return badRequest(res, "Décision invalide.");
+
+  Validation.getById(req.params.id, (err, demande) => {
+    if (err) return sendErr(res, err);
+    if (!demande) return res.status(404).send({ success: false, message: "Demande introuvable." });
+    if (demande.statut !== "EN_ATTENTE")
+      return badRequest(res, "Cette demande a déjà été traitée.");
+
+    const decideurNom = auteurDe(req).auteurNom;
+    const marquer = (cb) => Validation.decide(req.params.id, decision, decideurNom, cb);
+
+    if (decision === "REFUSE") {
+      return marquer((err2) => {
+        if (err2) return sendErr(res, err2);
+        res.send({ success: true, statut: "REFUSE" });
+      });
+    }
+
+    // APPROUVE : executer l'action demandee.
+    const finir = (err2) => {
+      if (err2) return sendErr(res, err2);
+      marquer((err3) => {
+        if (err3) return sendErr(res, err3);
+        res.send({ success: true, statut: "APPROUVE" });
+      });
+    };
+
+    if (demande.action === "AJOUT") {
+      const data = demande.apres;
+      // La chambre a pu etre prise entre-temps : re-verifier.
+      if (data.actif) {
+        Locataire.findActiveInChambre(data.chambre, data.etage, data.bienId, null, (e, occupant) => {
+          if (e) return sendErr(res, e);
+          if (occupant)
+            return res.status(409).send({
+              success: false,
+              message: `Impossible d'approuver : la chambre ${data.chambre} est maintenant occupée par ${occupant.nom}.`,
+            });
+          execCreateLocataire(data, finir);
         });
+      } else {
+        execCreateLocataire(data, finir);
       }
-      res.send(result);
-    });
+    } else if (demande.action === "MODIFICATION") {
+      const data = demande.apres;
+      Locataire.getById(demande.entiteId, (e, avant) => {
+        if (data.actif) {
+          Locataire.findActiveInChambre(data.chambre, data.etage, data.bienId, demande.entiteId, (e2, occupant) => {
+            if (e2) return sendErr(res, e2);
+            if (occupant)
+              return res.status(409).send({
+                success: false,
+                message: `Impossible d'approuver : la chambre ${data.chambre} est occupée par ${occupant.nom}.`,
+              });
+            execUpdateLocataire(demande.entiteId, data, e ? null : avant, finir);
+          });
+        } else {
+          execUpdateLocataire(demande.entiteId, data, e ? null : avant, finir);
+        }
+      });
+    } else if (demande.action === "SUPPRESSION") {
+      Locataire.getById(demande.entiteId, (e, avant) => {
+        execDeleteLocataire(demande.entiteId, e ? null : avant, finir);
+      });
+    } else {
+      badRequest(res, "Type d'action inconnu.");
+    }
   });
 };
 
