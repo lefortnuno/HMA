@@ -44,6 +44,7 @@ import Loyer from "./pages/loyer/loyer";
 import Ofatrano from "./pages/loyer/ofatrano";
 import Locataires from "./pages/loyer/locataires";
 import Chambres from "./pages/loyer/chambres";
+import Historique from "./pages/loyer/historique";
 import AddLocataire from "./pages/loyer/add.locataire";
 import EditLocataire from "./pages/loyer/edit.locataire";
 import Factures from "./pages/loyer/factures";
@@ -108,7 +109,7 @@ function App() {
 
           {/* ── Loyer (Immobilier — tous les users connectés) ── */}
           <Route path="loyer/" element={<SignInProtection Cmp={Loyer} />} />
-          <Route path="ofatrano/" element={<AdminProtection Cmp={Ofatrano} />} />
+          <Route path="ofatrano/" element={<SignInProtection Cmp={Ofatrano} />} />
           <Route path="loyer/chambres/" element={<SignInProtection Cmp={Chambres} />} />
           <Route path="loyer/locataires/" element={<SignInProtection Cmp={Locataires} />} />
           <Route path="loyer/locataires/new" element={<SignInProtection Cmp={AddLocataire} />} />
@@ -116,6 +117,7 @@ function App() {
           <Route path="loyer/factures/" element={<SignInProtection Cmp={Factures} />} />
           <Route path="loyer/depenses/" element={<SignInProtection Cmp={Depenses} />} />
           <Route path="loyer/benefices/" element={<SignInProtection Cmp={Benefices} />} />
+          <Route path="loyer/historique/" element={<SignInProtection Cmp={Historique} />} />
 
           {/* ── Finance (admin) ── */}
           <Route path="finance/revenus/"  element={<AdminProtection Cmp={FinanceRevenus}  />} />

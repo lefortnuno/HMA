@@ -1,5 +1,6 @@
 "use strict";
 const Service = require("../models/service.model");
+const { sendErr } = require("../utils/http");
 
 module.exports.addService = (req, res) => {
   const { nom, prix, fandrefesana, karazana } = req.body;
@@ -7,7 +8,7 @@ module.exports.addService = (req, res) => {
 
   Service.addService(newService, (err, resp) => {
     if (err) {
-      res.send(err);
+      sendErr(res, err);
     } else {
       res.send(resp);
     }
@@ -19,7 +20,7 @@ module.exports.getAllServices = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -29,7 +30,7 @@ module.exports.getIdService = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -39,7 +40,7 @@ module.exports.getMyTotalOfService = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -52,7 +53,7 @@ module.exports.updateService = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -62,7 +63,7 @@ module.exports.deleteService = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -74,7 +75,7 @@ module.exports.searchService = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -87,7 +88,7 @@ module.exports.trieService = (req, res) => {
       if (!err) {
         res.send(resp);
       } else {
-        res.send(err);
+        sendErr(res, err);
       }
     });
   } else {
@@ -95,7 +96,7 @@ module.exports.trieService = (req, res) => {
       if (!err) {
         res.send(resp);
       } else {
-        res.send(err);
+        sendErr(res, err);
       }
     });
   }

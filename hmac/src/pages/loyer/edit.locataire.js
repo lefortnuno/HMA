@@ -31,6 +31,7 @@ export default function EditLocataire() {
       ? existing.dateEntree.split("T")[0]
       : new Date().toISOString().split("T")[0],
     actif: existing.actif !== undefined ? existing.actif : true,
+    caution: existing.caution || 0,
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -152,6 +153,11 @@ export default function EditLocataire() {
                   <div className="col-sm-6">
                     <label className="form-label">Date d'entrée</label>
                     <input type="date" name="dateEntree" className="form-control" value={form.dateEntree} onChange={handleChange} />
+                  </div>
+                  <div className="col-sm-6">
+                    <label className="form-label">Caution / dépôt de garantie (Ar)</label>
+                    <input type="number" name="caution" min="0" className="form-control"
+                      value={form.caution} onChange={handleChange} placeholder="0" />
                   </div>
                   <div className="col-sm-6 d-flex align-items-end">
                     <div className="form-check mb-2">

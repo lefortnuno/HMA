@@ -5,7 +5,25 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { BsClipboardData, BsGraphUp, BsGraphDown, BsCurrencyExchange, BsTrophyFill } from "react-icons/bs";
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+  ReferenceLine,
+} from "recharts";
 import { SkBenefices } from "../../components/skeleton/skeleton";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -13,22 +31,46 @@ const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep",
 export default function Benefices() {
   const u_info = GetUserData();
   const now = new Date();
+  const apparts = useAppartements();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee, setAnnee] = useState(now.getFullYear());
   const [data, setData] = useState(null);
+  const [anneeData, setAnneeData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchBenefices();
-  }, [mois, annee]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mois, annee, bienId]);
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
+  }
 
   function fetchBenefices() {
     setLoading(true);
-    axios
-      .get(`loyer/benefices?mois=${mois}&annee=${annee}`, u_info.opts)
-      .then((r) => setData(r.data || null))
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
+    Promise.all([
+      axios
+        .get(`loyer/benefices?mois=${mois}&annee=${annee}&bienId=${bienId}`, u_info.opts)
+        .then((r) => setData(r.data || null))
+        .catch(() => setData(null)),
+      axios
+        .get(`loyer/benefices/annee?annee=${annee}&bienId=${bienId}`, u_info.opts)
+        .then((r) =>
+          setAnneeData(
+            (r.data?.mois || []).map((m) => ({
+              nom: MOIS_LABELS[m.mois],
+              Recettes: (m.totalLoyers || 0) + (m.totalJIRAMA || 0),
+              "Dépenses": m.totalDepenses || 0,
+              "Bénéfice": m.benefice || 0,
+            }))
+          )
+        )
+        .catch(() => setAnneeData([])),
+    ]).finally(() => setLoading(false));
   }
 
   const loyers = data?.totalLoyers || 0;
@@ -52,10 +94,11 @@ export default function Benefices() {
                   <BsClipboardData /> Bénéfices
                 </h1>
                 <p className="text-muted small mb-0">
-                  Résultat mensuel — {MOIS_LABELS[mois]} {annee}
+                  {current.nom} · résultat mensuel — {MOIS_LABELS[mois]} {annee}
                 </p>
               </div>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 flex-wrap align-items-center">
+                <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
                 <select className="form-select form-select-sm" style={{ width: "auto" }} value={mois} onChange={(e) => setMois(+e.target.value)}>
                   {MOIS_LABELS.slice(1).map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                 </select>
@@ -110,6 +153,38 @@ export default function Benefices() {
                         <p>Bénéfice net (Ar)</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Évolution annuelle */}
+                <div className="card-pro mb-4">
+                  <h6 className="fw-bold mb-1">Évolution {annee} — {current.nom}</h6>
+                  <p className="text-muted mb-3" style={{ fontSize: "0.78rem" }}>
+                    Recettes et dépenses par mois, avec le bénéfice net en ligne
+                  </p>
+                  <div style={{ width: "100%", height: 300 }}>
+                    <ResponsiveContainer>
+                      <ComposedChart data={anneeData} margin={{ top: 8, right: 12, left: 8, bottom: 0 }} barGap={2}>
+                        <CartesianGrid stroke="#eef2f7" vertical={false} />
+                        <XAxis dataKey="nom" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={{ stroke: "#e2e8f0" }} tickLine={false} />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: "#64748b" }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                          width={44}
+                        />
+                        <Tooltip
+                          formatter={(v) => `${Number(v).toLocaleString()} Ar`}
+                          contentStyle={{ fontSize: "0.8rem", borderRadius: 8, border: "1px solid #e2e8f0" }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: "0.78rem" }} />
+                        <ReferenceLine y={0} stroke="#94a3b8" />
+                        <Bar dataKey="Recettes" fill="#16a34a" radius={[4, 4, 0, 0]} maxBarSize={22} />
+                        <Bar dataKey="Dépenses" fill="#dc2626" radius={[4, 4, 0, 0]} maxBarSize={22} />
+                        <Line type="monotone" dataKey="Bénéfice" stroke="#2563eb" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                      </ComposedChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
 

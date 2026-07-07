@@ -6,6 +6,12 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { BsCurrencyExchange, BsPlus, BsFillTrashFill } from "react-icons/bs";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -25,6 +31,9 @@ function initForm(now) {
 export default function Depenses() {
   const u_info = GetUserData();
   const now = new Date();
+  const apparts = useAppartements();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee, setAnnee] = useState(now.getFullYear());
   const [depenses, setDepenses] = useState([]);
@@ -34,11 +43,17 @@ export default function Depenses() {
 
   useEffect(() => {
     fetchDepenses();
-  }, [mois, annee]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mois, annee, bienId]);
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
+  }
 
   function fetchDepenses() {
     axios
-      .get(`loyer/depenses?mois=${mois}&annee=${annee}`, u_info.opts)
+      .get(`loyer/depenses?mois=${mois}&annee=${annee}&bienId=${bienId}`, u_info.opts)
       .then((r) => setDepenses(r.data || []))
       .catch(() => setDepenses([]));
   }
@@ -49,7 +64,7 @@ export default function Depenses() {
     if (!form.montant || form.montant <= 0) return toast.warning("Montant invalide");
     setSaving(true);
     axios
-      .post("loyer/depenses", { ...form, mois, annee, montant: +form.montant }, u_info.opts)
+      .post("loyer/depenses", { ...form, mois, annee, montant: +form.montant, bienId }, u_info.opts)
       .then(() => {
         toast.success("Dépense ajoutée");
         setForm(initForm(now));
@@ -87,10 +102,11 @@ export default function Depenses() {
                   <BsCurrencyExchange /> Dépenses Immobilier
                 </h1>
                 <p className="text-muted small mb-0">
-                  {MOIS_LABELS[mois]} {annee} — Total : <span className="fw-bold text-danger">{totalMois.toLocaleString()} Ar</span>
+                  {current.nom} · {MOIS_LABELS[mois]} {annee} — Total : <span className="fw-bold text-danger">{totalMois.toLocaleString()} Ar</span>
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
+                <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
                 <select className="form-select form-select-sm" style={{ width: "auto" }} value={mois} onChange={(e) => setMois(+e.target.value)}>
                   {MOIS_LABELS.slice(1).map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                 </select>

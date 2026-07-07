@@ -118,6 +118,7 @@ function initForm() {
     email: "",
     dateEntree: new Date().toISOString().split("T")[0],
     actif: true,
+    caution: 0,
   };
 }
 
@@ -238,6 +239,7 @@ export default function Locataires() {
         email: loc.email || "",
         dateEntree: loc.dateEntree ? loc.dateEntree.split("T")[0] : new Date().toISOString().split("T")[0],
         actif: loc.actif !== undefined ? loc.actif : true,
+        caution: loc.caution || 0,
       });
       setShowEditModal(true);
     } else {
@@ -528,6 +530,11 @@ export default function Locataires() {
                   <input type="date" name="dateEntree" className="form-control form-control-sm"
                     value={editForm.dateEntree} onChange={handleEditChange} />
                 </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Caution / dépôt de garantie (Ar)</label>
+                  <input type="number" name="caution" min="0" className="form-control form-control-sm"
+                    value={editForm.caution} onChange={handleEditChange} placeholder="0" />
+                </div>
                 <div className="col-sm-6 d-flex align-items-end pb-1">
                   <div className="form-check">
                     <input type="checkbox" name="actif" className="form-check-input" id="editActifCheck"
@@ -621,6 +628,11 @@ export default function Locataires() {
                   <label className="form-label">Date d'entrée</label>
                   <input type="date" name="dateEntree" className="form-control form-control-sm"
                     value={addForm.dateEntree} onChange={handleAddChange} />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Caution / dépôt de garantie (Ar)</label>
+                  <input type="number" name="caution" min="0" className="form-control form-control-sm"
+                    value={addForm.caution} onChange={handleAddChange} placeholder="0" />
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">

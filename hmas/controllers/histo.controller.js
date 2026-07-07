@@ -1,5 +1,6 @@
 "use strict";
 const Histo = require("../models/histo.model");
+const { sendErr } = require("../utils/http");
 
 module.exports.addHisto = (req, res) => {
   let { coms, qte, karazana, idS, idM } = req.body;
@@ -8,7 +9,7 @@ module.exports.addHisto = (req, res) => {
 
   Histo.addHisto(newHisto, (err, resp) => {
     if (err) {
-      res.send(err);
+      sendErr(res, err);
     } else {
       res.send(resp);
     }
@@ -20,7 +21,7 @@ module.exports.getAllMyHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -30,7 +31,7 @@ module.exports.getAllMyInComingHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -40,7 +41,7 @@ module.exports.getMyTotalOfInComing = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -50,7 +51,7 @@ module.exports.getAllMyOutGoingHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -60,7 +61,7 @@ module.exports.getMyTotalOfOutGoing = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -70,7 +71,7 @@ module.exports.getIdHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -83,7 +84,7 @@ module.exports.updateMyHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -93,7 +94,7 @@ module.exports.deleteMyHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -105,7 +106,7 @@ module.exports.searchSomeHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -118,7 +119,7 @@ module.exports.filtreHisto = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };

@@ -40,7 +40,7 @@ Utilisateur.deleteUtilisateur = (id, result) => {
   Utilisateur.getIdUtilisateur(id, (err, resId) => {
     if (resId.length != 0) {
       dbConn.query(
-        `DELETE FROM mpampiasa WHERE id = ${id}`,
+        "DELETE FROM mpampiasa WHERE id = ?", [id],
         function (err, res) {
           if (err) {
             result(err, null);
@@ -118,10 +118,10 @@ Utilisateur.getIdPSUtilisateur = (idPS, result) => {
 };
 
 Utilisateur.searchUtilisateur = (valeur, result) => {
+  const motif = `%${valeur.val}%`;
   dbConn.query(
-    reqSQL +
-      `WHERE (nom LIKE '%${valeur.val}%' OR prenom LIKE '%${valeur.val}%')` +
-      ordre,
+    reqSQL + `WHERE (nom LIKE ? OR prenom LIKE ?)` + ordre,
+    [motif, motif],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -142,8 +142,8 @@ Utilisateur.updateUtilisateur = (updateUtilisateur, id, result) => {
       delete updateUtilisateur.idPS; // j'enleve l'idPS parce qu'il n'a pas ete modifier
 
       dbConn.query(
-        `UPDATE mpampiasa SET ? WHERE id = ${id}`,
-        updateUtilisateur,
+        "UPDATE mpampiasa SET ? WHERE id = ?", 
+        [updateUtilisateur, id],
         function (err, res) {
           if (err) {
             result(err, null);
@@ -156,8 +156,8 @@ Utilisateur.updateUtilisateur = (updateUtilisateur, id, result) => {
       Utilisateur.getIdPSUtilisateur(updateUtilisateur.idPS, (err, resIdPS) => {
         if (resIdPS.length == 0) {
           dbConn.query(
-            `UPDATE mpampiasa SET ? WHERE id = ${id}`,
-            updateUtilisateur,
+            "UPDATE mpampiasa SET ? WHERE id = ?", 
+            [updateUtilisateur, id],
             function (err, res) {
               if (err) {
                 result(err, null);

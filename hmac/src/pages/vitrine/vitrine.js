@@ -12,6 +12,7 @@ import {
   BsLinkedin,
   BsEnvelope,
 } from "react-icons/bs";
+import { WHATSAPP_NUM } from "../../config/contact";
 import "./vitrine.css";
 import hma from "../../assets/images/hma256.png";
 
@@ -64,7 +65,7 @@ export default function Vitrine() {
         </a>
         <div className="vitrine-nav-actions">
           <a
-            href="https://wa.me/261000000000"
+            href={`https://wa.me/${WHATSAPP_NUM}`}
             className="btn-whatsapp"
             target="_blank"
             rel="noopener noreferrer"

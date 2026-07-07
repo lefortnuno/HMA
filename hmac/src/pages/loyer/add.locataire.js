@@ -28,6 +28,7 @@ export default function AddLocataire() {
     email: "",
     dateEntree: new Date().toISOString().split("T")[0],
     actif: true,
+    caution: 0,
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -218,6 +219,11 @@ export default function AddLocataire() {
                       value={form.dateEntree}
                       onChange={handleChange}
                     />
+                  </div>
+                  <div className="col-sm-6">
+                    <label className="form-label">Caution / dépôt de garantie (Ar)</label>
+                    <input type="number" name="caution" min="0" className="form-control"
+                      value={form.caution} onChange={handleChange} placeholder="0" />
                   </div>
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">

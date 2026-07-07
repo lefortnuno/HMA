@@ -112,7 +112,7 @@ Histo.getIdHisto = (id, result) => {
 
 Histo.searchSomeHisto = (valeur, result) => {
   dbConn.query(
-    reqSQL + myReq + `AND serivisy.nom LIKE '%${valeur.val}%'` + ordre,
+    reqSQL + myReq + `AND serivisy.nom LIKE ?` + ordre, [`%${valeur.val}%`],
     [valeur.idM],
     (err, res) => {
       if (err) {
@@ -132,8 +132,8 @@ Histo.updateMyHisto = (updateHisto, id, result) => {
   Histo.getIdHisto(id, (err, resId) => {
     if (resId.length != 0) {
       dbConn.query(
-        `UPDATE hetsika SET ? WHERE id = ${id}`,
-        updateHisto,
+        "UPDATE hetsika SET ? WHERE id = ?", 
+        [updateHisto, id],
         function (err, res) {
           if (err) {
             result(err, null);
@@ -155,7 +155,7 @@ Histo.deleteMyHisto = (id, result) => {
   Histo.getIdHisto(id, (err, resId) => {
     if (resId.length != 0) {
       dbConn.query(
-        `DELETE FROM hetsika WHERE hetsika.id = ${id}`,
+        "DELETE FROM hetsika WHERE hetsika.id = ?", [id],
         function (err, res) {
           if (err) {
             result(err, null);

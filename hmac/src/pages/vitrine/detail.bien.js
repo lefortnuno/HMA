@@ -16,6 +16,7 @@ import {
   BsLinkedin,
   BsEnvelope,
 } from "react-icons/bs";
+import { WHATSAPP_NUM } from "../../config/contact";
 import "./vitrine.css";
 import hma from "../../assets/images/hma256.png";
 
@@ -44,6 +45,30 @@ export default function DetailBien() {
       .catch(() => setBien(null))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // SEO : title + meta description propres au bien affiché.
+  useEffect(() => {
+    if (!bien) return;
+    const ancienTitre = document.title;
+    document.title = `${bien.titre} — ${(bien.prix || 0).toLocaleString()} Ar/mois | Trofel Immobilier`;
+
+    let meta = document.querySelector('meta[name="description"]');
+    const ancienneDesc = meta ? meta.getAttribute("content") : null;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute(
+      "content",
+      `${bien.type === "VILLA" ? "Villa" : "Chambre"} à louer${bien.localisation ? " à " + bien.localisation : ""} — ${(bien.prix || 0).toLocaleString()} Ar/mois. ${(bien.description || "").slice(0, 140)}`
+    );
+
+    return () => {
+      document.title = ancienTitre;
+      if (meta && ancienneDesc !== null) meta.setAttribute("content", ancienneDesc);
+    };
+  }, [bien]);
 
   if (loading) {
     return (
@@ -236,7 +261,7 @@ export default function DetailBien() {
               </p>
 
               <a
-                href={`https://wa.me/261000000000?text=${encodeURIComponent(
+                href={`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(
                   `Bonjour, je suis intéressé par le bien : ${bien.titre}`,
                 )}`}
                 className="btn-whatsapp-big mb-2"
@@ -245,7 +270,7 @@ export default function DetailBien() {
               >
                 <BsWhatsapp size={20} /> WhatsApp
               </a>
-              <a href="tel:+261000000000" className="btn-call-big">
+              <a href="tel:+${WHATSAPP_NUM}" className="btn-call-big">
                 <BsTelephoneFill /> Appeler
               </a>
 
@@ -300,7 +325,7 @@ function VitrineNav() {
       </Link>
       <div className="vitrine-nav-actions">
         <a
-          href="https://wa.me/261000000000"
+          href={`https://wa.me/${WHATSAPP_NUM}`}
           className="btn-whatsapp"
           target="_blank"
           rel="noopener noreferrer"

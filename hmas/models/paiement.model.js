@@ -14,18 +14,20 @@ Paiement.getByAnnee = (annee, result) => {
   );
 };
 
-Paiement.getByMoisAnnee = (mois, annee, result) => {
-  db.query(
-    `SELECT p.*, l.nom, l.prenom, l.chambre, l.etage
+Paiement.getByMoisAnnee = (mois, annee, bienId, result) => {
+  let sql = `SELECT p.*, l.nom, l.prenom, l.chambre, l.etage
      FROM paiement_loyer p
      JOIN locataire l ON l.id = p.locataireId
-     WHERE p.mois = ? AND p.annee = ?`,
-    [mois, annee],
-    (err, res) => {
-      if (err) result(err, null);
-      else result(null, res);
-    }
-  );
+     WHERE p.mois = ? AND p.annee = ?`;
+  const params = [mois, annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND l.bienId = ?";
+    params.push(Number(bienId));
+  }
+  db.query(sql, params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res);
+  });
 };
 
 Paiement.getExisting = (locataireId, mois, annee, result) => {
@@ -53,18 +55,41 @@ Paiement.update = (id, data, result) => {
   });
 };
 
-Paiement.sumByMoisAnnee = (mois, annee, result) => {
-  db.query(
-    `SELECT
-      COALESCE(SUM(CASE WHEN statut IN ('PAYE','PARTIEL') THEN montantLoyer ELSE 0 END), 0) AS totalLoyers,
-      COALESCE(SUM(CASE WHEN statut IN ('PAYE','PARTIEL') THEN montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
-     FROM paiement_loyer WHERE mois=? AND annee=?`,
-    [mois, annee],
-    (err, res) => {
-      if (err) result(err, null);
-      else result(null, res[0]);
-    }
-  );
+Paiement.sumByMoisAnnee = (mois, annee, bienId, result) => {
+  let sql = `SELECT
+      COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantLoyer ELSE 0 END), 0) AS totalLoyers,
+      COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
+     FROM paiement_loyer p
+     JOIN locataire l ON l.id = p.locataireId
+     WHERE p.mois=? AND p.annee=?`;
+  const params = [mois, annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND l.bienId = ?";
+    params.push(Number(bienId));
+  }
+  db.query(sql, params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res[0]);
+  });
+};
+
+// Totaux par mois sur une annee complete (dashboard annuel des benefices).
+Paiement.sumByAnnee = (annee, bienId, result) => {
+  let sql = `SELECT p.mois,
+      COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantLoyer ELSE 0 END), 0) AS totalLoyers,
+      COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
+     FROM paiement_loyer p
+     JOIN locataire l ON l.id = p.locataireId
+     WHERE p.annee=?`;
+  const params = [annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND l.bienId = ?";
+    params.push(Number(bienId));
+  }
+  db.query(sql + " GROUP BY p.mois", params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res);
+  });
 };
 
 module.exports = Paiement;

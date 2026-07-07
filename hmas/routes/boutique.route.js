@@ -1,25 +1,25 @@
 const router = require("express").Router();
 const BoutiqueController = require("../controllers/boutique.controller");
-const user = require("../middlewares/user.middleware");
+const admin = require("../middlewares/admin.middleware");
 
 router.post("/", BoutiqueController.addBoutique);
-router.post("/trie", user.checkUtilisateur, BoutiqueController.trieBoutique);
+router.post("/trie", admin.checkUtilisateur, BoutiqueController.trieBoutique);
 router.post(
   "/recherche",
-  user.checkUtilisateur,
+  admin.checkUtilisateur,
   BoutiqueController.searchBoutique
 );
 
-router.get("/", user.checkUtilisateur, BoutiqueController.getAllBoutiques);
+router.get("/", admin.checkUtilisateur, BoutiqueController.getAllBoutiques);
 router.get(
   "/boutiqueTtl",
-  user.checkUtilisateur,
+  admin.checkUtilisateur,
   BoutiqueController.getMyTotalOfBoutique
 );
-router.get("/:id", user.checkUtilisateur, BoutiqueController.getIdBoutique);
+router.get("/:id", admin.checkUtilisateur, BoutiqueController.getIdBoutique);
 
-router.put("/:id", user.checkUtilisateur, BoutiqueController.updateBoutique);
+router.put("/:id", admin.checkUtilisateur, BoutiqueController.updateBoutique);
 
-router.delete("/:id", user.checkUtilisateur, BoutiqueController.deleteBoutique);
+router.delete("/:id", admin.checkUtilisateur, BoutiqueController.deleteBoutique);
 
 module.exports = router;

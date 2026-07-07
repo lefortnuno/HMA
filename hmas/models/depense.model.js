@@ -3,15 +3,17 @@ const db = require("../config/db");
 
 const Depense = {};
 
-Depense.getByMoisAnnee = (mois, annee, result) => {
-  db.query(
-    "SELECT * FROM depense_immo WHERE mois=? AND annee=? ORDER BY date DESC",
-    [mois, annee],
-    (err, res) => {
-      if (err) result(err, null);
-      else result(null, res);
-    }
-  );
+Depense.getByMoisAnnee = (mois, annee, bienId, result) => {
+  let sql = "SELECT * FROM depense_immo WHERE mois=? AND annee=?";
+  const params = [mois, annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND bienId=?";
+    params.push(Number(bienId));
+  }
+  db.query(sql + " ORDER BY date DESC", params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res);
+  });
 };
 
 Depense.create = (data, result) => {
@@ -35,15 +37,33 @@ Depense.delete = (id, result) => {
   });
 };
 
-Depense.sumByMoisAnnee = (mois, annee, result) => {
-  db.query(
-    "SELECT COALESCE(SUM(montant), 0) AS totalDepenses FROM depense_immo WHERE mois=? AND annee=?",
-    [mois, annee],
-    (err, res) => {
-      if (err) result(err, null);
-      else result(null, res[0]);
-    }
-  );
+Depense.sumByMoisAnnee = (mois, annee, bienId, result) => {
+  let sql =
+    "SELECT COALESCE(SUM(montant), 0) AS totalDepenses FROM depense_immo WHERE mois=? AND annee=?";
+  const params = [mois, annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND bienId=?";
+    params.push(Number(bienId));
+  }
+  db.query(sql, params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res[0]);
+  });
+};
+
+// Somme des benefices par mois pour toute une annee (dashboard annuel).
+Depense.sumByAnnee = (annee, bienId, result) => {
+  let sql =
+    "SELECT mois, COALESCE(SUM(montant),0) AS totalDepenses FROM depense_immo WHERE annee=?";
+  const params = [annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND bienId=?";
+    params.push(Number(bienId));
+  }
+  db.query(sql + " GROUP BY mois", params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res);
+  });
 };
 
 module.exports = Depense;

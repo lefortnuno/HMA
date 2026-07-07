@@ -26,5 +26,9 @@ router.delete("/depenses/:id",user.checkUtilisateur, ctrl.deleteDepense);
 
 // ── Bénéfices ─────────────────────────────────────────────────
 router.get("/benefices", user.checkUtilisateur, ctrl.getBenefices);
+router.get("/benefices/annee", user.checkUtilisateur, ctrl.getBeneficesAnnee);
+
+// ── Historique d'occupation ───────────────────────────────────
+router.get("/historique", user.checkUtilisateur, ctrl.getHistorique);
 
 module.exports = router;

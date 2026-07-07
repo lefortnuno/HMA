@@ -70,6 +70,20 @@ async function imgToBase64(url) {
   });
 }
 
+// Lien WhatsApp de relance avec message pré-rempli.
+export function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
+  if (!loc.tel) return null;
+  const num = loc.tel.replace(/\s+/g, "").replace(/^\+/, "");
+  const msg =
+    `Bonjour ${loc.nom},\n` +
+    `Petit rappel concernant votre loyer de ${moisNom} ${annee} ` +
+    `(chambre ${loc.chambre}) d'un montant de ${(montant || 0).toLocaleString()} Ar ` +
+    `qui reste en attente de paiement.\n` +
+    `Merci de régulariser dès que possible.\n` +
+    `— LEFORT N. Nuno (Trofel)`;
+  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+}
+
 export default function Loyer() {
   const u_info = GetUserData();
   const apparts = useAppartements();
@@ -419,6 +433,64 @@ export default function Loyer() {
                 </div>
               </div>
             </div>
+
+            {/* Récap impayés du mois en cours + relance WhatsApp */}
+            {(() => {
+              const moisCourant = new Date().getMonth() + 1;
+              const anneeCourante = new Date().getFullYear();
+              if (annee !== anneeCourante) return null;
+              const impayes = locataires.filter((loc) => {
+                if (!loc.actif) return false;
+                const p = getCellData(loc.id, moisCourant);
+                return !p || p.statut === "IMPAYE" || p.statut === "PARTIEL";
+              });
+              if (impayes.length === 0) return null;
+              return (
+                <div className="card-pro p-0 mb-4" style={{ borderLeft: "4px solid #ef4444" }}>
+                  <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 className="mb-0 fw-bold" style={{ color: "#b91c1c" }}>
+                      Impayés — {MOIS_FULL[moisCourant - 1]} {anneeCourante} ({impayes.length})
+                    </h6>
+                  </div>
+                  <div className="p-3 d-flex flex-wrap gap-2">
+                    {impayes.map((loc) => {
+                      const p = getCellData(loc.id, moisCourant);
+                      const du =
+                        (loc.loyer || 0) -
+                        (p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0);
+                      const lien = lienRelanceWhatsApp(loc, MOIS_FULL[moisCourant - 1], anneeCourante, du);
+                      return (
+                        <div
+                          key={loc.id}
+                          className="d-flex align-items-center gap-2 rounded-3 px-2 py-1"
+                          style={{ background: "#fef2f2", border: "1px solid #fecaca", fontSize: "0.82rem" }}
+                        >
+                          <span className="fw-semibold">
+                            {loc.chambre} · {loc.nom}
+                          </span>
+                          <span className="text-muted">{du.toLocaleString()} Ar</span>
+                          {lien ? (
+                            <a
+                              href={lien}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-sm py-0 px-2 fw-semibold"
+                              style={{ background: "#25D366", color: "#fff", fontSize: "0.75rem" }}
+                            >
+                              Relancer
+                            </a>
+                          ) : (
+                            <span className="text-muted" style={{ fontSize: "0.72rem" }}>
+                              (pas de n°)
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Tableau principal */}
             <div className="card-pro p-0 mb-4">
@@ -1027,6 +1099,25 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
             </div>
           </div>
         </form>
+
+        {form.statut !== "PAYE" && cell.loc.tel && (
+          <div className="px-3 pb-2 pt-0">
+            <a
+              href={lienRelanceWhatsApp(
+                cell.loc,
+                moisNomFull,
+                cell.annee,
+                (cell.loc.loyer || 0) - (form.statut === "PARTIEL" ? form.montantLoyer || 0 : 0)
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center gap-2"
+              style={{ background: "#25D366", color: "#fff" }}
+            >
+              Relancer {cell.loc.nom} sur WhatsApp
+            </a>
+          </div>
+        )}
 
         {hasExisting && (
           <div className="px-3 pb-3 pt-0">

@@ -1,5 +1,6 @@
 "use strict";
 const Boutique = require("../models/boutique.model");
+const { sendErr } = require("../utils/http");
 
 module.exports.addBoutique = (req, res) => {
   const { nom, prix, idB } = req.body;
@@ -7,7 +8,7 @@ module.exports.addBoutique = (req, res) => {
 
   Boutique.addBoutique(newBoutique, (err, resp) => {
     if (err) {
-      res.send(err);
+      sendErr(res, err);
     } else {
       res.send(resp);
     }
@@ -19,7 +20,7 @@ module.exports.getAllBoutiques = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -29,7 +30,7 @@ module.exports.getIdBoutique = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -39,7 +40,7 @@ module.exports.getMyTotalOfBoutique = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -52,7 +53,7 @@ module.exports.updateBoutique = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -62,7 +63,7 @@ module.exports.deleteBoutique = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -74,7 +75,7 @@ module.exports.searchBoutique = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -87,7 +88,7 @@ module.exports.trieBoutique = (req, res) => {
       if (!err) {
         res.send(resp);
       } else {
-        res.send(err);
+        sendErr(res, err);
       }
     });
   } else {
@@ -95,7 +96,7 @@ module.exports.trieBoutique = (req, res) => {
       if (!err) {
         res.send(resp);
       } else {
-        res.send(err);
+        sendErr(res, err);
       }
     });
   }

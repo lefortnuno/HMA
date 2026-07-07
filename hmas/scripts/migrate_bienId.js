@@ -85,9 +85,16 @@ async function migrateOne(name, cfg) {
       console.log("   + nouvelle cle unique (mois,annee,bienId) creee");
     } else console.log("   = cle unique (mois,annee,bienId) existe deja");
 
-    // 4) Backfill de securite
+    // 4) depense_immo.bienId (multi-appartement pour les depenses/benefices)
+    if (!(await columnExists(conn, db, "depense_immo", "bienId"))) {
+      await q(conn, "ALTER TABLE depense_immo ADD COLUMN bienId INT NOT NULL DEFAULT 0");
+      console.log("   + depense_immo.bienId ajoutee");
+    } else console.log("   = depense_immo.bienId existe deja");
+
+    // 5) Backfill de securite
     await q(conn, "UPDATE locataire SET bienId = 0 WHERE bienId IS NULL");
     await q(conn, "UPDATE facture_jirama SET bienId = 0 WHERE bienId IS NULL");
+    await q(conn, "UPDATE depense_immo SET bienId = 0 WHERE bienId IS NULL");
 
     console.log(`[${name}] ✅ migration terminee.`);
   } catch (e) {

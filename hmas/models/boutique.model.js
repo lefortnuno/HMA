@@ -34,7 +34,7 @@ Boutique.addBoutique = (newBoutique, result) => {
 Boutique.deleteBoutique = (id, result) => {
   Boutique.getIdBoutique(id, (err, resId) => {
     if (resId.length != 0) {
-      dbConn.query(`DELETE FROM botika WHERE id = ${id}`, function (err, res) {
+      dbConn.query("DELETE FROM botika WHERE id = ?", [id], function (err, res) {
         if (err) {
           result(err, null);
         } else {
@@ -104,7 +104,7 @@ Boutique.getNomBoutique = (verif, result) => {
 
 Boutique.searchBoutique = (valeur, result) => {
   dbConn.query(
-    reqSQL + ` AND nom LIKE '${valeur.val}%'` + ordre,
+    reqSQL + ` AND nom LIKE ?` + ordre, [valeur.val + "%"],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -120,10 +120,10 @@ Boutique.searchBoutique = (valeur, result) => {
 };
 
 Boutique.advancedSearchBoutique = (valeur, result) => {
+  const motif = `%${valeur.val}%`;
   dbConn.query(
-    reqSQL +
-      ` AND (nom LIKE '%${valeur.val}%' OR prix LIKE '%${valeur.val}%')` +
-      ordre,
+    reqSQL + ` AND (nom LIKE ? OR prix LIKE ?)` + ordre,
+    [motif, motif],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -178,8 +178,8 @@ Boutique.updateBoutique = (updateBoutique, id, result) => {
       delete updateBoutique.nom; // j'enleve l'nom parce qu'il n'a pas ete modifier
 
       dbConn.query(
-        `UPDATE botika SET ? WHERE id = ${id}`,
-        updateBoutique,
+        "UPDATE botika SET ? WHERE id = ?", 
+        [updateBoutique, id],
         function (err, res) {
           if (err) {
             result(err, null);
@@ -192,8 +192,8 @@ Boutique.updateBoutique = (updateBoutique, id, result) => {
       Boutique.getNomBoutique(updateBoutique.nom, (err, resNom) => {
         if (resNom.length == 0) {
           dbConn.query(
-            `UPDATE botika SET ? WHERE id = ${id}`,
-            updateBoutique,
+            "UPDATE botika SET ? WHERE id = ?", 
+            [updateBoutique, id],
             function (err, res) {
               if (err) {
                 result(err, null);

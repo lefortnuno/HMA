@@ -12,6 +12,7 @@ import {
   BsCurrencyExchange,
   BsBuilding,
   BsDoorOpen,
+  BsClockHistory,
   BsInfoCircle,
   BsFileEarmarkText,
   BsImages,
@@ -64,7 +65,7 @@ export default function Sidebar() {
       <ul>
         <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
-        {isAdmin && nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
+        {nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
 
         <div className="separator" />
 
@@ -75,6 +76,7 @@ export default function Sidebar() {
         {nav("/loyer/factures/", BsFileEarmarkText, "Factures JIRAMA", true)}
         {nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}
         {nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
+        {nav("/loyer/historique/", BsClockHistory, "Historique", true)}
 
         {isAdmin && (
           <>

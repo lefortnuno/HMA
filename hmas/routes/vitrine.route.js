@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const ctrl   = require("../controllers/vitrine.controller");
-const user   = require("../middlewares/user.middleware");
+const admin  = require("../middlewares/admin.middleware");
 const multer = require("multer");
 const path   = require("path");
 const fs     = require("fs");
@@ -22,14 +22,14 @@ router.get("/biens",     ctrl.getAllBiens);
 router.get("/biens/:id", ctrl.getBienById);
 
 // ── Upload photo (admin) ──────────────────────────────────────
-router.post("/upload", user.checkUtilisateur, upload.single("photo"), (req, res) => {
+router.post("/upload", admin.checkUtilisateur, upload.single("photo"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
   res.json({ url: `/uploads/${req.file.filename}` });
 });
 
 // ── Admin CRUD ────────────────────────────────────────────────
-router.post("/biens",       user.checkUtilisateur, ctrl.createBien);
-router.put("/biens/:id",    user.checkUtilisateur, ctrl.updateBien);
-router.delete("/biens/:id", user.checkUtilisateur, ctrl.deleteBien);
+router.post("/biens",       admin.checkUtilisateur, ctrl.createBien);
+router.put("/biens/:id",    admin.checkUtilisateur, ctrl.updateBien);
+router.delete("/biens/:id", admin.checkUtilisateur, ctrl.deleteBien);
 
 module.exports = router;

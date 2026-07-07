@@ -32,6 +32,7 @@ function initForm(etage, chambre) {
     email: "",
     dateEntree: new Date().toISOString().split("T")[0],
     actif: true,
+    caution: 0,
   };
 }
 
@@ -315,6 +316,11 @@ export default function Chambres() {
                   <label className="form-label">Date d'entrée</label>
                   <input type="date" name="dateEntree" className="form-control form-control-sm"
                     value={form.dateEntree} onChange={handleChange} />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Caution / dépôt de garantie (Ar)</label>
+                  <input type="number" name="caution" min="0" className="form-control form-control-sm"
+                    value={form.caution} onChange={handleChange} placeholder="0" />
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">

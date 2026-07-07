@@ -16,3 +16,8 @@ CLAUDE.md
 CONTEXT.md
 *.stackdump
 *.pdf
+# secrets backend (ne JAMAIS committer)
+hmas/config/.env
+
+# sauvegardes locales de la base (ne pas committer)
+hmas/backups/

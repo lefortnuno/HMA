@@ -1,5 +1,6 @@
 "use strict";
 const Utilisateur = require("../models/utilisateur.model");
+const { sendErr } = require("../utils/http");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -16,7 +17,7 @@ module.exports.addUtilisateur = (req, res) => {
 
   Utilisateur.addUtilisateur(newUtilisateur, (err, resp) => {
     if (err) {
-      res.send(err);
+      sendErr(res, err);
     } else {
       res.send(resp);
     }
@@ -52,7 +53,7 @@ module.exports.getAllUtilisateurs = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -62,7 +63,7 @@ module.exports.getMyTotalOfUser = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -72,7 +73,7 @@ module.exports.getIdUtilisateur = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -85,7 +86,7 @@ module.exports.updateUtilisateur = (req, res) => {
 
   Utilisateur.updateUtilisateur(updateData, req.params.id, (err, resp) => {
     if (!err) res.send(resp);
-    else res.send(err);
+    else sendErr(res, err);
   });
 };
 
@@ -94,7 +95,7 @@ module.exports.deleteUtilisateur = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };
@@ -106,7 +107,7 @@ module.exports.searchUtilisateur = (req, res) => {
     if (!err) {
       res.send(resp);
     } else {
-      res.send(err);
+      sendErr(res, err);
     }
   });
 };

@@ -35,7 +35,7 @@ Service.deleteService = (id, result) => {
   Service.getIdService(id, (err, resId) => {
     if (resId.length != 0) {
       dbConn.query(
-        `DELETE FROM serivisy WHERE id = ${id}`,
+        "DELETE FROM serivisy WHERE id = ?", [id],
         function (err, res) {
           if (err) {
             result(err, null);
@@ -103,7 +103,7 @@ Service.getNomService = (nom, result) => {
 
 Service.searchService = (valeur, result) => { 
   dbConn.query(
-    reqSQL + `WHERE nom LIKE '${valeur.val}%'` + ordre,
+    reqSQL + `WHERE nom LIKE ?` + ordre, [valeur.val + "%"],
     (err, res) => { 
       if (err) { 
         result({ err, message: "erreur !", success: false }, null);
@@ -121,8 +121,8 @@ Service.searchService = (valeur, result) => {
 Service.advancedSearchService = (valeur, result) => {
   dbConn.query(
     reqSQL +
-      `WHERE (nom LIKE '%${valeur.val}%' OR prix LIKE '%${valeur.val}%')` +
-      ordre,
+      `WHERE (nom LIKE ? OR prix LIKE ?)` +
+      ordre, [`%${valeur.val}%`, `%${valeur.val}%`],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -139,7 +139,7 @@ Service.advancedSearchService = (valeur, result) => {
 
 Service.trieServiceByUnite = (valeur, result) => {
   dbConn.query(
-    reqSQL + `WHERE  fandrefesana = '${valeur.val}'` + ordre,
+    reqSQL + `WHERE  fandrefesana = ?` + ordre, [valeur.val],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -156,7 +156,7 @@ Service.trieServiceByUnite = (valeur, result) => {
 
 Service.trieServiceByType = (valeur, result) => {
   dbConn.query(
-    reqSQL + `WHERE karazana = '${valeur.val}'` + ordre,
+    reqSQL + `WHERE karazana = ?` + ordre, [valeur.val],
     (err, res) => {
       if (err) {
         result({ err, message: "erreur !", success: false }, null);
@@ -177,8 +177,8 @@ Service.updateService = (updateService, id, result) => {
       delete updateService.nom; // j'enleve l'nom parce qu'il n'a pas ete modifier
 
       dbConn.query(
-        `UPDATE serivisy SET ? WHERE id = ${id}`,
-        updateService,
+        "UPDATE serivisy SET ? WHERE id = ?", 
+        [updateService, id],
         function (err, res) {
           if (err) {
             result(err, null);
@@ -191,8 +191,8 @@ Service.updateService = (updateService, id, result) => {
       Service.getNomService(updateService.nom, (err, resNom) => {
         if (resNom.length == 0) {
           dbConn.query(
-            `UPDATE serivisy SET ? WHERE id = ${id}`,
-            updateService,
+            "UPDATE serivisy SET ? WHERE id = ?", 
+            [updateService, id],
             function (err, res) {
               if (err) {
                 result(err, null);
