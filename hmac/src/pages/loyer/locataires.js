@@ -359,18 +359,24 @@ export default function Locataires() {
                     </span>
                   </td>
                   <td>
-                    <button
-                      className="btn btn-outline-primary btn-sm me-1"
-                      onClick={() => handleEditClick(loc)}
-                    >
-                      <BsPencilSquare />
-                    </button>
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => { setToDelete(loc); setShowDeleteModal(true); }}
-                    >
-                      <BsFillTrashFill />
-                    </button>
+                    <div className="d-flex gap-1">
+                      <button
+                        className="btn-action btn-action-edit"
+                        title={`Modifier ${loc.nom}`}
+                        aria-label={`Modifier ${loc.nom}`}
+                        onClick={() => handleEditClick(loc)}
+                      >
+                        <BsPencilSquare />
+                      </button>
+                      <button
+                        className="btn-action btn-action-delete"
+                        title={`Supprimer ${loc.nom}`}
+                        aria-label={`Supprimer ${loc.nom}`}
+                        onClick={() => { setToDelete(loc); setShowDeleteModal(true); }}
+                      >
+                        <BsFillTrashFill />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

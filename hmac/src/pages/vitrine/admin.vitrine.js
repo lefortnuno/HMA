@@ -376,18 +376,20 @@ export default function AdminVitrine() {
                           </button>
                         </td>
                         <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                          <a href={`/vitrine/bien/${b.id}`} target="_blank" rel="noopener noreferrer"
-                            className="btn btn-outline-success btn-sm me-1" title="Voir sur la vitrine">
-                            <BsEye />
-                          </a>
-                          <button className="btn btn-outline-primary btn-sm me-1" title="Modifier"
-                            onClick={() => navigate(`/vitrine/admin/edit/${b.id}`, { state: { bien: b } })}>
-                            <BsPencilSquare />
-                          </button>
-                          <button className="btn btn-outline-danger btn-sm" title="Supprimer"
-                            onClick={() => setToDelete(b)}>
-                            <BsFillTrashFill />
-                          </button>
+                          <div className="d-inline-flex gap-1">
+                            <a href={`/vitrine/bien/${b.id}`} target="_blank" rel="noopener noreferrer"
+                              className="btn-action btn-action-view" title="Voir sur la vitrine">
+                              <BsEye />
+                            </a>
+                            <button className="btn-action btn-action-edit" title="Modifier"
+                              onClick={() => navigate(`/vitrine/admin/edit/${b.id}`, { state: { bien: b } })}>
+                              <BsPencilSquare />
+                            </button>
+                            <button className="btn-action btn-action-delete" title="Supprimer"
+                              onClick={() => setToDelete(b)}>
+                              <BsFillTrashFill />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

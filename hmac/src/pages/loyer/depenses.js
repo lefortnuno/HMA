@@ -165,7 +165,12 @@ export default function Depenses() {
                             {(+d.montant).toLocaleString()} Ar
                           </td>
                           <td>
-                            <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(d.id)}>
+                            <button
+                              className="btn-action btn-action-delete"
+                              title="Supprimer cette dépense"
+                              aria-label="Supprimer cette dépense"
+                              onClick={() => handleDelete(d.id)}
+                            >
                               <BsFillTrashFill />
                             </button>
                           </td>

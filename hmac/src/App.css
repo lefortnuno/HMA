@@ -5,3 +5,66 @@
 .App {
   text-align: left;
 }
+
+/* ─── Boutons d'action (edit / delete) ─────────────────────────
+   Pastilles douces : fond teinte + icone coloree, qui s'inversent
+   au survol avec une legere elevation. */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+}
+.btn-action:active {
+  transform: scale(0.92);
+}
+.btn-action:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.btn-action-edit {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #dbeafe;
+}
+.btn-action-edit:hover {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-action-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fee2e2;
+}
+.btn-action-delete:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-action-view {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #dcfce7;
+}
+.btn-action-view:hover {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+  transform: translateY(-1px);
+}
