@@ -30,6 +30,13 @@ Paiement.getByMoisAnnee = (mois, annee, bienId, result) => {
   });
 };
 
+Paiement.getById = (id, result) => {
+  db.query("SELECT * FROM paiement_loyer WHERE id = ?", [id], (err, res) => {
+    if (err) result(err, null);
+    else result(null, res[0] || null);
+  });
+};
+
 Paiement.getExisting = (locataireId, mois, annee, result) => {
   db.query(
     "SELECT * FROM paiement_loyer WHERE locataireId=? AND mois=? AND annee=?",

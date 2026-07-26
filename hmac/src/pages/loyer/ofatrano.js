@@ -540,11 +540,18 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
       ? axios.put(`loyer/paiements/${cell.existing.id}`, data, u_info.opts)
       : axios.post("loyer/paiements", data, u_info.opts);
     req
-      .then(() => {
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          onClose();
+          return;
+        }
         toast.success("Paiement enregistré !");
         onSave();
       })
-      .catch(() => toast.error("Erreur d'enregistrement"))
+      .catch((err) =>
+        toast.error(err.response?.data?.message || "Erreur d'enregistrement")
+      )
       .finally(() => setSaving(false));
   };
 

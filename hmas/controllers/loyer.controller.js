@@ -267,6 +267,23 @@ module.exports.decideValidation = (req, res) => {
       });
     };
 
+    // ── Paiements : upsert du paiement demande ──
+    if (demande.entite === "PAIEMENT") {
+      const a = demande.apres || {};
+      const data = {
+        locataireId: a.locataireId,
+        mois: a.mois,
+        annee: a.annee,
+        montantLoyer: a.montantLoyer,
+        montantJIRAMA: a.montantJIRAMA || 0,
+        statut: a.statut,
+        datePaiement: a.datePaiement ? String(a.datePaiement).split("T")[0] : null,
+      };
+      if (!data.locataireId) return badRequest(res, "Demande de paiement invalide.");
+      return execUpsertPaiement(data, finir);
+    }
+
+    // ── Locataires ──
     if (demande.action === "AJOUT") {
       const data = demande.apres;
       // La chambre a pu etre prise entre-temps : re-verifier.
@@ -425,31 +442,75 @@ module.exports.getPaiements = (req, res) => {
   });
 };
 
+// Upsert reel d'un paiement (admin direct, ou approbation d'une demande).
+function execUpsertPaiement(data, cb) {
+  Paiement.getExisting(data.locataireId, data.mois, data.annee, (err, existing) => {
+    if (err) return cb(err);
+    if (existing) {
+      Paiement.update(existing.id, data, (err2, result) =>
+        err2 ? cb(err2) : cb(null, { ...result, id: existing.id })
+      );
+    } else {
+      Paiement.create(data, cb);
+    }
+  });
+}
+
+// Enrichit la demande avec le nom/chambre du locataire (affichage notifications).
+function metaLocataire(locataireId, cb) {
+  Locataire.getById(locataireId, (err, loc) => {
+    if (err || !loc) return cb({});
+    cb({ locataireNom: `${loc.nom} ${loc.prenom || ""}`.trim(), chambre: loc.chambre, etage: loc.etage });
+  });
+}
+
+function validePaiement(body) {
+  const { mois, annee, montantLoyer, montantJIRAMA, statut } = body;
+  if (!V.isMoisValide(mois)) return "Mois invalide (1-12).";
+  if (!V.isAnneeValide(annee)) return "Année invalide.";
+  if (!V.isMontantValide(montantLoyer)) return "Montant loyer invalide.";
+  if (montantJIRAMA !== undefined && !V.isMontantValide(montantJIRAMA))
+    return "Montant JIRAMA invalide.";
+  if (!V.isStatutValide(statut)) return "Statut invalide (PAYE/PARTIEL/IMPAYE).";
+  return null;
+}
+
 module.exports.createPaiement = (req, res) => {
   const { locataireId, mois, annee, montantLoyer, montantJIRAMA, statut, datePaiement } = req.body;
-  if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
-  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
-  if (!V.isMontantValide(montantLoyer)) return badRequest(res, "Montant loyer invalide.");
-  if (montantJIRAMA !== undefined && !V.isMontantValide(montantJIRAMA))
-    return badRequest(res, "Montant JIRAMA invalide.");
-  if (!V.isStatutValide(statut)) return badRequest(res, "Statut invalide (PAYE/PARTIEL/IMPAYE).");
+  const erreur = validePaiement(req.body);
+  if (erreur) return badRequest(res, erreur);
 
+  const data = { locataireId, mois, annee, montantLoyer, montantJIRAMA: montantJIRAMA || 0, statut, datePaiement: datePaiement || null };
+
+  if (isAdmin(req)) {
+    return execUpsertPaiement(data, (err, result) => {
+      if (err) sendErr(res, err);
+      else res.send(result);
+    });
+  }
+
+  // Simple user : demande de validation (avec l'eventuel paiement existant en "avant").
   Paiement.getExisting(locataireId, mois, annee, (err, existing) => {
     if (err) return sendErr(res, err);
-
-    const data = { locataireId, mois, annee, montantLoyer, montantJIRAMA: montantJIRAMA || 0, statut, datePaiement: datePaiement || null };
-
-    if (existing) {
-      Paiement.update(existing.id, data, (err2, result) => {
-        if (err2) sendErr(res, err2);
-        else res.send({ ...result, id: existing.id });
-      });
-    } else {
-      Paiement.create(data, (err2, result) => {
-        if (err2) sendErr(res, err2);
-        else res.send(result);
-      });
-    }
+    metaLocataire(locataireId, (meta) => {
+      Validation.create(
+        {
+          entite: "PAIEMENT",
+          action: existing ? "MODIFICATION" : "AJOUT",
+          entiteId: existing ? existing.id : null,
+          avant: existing ? { ...existing, ...meta } : null,
+          apres: { ...data, ...meta },
+          ...auteurDe(req),
+        },
+        (err2, result) => {
+          if (err2) return sendErr(res, err2);
+          res.status(202).send({
+            ...result,
+            message: "Demande de paiement envoyée à l'admin pour validation.",
+          });
+        }
+      );
+    });
   });
 };
 
@@ -459,9 +520,38 @@ module.exports.updatePaiement = (req, res) => {
   if (montantJIRAMA !== undefined && !V.isMontantValide(montantJIRAMA))
     return badRequest(res, "Montant JIRAMA invalide.");
   if (!V.isStatutValide(statut)) return badRequest(res, "Statut invalide.");
-  Paiement.update(req.params.id, { montantLoyer, montantJIRAMA, statut, datePaiement: datePaiement || null }, (err, result) => {
-    if (err) sendErr(res, err);
-    else res.send(result);
+
+  const data = { montantLoyer, montantJIRAMA, statut, datePaiement: datePaiement || null };
+
+  if (isAdmin(req)) {
+    return Paiement.update(req.params.id, data, (err, result) => {
+      if (err) sendErr(res, err);
+      else res.send(result);
+    });
+  }
+
+  Paiement.getById(req.params.id, (err, existing) => {
+    if (err) return sendErr(res, err);
+    if (!existing) return res.status(404).send({ success: false, message: "Paiement introuvable." });
+    metaLocataire(existing.locataireId, (meta) => {
+      Validation.create(
+        {
+          entite: "PAIEMENT",
+          action: "MODIFICATION",
+          entiteId: +req.params.id,
+          avant: { ...existing, ...meta },
+          apres: { ...existing, ...data, ...meta },
+          ...auteurDe(req),
+        },
+        (err2, result) => {
+          if (err2) return sendErr(res, err2);
+          res.status(202).send({
+            ...result,
+            message: "Demande de paiement envoyée à l'admin pour validation.",
+          });
+        }
+      );
+    });
   });
 };
 

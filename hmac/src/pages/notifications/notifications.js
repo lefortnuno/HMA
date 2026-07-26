@@ -40,8 +40,10 @@ const STATUTS = {
   REFUSE:     { label: "Refusée",    color: "#dc2626", bg: "#fef2f2", Icon: BsXCircleFill },
 };
 
-// Champs affichés dans le diff, avec libellés lisibles.
-const CHAMPS = [
+const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
+// Champs affichés dans le diff, par type d'entité.
+const CHAMPS_LOCATAIRE = [
   ["nom", "Nom"],
   ["prenom", "Prénom"],
   ["chambre", "Chambre"],
@@ -54,11 +56,26 @@ const CHAMPS = [
   ["actif", "Actif"],
 ];
 
+const CHAMPS_PAIEMENT = [
+  ["mois", "Mois"],
+  ["annee", "Année"],
+  ["montantLoyer", "Loyer payé (Ar)"],
+  ["montantJIRAMA", "JIRAMA payé (Ar)"],
+  ["statut", "Statut"],
+  ["datePaiement", "Date de paiement"],
+];
+
+function champsDe(entite) {
+  return entite === "PAIEMENT" ? CHAMPS_PAIEMENT : CHAMPS_LOCATAIRE;
+}
+
 function fmtVal(champ, v) {
   if (v === null || v === undefined || v === "") return "—";
   if (champ === "actif") return Number(v) ? "Oui" : "Non";
-  if (champ === "loyer" || champ === "caution") return Number(v).toLocaleString();
-  if (champ === "dateEntree") return String(v).split("T")[0];
+  if (["loyer", "caution", "montantLoyer", "montantJIRAMA"].includes(champ))
+    return Number(v).toLocaleString();
+  if (champ === "mois") return MOIS_FULL[Number(v) - 1] || String(v);
+  if (champ === "dateEntree" || champ === "datePaiement") return String(v).split("T")[0];
   return String(v);
 }
 
@@ -69,6 +86,7 @@ function estDifferent(champ, a, b) {
 // Tableau avant/après : en MODIFICATION seuls les champs modifiés ressortent.
 function DiffTable({ demande }) {
   const { action, avant, apres } = demande;
+  const CHAMPS = champsDe(demande.entite);
   const rows =
     action === "MODIFICATION"
       ? CHAMPS.filter(([c]) => avant && apres && estDifferent(c, avant[c], apres[c]))
@@ -213,8 +231,11 @@ export default function Notifications() {
                 {affichees.map((d) => {
                   const a = ACTIONS[d.action] || ACTIONS.MODIFICATION;
                   const s = STATUTS[d.statut] || STATUTS.EN_ATTENTE;
-                  const cible =
-                    d.action === "AJOUT" ? d.apres?.nom : d.avant?.nom || d.apres?.nom || "";
+                  const src = d.apres || d.avant || {};
+                  const estPaiement = d.entite === "PAIEMENT";
+                  const cible = estPaiement
+                    ? `${src.locataireNom || "?"}${src.chambre ? ` (ch. ${src.chambre})` : ""} · ${MOIS_FULL[Number(src.mois) - 1] || ""} ${src.annee || ""}`
+                    : d.action === "AJOUT" ? d.apres?.nom : d.avant?.nom || d.apres?.nom || "";
                   return (
                     <div className="col-12 col-lg-6" key={d.id}>
                       <div
@@ -230,7 +251,7 @@ export default function Notifications() {
                             className="d-inline-flex align-items-center gap-1 fw-bold"
                             style={{ color: a.color, fontSize: "0.85rem" }}
                           >
-                            <a.Icon size={14} /> {a.label} — locataire {cible && <strong>{cible}</strong>}
+                            <a.Icon size={14} /> {a.label} — {estPaiement ? "paiement" : "locataire"} {cible && <strong>{cible}</strong>}
                           </span>
                           <span
                             className="d-inline-flex align-items-center gap-1 rounded-pill px-2 py-0"
