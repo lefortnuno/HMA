@@ -7,6 +7,7 @@ import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import { BsPeople, BsArrowLeft } from "react-icons/bs";
+import AvatarPicker from "../../components/avatar/avatar";
 import { getSelectedBienId } from "../../components/appart/apart.select";
 import "./loyer.css";
 
@@ -29,6 +30,7 @@ export default function AddLocataire() {
     dateEntree: new Date().toISOString().split("T")[0],
     actif: true,
     caution: 0,
+    photo: "",
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -121,6 +123,10 @@ export default function AddLocataire() {
             <div className="card-pro" style={{ maxWidth: 620 }}>
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
+                  <div className="col-12 pb-3 mb-1 border-bottom">
+                    <label className="form-label">Photo du locataire</label>
+                    <AvatarPicker value={form.photo} onChange={(p) => setForm((fm) => ({ ...fm, photo: p }))} nom={`${form.nom} ${form.prenom}`} size={72} />
+                  </div>
                   <div className="col-sm-6">
                     <label className="form-label">Nom *</label>
                     <input

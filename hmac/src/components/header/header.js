@@ -13,7 +13,15 @@ export default function Header({ children }) {
   const [open, setOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [nbNotifs, setNbNotifs] = useState(0);
+  const [photo, setPhoto] = useState(localStorage.getItem("photo") || "");
   const isAdmin = String(u_info.u_karazana) === "1";
+
+  // Rafraichit l'avatar quand la page Parametres enregistre une nouvelle photo.
+  useEffect(() => {
+    const maj = () => setPhoto(localStorage.getItem("photo") || "");
+    window.addEventListener("hma-profil-maj", maj);
+    return () => window.removeEventListener("hma-profil-maj", maj);
+  }, []);
 
   // Cloche : nombre de demandes en attente de validation (admin).
   useEffect(() => {
@@ -103,7 +111,11 @@ export default function Header({ children }) {
           </button>
 
           <button className="user-btn" onClick={() => setOpen(!open)}>
-            <img src={hma} alt="avatar" className="user-avatar" />
+            {photo ? (
+              <img src={photo} alt="avatar" className="user-avatar" style={{ objectFit: "cover" }} />
+            ) : (
+              <img src={hma} alt="avatar" className="user-avatar" />
+            )}
             <div className="d-none d-sm-flex flex-column text-start">
               <span className="user-name-text">{u_info.u_nom}</span>
               <span className="user-role-text">

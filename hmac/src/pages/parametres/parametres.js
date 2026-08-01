@@ -6,6 +6,7 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { BsGear, BsPersonCircle, BsShieldLock, BsEye, BsEyeSlash } from "react-icons/bs";
+import AvatarPicker from "../../components/avatar/avatar";
 import "../loyer/loyer.css";
 
 export default function Parametres() {
@@ -15,6 +16,7 @@ export default function Parametres() {
   // ── Profil ──
   const [nom, setNom] = useState(u_info.u_nom || "");
   const [prenom, setPrenom] = useState(u_info.u_prenom || "");
+  const [photo, setPhoto] = useState(localStorage.getItem("photo") || "");
   const [savingProfil, setSavingProfil] = useState(false);
 
   // ── Mot de passe ──
@@ -29,12 +31,15 @@ export default function Parametres() {
     if (!nom.trim()) return toast.warning("Le nom est requis");
     setSavingProfil(true);
     axios
-      .put("utilisateur/me", { nom, prenom }, u_info.opts)
+      .put("utilisateur/me", { nom, prenom, photo }, u_info.opts)
       .then((r) => {
         toast.success("Profil mis à jour !");
         // Met a jour l'affichage (header) sans deconnexion.
         localStorage.setItem("nom", r.data.nom ?? nom);
         localStorage.setItem("prenom", r.data.prenom ?? prenom);
+        if (photo) localStorage.setItem("photo", photo);
+        else localStorage.removeItem("photo");
+        window.dispatchEvent(new Event("hma-profil-maj"));
       })
       .catch((err) => toast.error(err.response?.data?.message || "Erreur lors de la mise à jour"))
       .finally(() => setSavingProfil(false));
@@ -82,6 +87,14 @@ export default function Parametres() {
                     <BsPersonCircle className="text-primary" /> Mon profil
                   </h6>
                   <form onSubmit={saveProfil}>
+                    <div className="mb-3 pb-3 border-bottom">
+                      <label className="form-label">Photo de profil</label>
+                      <AvatarPicker
+                        value={photo}
+                        onChange={setPhoto}
+                        nom={`${nom} ${prenom}`}
+                      />
+                    </div>
                     <div className="mb-3">
                       <label className="form-label">Nom *</label>
                       <input type="text" className="form-control form-control-sm"

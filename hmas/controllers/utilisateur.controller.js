@@ -116,7 +116,7 @@ module.exports.searchUtilisateur = (req, res) => {
 // Modifie UNIQUEMENT son propre profil : nom, prénom, mot de passe.
 // karazana (rôle) et idPS ne sont jamais modifiables ici.
 module.exports.updateMonCompte = (req, res) => {
-  const { nom, prenom, pwd, pwdActuel } = req.body;
+  const { nom, prenom, pwd, pwdActuel, photo } = req.body;
   const moi = req.user;
   if (!moi || !moi.id)
     return res.status(401).send({ success: false, message: "Non authentifié." });
@@ -127,6 +127,12 @@ module.exports.updateMonCompte = (req, res) => {
     const updateData = {};
     if (nom !== undefined && String(nom).trim()) updateData.nom = String(nom).trim();
     if (prenom !== undefined) updateData.prenom = String(prenom).trim();
+    // Photo de profil : data URL base64 (ou "" pour retirer la photo).
+    if (photo !== undefined) {
+      if (photo && String(photo).length > 700000)
+        return res.status(400).send({ success: false, message: "Photo trop lourde (max ~500 Ko)." });
+      updateData.photo = photo || null;
+    }
 
     if (pwd) {
       if (String(pwd).length < 4)
@@ -148,6 +154,7 @@ module.exports.updateMonCompte = (req, res) => {
         message: "Compte mis à jour !",
         nom: updateData.nom || resultat[0].nom,
         prenom: updateData.prenom !== undefined ? updateData.prenom : resultat[0].prenom,
+        photo: updateData.photo !== undefined ? updateData.photo : resultat[0].photo,
       });
     });
   });

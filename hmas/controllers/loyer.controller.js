@@ -23,8 +23,9 @@ module.exports.getAllLocataires = (req, res) => {
 };
 
 function valideLocataire(body) {
-  const { nom, chambre, etage, loyer, caution, bienId } = body;
+  const { nom, chambre, etage, loyer, caution, bienId, photo } = body;
   if (!nom || !String(nom).trim()) return "Le nom est requis.";
+  if (photo && String(photo).length > 700000) return "Photo trop lourde (max ~500 Ko).";
   if (!V.isEtageValide(etage)) return "Étage invalide (RDC ou 1ER).";
   if (!V.isChambreValide(chambre, etage, Number(bienId) || 0))
     return "Chambre invalide pour cet étage/appartement.";
@@ -49,13 +50,14 @@ function execCreateLocataire(data, cb) {
 }
 
 function normaliseLocataire(body) {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution } = body;
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo } = body;
   return {
     nom, prenom, chambre, etage, loyer, tel, email,
     dateEntree: dateEntree || null,
     actif: actif ? 1 : 0,
     bienId: Number(bienId) || 0,
     caution: Number(caution) || 0,
+    photo: photo || null, // data URL base64 ou avatar predefini
   };
 }
 

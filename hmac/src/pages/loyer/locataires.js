@@ -16,6 +16,7 @@ import {
   BsWhatsapp,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
 import ApartSelect, {
   useAppartements,
   getSelectedBienId,
@@ -119,6 +120,7 @@ function initForm() {
     dateEntree: new Date().toISOString().split("T")[0],
     actif: true,
     caution: 0,
+    photo: "",
   };
 }
 
@@ -257,6 +259,7 @@ export default function Locataires() {
         dateEntree: loc.dateEntree ? loc.dateEntree.split("T")[0] : new Date().toISOString().split("T")[0],
         actif: loc.actif !== undefined ? loc.actif : true,
         caution: loc.caution || 0,
+        photo: loc.photo || "",
       });
       setShowEditModal(true);
     } else {
@@ -345,6 +348,9 @@ export default function Locataires() {
                     </span>
                   </td>
                   <td style={{ width: "150px", maxWidth: "150px" }}>
+                    <div className="d-flex align-items-center gap-2">
+                    <Avatar photo={loc.photo} nom={`${loc.nom} ${loc.prenom || ""}`} size={32} />
+                    <div style={{ minWidth: 0 }}>
                     <div
                       className="fw-semibold"
                       style={{ fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
@@ -359,6 +365,8 @@ export default function Locataires() {
                     >
                       {loc.email}
                     </small>
+                    </div>
+                    </div>
                   </td>
                   <td>
                     <PhoneActions tel={loc.tel} />
@@ -502,6 +510,10 @@ export default function Locataires() {
             </div>
             <form onSubmit={handleEditSubmit} className="p-4">
               <div className="row g-3">
+                <div className="col-12 pb-2 mb-1 border-bottom">
+                  <label className="form-label">Photo du locataire</label>
+                  <AvatarPicker value={editForm.photo} onChange={(p) => setEditForm((f) => ({ ...f, photo: p }))} nom={`${editForm.nom} ${editForm.prenom}`} size={68} />
+                </div>
                 <div className="col-sm-6">
                   <label className="form-label">Nom *</label>
                   <input type="text" name="nom" className="form-control form-control-sm"
@@ -598,6 +610,10 @@ export default function Locataires() {
             </div>
             <form onSubmit={handleAddSubmit} className="p-4">
               <div className="row g-3">
+                <div className="col-12 pb-2 mb-1 border-bottom">
+                  <label className="form-label">Photo du locataire</label>
+                  <AvatarPicker value={addForm.photo} onChange={(p) => setAddForm((f) => ({ ...f, photo: p }))} nom={`${addForm.nom} ${addForm.prenom}`} size={68} />
+                </div>
                 <div className="col-sm-6">
                   <label className="form-label">Nom *</label>
                   <input type="text" name="nom" className="form-control form-control-sm"

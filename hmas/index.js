@@ -12,8 +12,9 @@ const vitrineRoute = require("./routes/vitrine.route");
 const financeRoute = require("./routes/finance.route");
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// Limite relevee : les photos de profil transitent en data URL base64.
+app.use(bodyParser.urlencoded({ extended: true, limit: "2mb" }));
+app.use(bodyParser.json({ limit: "2mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 // CORS restreint : liste des origines autorisees via la variable CORS_ORIGINS

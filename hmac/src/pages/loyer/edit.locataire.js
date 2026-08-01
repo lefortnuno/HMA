@@ -7,6 +7,7 @@ import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
 import { BsPeople, BsArrowLeft } from "react-icons/bs";
+import AvatarPicker from "../../components/avatar/avatar";
 import "./loyer.css";
 
 const CHAMBRES_RDC = ["1","2","3","4","5","6","7","8","9","10"];
@@ -32,6 +33,7 @@ export default function EditLocataire() {
       : new Date().toISOString().split("T")[0],
     actif: existing.actif !== undefined ? existing.actif : true,
     caution: existing.caution || 0,
+    photo: existing.photo || "",
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -113,6 +115,10 @@ export default function EditLocataire() {
             <div className="card-pro" style={{ maxWidth: 620 }}>
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
+                  <div className="col-12 pb-3 mb-1 border-bottom">
+                    <label className="form-label">Photo du locataire</label>
+                    <AvatarPicker value={form.photo} onChange={(p) => setForm((fm) => ({ ...fm, photo: p }))} nom={`${form.nom} ${form.prenom}`} size={72} />
+                  </div>
                   <div className="col-sm-6">
                     <label className="form-label">Nom *</label>
                     <input type="text" name="nom" className="form-control" value={form.nom} onChange={handleChange} />

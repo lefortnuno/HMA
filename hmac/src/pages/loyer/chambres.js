@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { BsBuilding, BsDoorOpen, BsDoorClosedFill, BsPlus, BsPencilSquare } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
 import ApartSelect, {
   useAppartements,
   getSelectedBienId,
@@ -33,6 +34,7 @@ function initForm(etage, chambre) {
     dateEntree: new Date().toISOString().split("T")[0],
     actif: true,
     caution: 0,
+    photo: "",
   };
 }
 
@@ -171,8 +173,9 @@ export default function Chambres() {
                     </div>
                     {occ ? (
                       <>
-                        <div className="fw-semibold text-truncate" style={{ fontSize: "0.82rem" }}>
-                          {occ.nom} {occ.prenom}
+                        <div className="d-flex align-items-center gap-1">
+                          <Avatar photo={occ.photo} nom={`${occ.nom} ${occ.prenom || ""}`} size={22} />
+                          <span className="fw-semibold text-truncate" style={{ fontSize: "0.82rem" }}>{occ.nom} {occ.prenom}</span>
                         </div>
                         <div className="mt-auto d-flex align-items-center gap-1 text-primary" style={{ fontSize: "0.7rem" }}>
                           <BsPencilSquare size={11} /> Modifier
@@ -222,7 +225,10 @@ export default function Chambres() {
             </div>
             {occ ? (
               <>
-                <div className="fw-bold" style={{ fontSize: "1rem" }}>{occ.nom} {occ.prenom}</div>
+                <div className="d-flex align-items-center gap-2">
+                  <Avatar photo={occ.photo} nom={`${occ.nom} ${occ.prenom || ""}`} size={38} />
+                  <div className="fw-bold" style={{ fontSize: "1rem" }}>{occ.nom} {occ.prenom}</div>
+                </div>
                 {occ.tel && <div className="text-muted" style={{ fontSize: "0.82rem" }}>{occ.tel}</div>}
                 <div className="mt-2 d-flex align-items-center gap-1 text-primary" style={{ fontSize: "0.78rem" }}>
                   <BsPencilSquare size={12} /> Modifier le locataire
@@ -291,6 +297,10 @@ export default function Chambres() {
               <button className="btn-close" onClick={() => setShowAdd(false)} />
             </div>
             <form onSubmit={handleSubmit} className="p-4">
+              <div className="pb-3 mb-3 border-bottom">
+                <label className="form-label">Photo du locataire</label>
+                <AvatarPicker value={form.photo} onChange={(p) => setForm((f) => ({ ...f, photo: p }))} nom={`${form.nom} ${form.prenom}`} size={68} />
+              </div>
               <div className="p-2 rounded-3 mb-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
                 <span className="fw-bold" style={{ color: "#16a34a", fontSize: "0.85rem" }}>
                   {mono
