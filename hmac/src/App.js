@@ -41,7 +41,6 @@ import EditBoutique from "./pages/boutiques/edit.boutique";
 
 // ─── Loyer ────────────────────────────────────────────────────
 import Loyer from "./pages/loyer/loyer";
-import Ofatrano from "./pages/loyer/ofatrano";
 import Locataires from "./pages/loyer/locataires";
 import Chambres from "./pages/loyer/chambres";
 import Historique from "./pages/loyer/historique";
@@ -113,7 +112,6 @@ function App() {
 
           {/* ── Loyer (Immobilier — tous les users connectés) ── */}
           <Route path="loyer/" element={<SignInProtection Cmp={Loyer} />} />
-          <Route path="ofatrano/" element={<SignInProtection Cmp={Ofatrano} />} />
           <Route path="loyer/chambres/" element={<SignInProtection Cmp={Chambres} />} />
           <Route path="loyer/locataires/" element={<SignInProtection Cmp={Locataires} />} />
           <Route path="loyer/locataires/new" element={<SignInProtection Cmp={AddLocataire} />} />

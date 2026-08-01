@@ -146,7 +146,7 @@
   white-space: nowrap;
 }
 
-/* ─── Rotation visuelle 90° (ofatrano.js, mobile uniquement) ─ */
+/* ─── Rotation visuelle 90° (mobile uniquement) ─ */
 /* Desktop : pas de rotation, mise en page normale */
 .tableau-rot90-outer,
 .tableau-rot90-inner {
@@ -191,4 +191,25 @@
   gap: 6px;
   font-size: 0.75rem;
   color: #64748b;
+}
+
+/* ─── Mois courant mis en evidence dans l'entete ────────────── */
+.tableau-loyer thead th.th-mois-courant {
+  background: #2563eb;
+  color: #fff;
+  font-weight: 800;
+  position: relative;
+  box-shadow: inset 0 -3px 0 #93c5fd;
+}
+
+.tableau-loyer thead th.th-mois-courant::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateX(-50%);
 }

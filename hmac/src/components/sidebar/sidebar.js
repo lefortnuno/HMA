@@ -6,7 +6,6 @@ import "./sidebar.css";
 
 import {
   BsHouse,
-  BsCashCoin,
   BsPeople,
   BsGraphUp,
   BsClipboardData,
@@ -97,7 +96,6 @@ export default function Sidebar() {
       <ul>
         <div className="sidebar-section-label">Principal</div>
         {nav("/home/", BsHouse, "Accueil", true)}
-        {nav("/ofatrano/", BsCashCoin, "Ofatrano", true)}
         {nav("/notifications/", BsBell, "Notifications", true, isAdmin ? nbPending : 0)}
 
         <div className="separator" />

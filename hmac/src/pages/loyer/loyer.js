@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
@@ -87,6 +87,8 @@ export function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
 
 export default function Loyer() {
   const u_info = GetUserData();
+  const tableauRef = useRef(null);
+  const moisCourant = new Date().getMonth() + 1;
   const apparts = useAppartements();
   const [bienId, setBienId] = useState(getSelectedBienId());
   const current = apparts.find((a) => a.id === bienId) || KINYA;
@@ -106,6 +108,28 @@ export default function Loyer() {
     ]).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annee, bienId]);
+
+  // En responsive (tableau scrollable), positionne la vue sur le mois
+  // precedent le mois courant pour que le mois en cours soit visible
+  // sans masquer le mois d'avant.
+  useEffect(() => {
+    if (loading || locataires.length === 0) return;
+    const box = tableauRef.current;
+    if (!box) return;
+    // Rien a faire si le tableau tient entierement dans l'ecran.
+    if (box.scrollWidth <= box.clientWidth) return;
+
+    const cible = Math.max(1, moisCourant - 1); // mois actuel - 1
+    const th = box.querySelector(`thead th[data-mois="${cible}"]`);
+    if (!th) return;
+
+    // Largeur des 2 colonnes figees (N° + Locataire) a ne pas masquer.
+    const ths = box.querySelectorAll("thead th");
+    const figees = (ths[0]?.offsetWidth || 0) + (ths[1]?.offsetWidth || 0);
+
+    const left = Math.max(0, th.offsetLeft - figees);
+    box.scrollTo({ left, behavior: "smooth" });
+  }, [loading, locataires.length, annee, moisCourant]);
 
   function changeAppart(id) {
     setBienId(id);
@@ -569,7 +593,7 @@ export default function Loyer() {
                 </div>
               </div>
 
-              <div className="tableau-loyer">
+              <div className="tableau-loyer" ref={tableauRef}>
                 <table className="table table-bordered mb-0">
                   <thead>
                     <tr>
@@ -583,7 +607,13 @@ export default function Loyer() {
                         Locataire
                       </th>
                       {MOIS.map((m, i) => (
-                        <th key={i}>{m}</th>
+                        <th
+                          key={i}
+                          data-mois={i + 1}
+                          className={i + 1 === moisCourant ? "th-mois-courant" : ""}
+                        >
+                          {m}
+                        </th>
                       ))}
                       <th>Total</th>
                     </tr>
