@@ -21,3 +21,6 @@ hmas/config/.env
 
 # sauvegardes locales de la base (ne pas committer)
 hmas/backups/
+
+# fichiers de relance (donnees personnelles locataires) - ne pas publier
+relances_*.xlsx
