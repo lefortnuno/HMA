@@ -43,8 +43,50 @@ const ACTIONS = {
 const STATUTS = {
   PAYE: { label: "Payé", color: "#16a34a", bg: "#f0fdf4" },
   PARTIEL: { label: "Partiel", color: "#d97706", bg: "#fffbeb" },
+  DOUTE: { label: "Doute", color: "#854d0e", bg: "#fef9c3" },
   IMPAYE: { label: "Impayé", color: "#dc2626", bg: "#fef2f2" },
 };
+
+const PAR_PAGE = 12;
+
+// Pagination réutilisée par les trois tableaux.
+function Pagination({ page, nbPages, onChange }) {
+  if (nbPages <= 1) return null;
+  const pages = Array.from({ length: nbPages }, (_, i) => i + 1).filter(
+    (p) => p === 1 || p === nbPages || Math.abs(p - page) <= 1
+  );
+  return (
+    <div className="d-flex align-items-center gap-1 flex-wrap">
+      <button
+        className="btn btn-sm btn-outline-secondary py-0 px-2"
+        disabled={page === 1}
+        onClick={() => onChange(page - 1)}
+      >
+        ‹
+      </button>
+      {pages.map((p, i) => (
+        <span key={p} className="d-flex align-items-center gap-1">
+          {i > 0 && pages[i - 1] !== p - 1 && (
+            <span className="text-muted" style={{ fontSize: "0.75rem" }}>…</span>
+          )}
+          <button
+            className={`btn btn-sm py-0 px-2 ${page === p ? "btn-primary" : "btn-outline-secondary"}`}
+            onClick={() => onChange(p)}
+          >
+            {p}
+          </button>
+        </span>
+      ))}
+      <button
+        className="btn btn-sm btn-outline-secondary py-0 px-2"
+        disabled={page === nbPages}
+        onClick={() => onChange(page + 1)}
+      >
+        ›
+      </button>
+    </div>
+  );
+}
 
 export default function Historique() {
   const u_info = GetUserData();
@@ -53,6 +95,21 @@ export default function Historique() {
   const [vue, setVue] = useState("PAIEMENTS"); // PAIEMENTS | OCCUPATION
   const [annee, setAnnee] = useState(new Date().getFullYear());
   const [recherche, setRecherche] = useState("");
+
+  // Filtres et pagination, propres à chaque tableau.
+  const [filtreStatut, setFiltreStatut] = useState("TOUS");
+  const [filtreMois, setFiltreMois] = useState("TOUS");
+  const [filtreAction, setFiltreAction] = useState("TOUTES");
+  const [pagePaiements, setPagePaiements] = useState(1);
+  const [pageJournal, setPageJournal] = useState(1);
+  const [pageOccupation, setPageOccupation] = useState(1);
+
+  // Tout changement de filtre ramène en première page.
+  useEffect(() => {
+    setPagePaiements(1);
+    setPageJournal(1);
+    setPageOccupation(1);
+  }, [recherche, filtreStatut, filtreMois, filtreAction, vue, annee, bienId]);
 
   const [histo, setHisto] = useState([]);
   const [paiements, setPaiements] = useState([]);
@@ -91,16 +148,34 @@ export default function Historique() {
   const corresp = (txt) =>
     !recherche || String(txt || "").toLowerCase().includes(recherche.toLowerCase());
 
-  const paiementsFiltres = paiements.filter(
-    (p) => corresp(`${p.nom} ${p.prenom || ""}`) || corresp(p.chambre)
-  );
-  const journalFiltre = journal.filter(
-    (j) => corresp(j.locataireNom) || corresp(j.chambre) || corresp(j.auteurNom)
-  );
+  const paiementsFiltres = paiements.filter((p) => {
+    if (filtreStatut !== "TOUS" && p.statut !== filtreStatut) return false;
+    if (filtreMois !== "TOUS" && String(p.mois) !== String(filtreMois)) return false;
+    return corresp(`${p.nom} ${p.prenom || ""}`) || corresp(p.chambre);
+  });
+
+  const journalFiltre = journal.filter((j) => {
+    if (filtreMois !== "TOUS" && String(j.mois) !== String(filtreMois)) return false;
+    return corresp(j.locataireNom) || corresp(j.chambre) || corresp(j.auteurNom);
+  });
+
+  const occupationFiltree = histo.filter((h) => {
+    if (filtreAction !== "TOUTES" && h.action !== filtreAction) return false;
+    return corresp(`${h.nom} ${h.prenom || ""}`) || corresp(h.chambre);
+  });
 
   const totalPaye = paiementsFiltres
     .filter((p) => p.statut === "PAYE" || p.statut === "PARTIEL")
     .reduce((s, p) => s + (p.montantLoyer || 0) + (p.montantJIRAMA || 0), 0);
+
+  // Découpage en pages
+  const pages = (liste, page) => ({
+    nbPages: Math.max(1, Math.ceil(liste.length / PAR_PAGE)),
+    visibles: liste.slice((page - 1) * PAR_PAGE, page * PAR_PAGE),
+  });
+  const vuePaiements = pages(paiementsFiltres, pagePaiements);
+  const vueJournal = pages(journalFiltre, pageJournal);
+  const vueOccupation = pages(occupationFiltree, pageOccupation);
 
   return (
     <Template>
@@ -160,19 +235,81 @@ export default function Historique() {
               })}
             </div>
 
-            {/* Recherche */}
-            <div className="input-group input-group-sm mb-3" style={{ maxWidth: 320 }}>
-              <span className="input-group-text bg-white border-end-0">
-                <BsSearch size={13} style={{ color: "#94a3b8" }} />
-              </span>
-              <input
-                type="text"
-                className="form-control border-start-0 ps-0"
-                placeholder="Rechercher un locataire, une chambre…"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-                style={{ fontSize: "0.82rem" }}
-              />
+            {/* Recherche et filtres */}
+            <div className="d-flex gap-2 mb-3 flex-wrap align-items-center">
+              <div className="input-group input-group-sm" style={{ maxWidth: 280 }}>
+                <span className="input-group-text bg-white border-end-0">
+                  <BsSearch size={13} style={{ color: "#94a3b8" }} />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-start-0 ps-0"
+                  placeholder="Rechercher un locataire, une chambre…"
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                  style={{ fontSize: "0.82rem" }}
+                />
+              </div>
+
+              {vue === "PAIEMENTS" ? (
+                <>
+                  <select
+                    className="form-select form-select-sm"
+                    style={{ width: "auto", fontSize: "0.82rem" }}
+                    value={filtreStatut}
+                    onChange={(e) => setFiltreStatut(e.target.value)}
+                    title="Filtrer par statut"
+                  >
+                    <option value="TOUS">Tous les statuts</option>
+                    {Object.entries(STATUTS).map(([cle, s]) => (
+                      <option key={cle} value={cle}>{s.label}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="form-select form-select-sm"
+                    style={{ width: "auto", fontSize: "0.82rem" }}
+                    value={filtreMois}
+                    onChange={(e) => setFiltreMois(e.target.value)}
+                    title="Filtrer par mois"
+                  >
+                    <option value="TOUS">Tous les mois</option>
+                    {MOIS_FULL.map((m, i) => (
+                      <option key={i + 1} value={i + 1}>{m}</option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <select
+                  className="form-select form-select-sm"
+                  style={{ width: "auto", fontSize: "0.82rem" }}
+                  value={filtreAction}
+                  onChange={(e) => setFiltreAction(e.target.value)}
+                  title="Filtrer par type de mouvement"
+                >
+                  <option value="TOUTES">Toutes les actions</option>
+                  {Object.entries(ACTIONS).map(([cle, a]) => (
+                    <option key={cle} value={cle}>{a.label}</option>
+                  ))}
+                </select>
+              )}
+
+              {(recherche ||
+                filtreStatut !== "TOUS" ||
+                filtreMois !== "TOUS" ||
+                filtreAction !== "TOUTES") && (
+                <button
+                  className="btn btn-sm btn-outline-secondary py-0 px-2"
+                  style={{ fontSize: "0.75rem" }}
+                  onClick={() => {
+                    setRecherche("");
+                    setFiltreStatut("TOUS");
+                    setFiltreMois("TOUS");
+                    setFiltreAction("TOUTES");
+                  }}
+                >
+                  ✕ Réinitialiser
+                </button>
+              )}
             </div>
 
             {loading ? (
@@ -211,7 +348,7 @@ export default function Historique() {
                             </td>
                           </tr>
                         ) : (
-                          paiementsFiltres.map((p) => {
+                          vuePaiements.visibles.map((p) => {
                             const st = STATUTS[p.statut] || STATUTS.IMPAYE;
                             return (
                               <tr key={p.id}>
@@ -278,7 +415,7 @@ export default function Historique() {
                           </tr>
                         </thead>
                         <tbody>
-                          {journalFiltre.map((j) => (
+                          {vueJournal.visibles.map((j) => (
                             <tr key={j.id}>
                               <td style={{ fontSize: "0.82rem", whiteSpace: "nowrap" }}>
                                 {formatDateTime(j.dateAction)}
@@ -341,9 +478,7 @@ export default function Historique() {
                       </tr>
                     </thead>
                     <tbody>
-                      {histo
-                        .filter((h) => corresp(`${h.nom} ${h.prenom || ""}`) || corresp(h.chambre))
-                        .map((h) => {
+                      {vueOccupation.visibles.map((h) => {
                           const a = ACTIONS[h.action] || ACTIONS.MODIFICATION;
                           return (
                             <tr key={h.id}>
@@ -375,6 +510,15 @@ export default function Historique() {
                     </tbody>
                   </table>
                 </div>
+                {vueOccupation.nbPages > 1 && (
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 border-top">
+                    <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      {occupationFiltree.length} mouvement{occupationFiltree.length > 1 ? "s" : ""} ·
+                      page {pageOccupation} sur {vueOccupation.nbPages}
+                    </small>
+                    <Pagination page={pageOccupation} nbPages={vueOccupation.nbPages} onChange={setPageOccupation} />
+                  </div>
+                )}
               </div>
             )}
           </main>
