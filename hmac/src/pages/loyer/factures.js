@@ -23,9 +23,12 @@ export default function Factures() {
   const apparts = useAppartements(bienId, setBienId);
   const current = apparts.find((a) => a.id === bienId) || KINYA;
   const mono = bienId !== 0; // appart "loyer seul" : pas de JIRAMA
+  // La facture JIRAMA porte sur le mois écoulé : on ouvre donc sur M-1
+  // (en janvier, cela renvoie à décembre de l'année précédente).
   const now = new Date();
-  const [mois, setMois] = useState(now.getMonth() + 1);
-  const [annee, setAnnee] = useState(now.getFullYear());
+  const moisPrecedent = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const [mois, setMois] = useState(moisPrecedent.getMonth() + 1);
+  const [annee, setAnnee] = useState(moisPrecedent.getFullYear());
   const [prixUnitaire, setPrixUnitaire] = useState(0);
   const [montantFacture, setMontantFacture] = useState(0);
   const [locataires, setLocataires] = useState([]);

@@ -195,6 +195,29 @@ export default function Locataires() {
       .catch(() => toast.error("Erreur lors de la suppression"));
   }
 
+  // Depart d'un locataire sans perdre son historique : on le rend inactif.
+  // La chambre redevient libre et son compte de connexion est retire cote serveur.
+  function handleArchiver(loc) {
+    axios
+      .put(`loyer/locataires/${loc.id}`, { ...loc, actif: false }, u_info.opts)
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+        } else {
+          toast.success(`${loc.nom} archivé — chambre ${loc.chambre} libérée`);
+          // La fiche reste dans la liste, marquee "Inactif".
+          setLocataires((prev) =>
+            prev.map((l) => (l.id === loc.id ? { ...l, actif: 0 } : l))
+          );
+          fetchLocataires(true);
+        }
+        setShowDeleteModal(false);
+      })
+      .catch((err) =>
+        toast.error(err.response?.data?.message || "Erreur lors de l'archivage")
+      );
+  }
+
   function handleAddChange(e) {
     const { name, value } = e.target;
     if (name === "etage") {
@@ -474,23 +497,54 @@ export default function Locataires() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header-pro">
-              <h6>Confirmer la suppression</h6>
+              <h6>Départ de {toDelete.nom} {toDelete.prenom}</h6>
               <button className="btn-close" onClick={() => setShowDeleteModal(false)} />
             </div>
             <div className="p-4">
-              <p className="mb-4">
-                Supprimer <strong>{toDelete.nom} {toDelete.prenom}</strong> (chambre {toDelete.chambre}) ?
-                <br />
-                <small className="text-danger">
-                  Cette action supprimera aussi tous ses paiements et son compte de connexion.
-                </small>
+              <p className="mb-3" style={{ fontSize: "0.9rem" }}>
+                Chambre <strong>{toDelete.chambre}</strong> — que souhaitez-vous faire ?
               </p>
-              <div className="d-flex justify-content-end gap-2">
+
+              {/* Option recommandee : on garde la trace du passage du locataire. */}
+              <div
+                className="rounded-3 p-3 mb-3"
+                style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
+              >
+                <div className="fw-bold mb-1" style={{ color: "#15803d", fontSize: "0.87rem" }}>
+                  Archiver le locataire <span className="ms-1" style={{ fontWeight: 500 }}>(recommandé)</span>
+                </div>
+                <small className="d-block mb-3" style={{ color: "#166534", fontSize: "0.78rem" }}>
+                  La chambre est libérée et son accès à l'application est retiré, mais sa
+                  fiche et l'historique de ses paiements sont conservés.
+                </small>
+                <button
+                  className="btn btn-sm w-100 fw-semibold"
+                  style={{ background: "#16a34a", color: "#fff" }}
+                  onClick={() => handleArchiver(toDelete)}
+                >
+                  Archiver — libérer la chambre {toDelete.chambre}
+                </button>
+              </div>
+
+              <div className="rounded-3 p-3" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+                <div className="fw-bold mb-1" style={{ color: "#b91c1c", fontSize: "0.87rem" }}>
+                  Supprimer définitivement
+                </div>
+                <small className="d-block mb-3" style={{ color: "#991b1b", fontSize: "0.78rem" }}>
+                  Efface la fiche, <strong>tout l'historique de ses paiements</strong> et son
+                  compte de connexion. Irréversible.
+                </small>
+                <button
+                  className="btn btn-outline-danger btn-sm w-100"
+                  onClick={() => handleDelete(toDelete.id)}
+                >
+                  Supprimer définitivement
+                </button>
+              </div>
+
+              <div className="d-flex justify-content-end mt-3">
                 <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowDeleteModal(false)}>
                   Annuler
-                </button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(toDelete.id)}>
-                  Supprimer
                 </button>
               </div>
             </div>

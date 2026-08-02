@@ -116,6 +116,9 @@ function execUpdateLocataire(id, data, avant, cb) {
     if (err) return cb(err);
     if (avant) {
       if (avant.actif && !data.actif) {
+        // Depart du locataire : sa fiche et son historique restent, mais son
+        // compte de connexion est retire (il n'habite plus le logement).
+        Compte.supprimerPourLocataire(id, () => {});
         Occupation.log({
           locataireId: +id, nom: data.nom, prenom: data.prenom,
           chambre: avant.chambre, etage: avant.etage, bienId: data.bienId,
