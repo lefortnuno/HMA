@@ -315,6 +315,22 @@ module.exports.decideValidation = (req, res) => {
       });
     }
 
+    // ── Code oublie ──
+    // Approuver coupe l'acces : l'ancien code est remplace par un code
+    // aleatoire que personne ne connait, et le compte repasse en "code neuf".
+    // L'admin transmet ensuite un vrai code via le bouton Acces, qui
+    // reapparait justement dans la page Utilisateurs.
+    if (demande.entite === "ACCES") {
+      const Compte = require("../utils/compte");
+      const bcrypt = require("bcrypt");
+      const db = require("../config/db");
+      return db.query(
+        "UPDATE mpampiasa SET pwd = ?, mdpTemporaire = 1 WHERE id = ?",
+        [bcrypt.hashSync(Compte.codeAleatoire(), 10), demande.entiteId],
+        (e) => finir(e)
+      );
+    }
+
     // ── Reglement interieur ──
     if (demande.entite === "REGLEMENT") {
       if (demande.action === "SUPPRESSION")

@@ -235,6 +235,57 @@ module.exports.updateMonCompte = (req, res) => {
 // ─── Renvoyer les accès d'un compte (admin) ────────────────────
 // Les codes sont hachés : impossible de relire l'ancien. On en génère
 // donc un nouveau, et le changement à la 1re connexion redevient obligatoire.
+/**
+ * Code oublie : le compte demande lui-meme une reinitialisation.
+ *
+ * Route publique — celui qui a oublie son code ne peut pas se connecter. Rien
+ * n'est modifie ici : une demande part chez l'admin, qui tranche depuis ses
+ * notifications. C'est seulement a l'approbation que l'ancien code cesse de
+ * fonctionner.
+ */
+module.exports.demanderReinitialisation = (req, res) => {
+  const Validation = require("../models/validation.model");
+  const idPS = String(req.body.idPS || "").trim();
+
+  // Reponse volontairement identique dans tous les cas : un inconnu ne doit
+  // pas pouvoir deviner quels identifiants existent.
+  const repondre = () =>
+    res.send({
+      success: true,
+      message:
+        "Demande transmise au propriétaire. Il vous communiquera un nouveau code.",
+    });
+
+  if (!idPS) return repondre();
+
+  Utilisateur.getIdPSUtilisateur(idPS, (err, resultat) => {
+    if (err || !resultat || !resultat[0]) return repondre();
+    const compte = resultat[0];
+
+    Validation.pendingPour("ACCES", compte.id, (err2, dejaEnCours) => {
+      if (err2 || dejaEnCours) return repondre(); // une demande suffit
+      Validation.create(
+        {
+          entite: "ACCES",
+          action: "MODIFICATION",
+          entiteId: compte.id,
+          avant: null,
+          apres: {
+            idPS: compte.idPS,
+            nom: compte.nom,
+            prenom: compte.prenom || "",
+            motif: "Code oublié — demande de réinitialisation",
+          },
+          // L'auteur de la demande, c'est le titulaire du compte lui-meme.
+          auteurId: compte.id,
+          auteurNom: `${compte.nom || ""} ${compte.prenom || ""}`.trim() || compte.idPS,
+        },
+        () => repondre()
+      );
+    });
+  });
+};
+
 module.exports.regenererAcces = (req, res) => {
   const Compte = require("../utils/compte");
   const dbConn = require("../config/db");

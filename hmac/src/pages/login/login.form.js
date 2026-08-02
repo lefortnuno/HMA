@@ -30,6 +30,32 @@ export default function LoginForm() {
     pwd: "",
   });
 
+  // Code oublié : la demande part chez le propriétaire, qui régénère un code.
+  const [oubliOuvert, setOubliOuvert] = useState(false);
+  const [oubliIdPS, setOubliIdPS] = useState("");
+  const [oubliEnvoi, setOubliEnvoi] = useState(false);
+
+  function demanderNouveauCode(e) {
+    e.preventDefault();
+    const identifiant = oubliIdPS.trim();
+    if (!identifiant) return toast.warning("Entrez votre identifiant");
+    setOubliEnvoi(true);
+    axios
+      .post("utilisateur/mdp-oublie", { idPS: identifiant })
+      .then((r) =>
+        toast.success(
+          r.data?.message ||
+            "Demande transmise au propriétaire. Il vous communiquera un nouveau code."
+        )
+      )
+      .catch(() => toast.error("Impossible d'envoyer la demande pour l'instant."))
+      .finally(() => {
+        setOubliEnvoi(false);
+        setOubliOuvert(false);
+        setOubliIdPS("");
+      });
+  }
+
   const pwdRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const idPSRef = useRef(null);
   const timeoutRef = useRef(null);
@@ -416,13 +442,76 @@ export default function LoginForm() {
         )}
         <div>
           <div className="inputFP">
-            <span>Mot de passe oublié? </span>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                setOubliIdPS(inputs.idPS || "");
+                setOubliOuvert(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOubliIdPS(inputs.idPS || "");
+                  setOubliOuvert(true);
+                }
+              }}
+            >
+              Mot de passe oublié?{" "}
+            </span>
           </div>
           <button onClick={validation}>
             <span> Se Connecter</span>
           </button>
         </div>
       </form>
+
+      {/* ── Demande de nouveau code ── */}
+      {oubliOuvert && (
+        <div className="modal-overlay" onClick={() => setOubliOuvert(false)}>
+          <div
+            className="modal-content-pro"
+            style={{ maxWidth: 400 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header-pro">
+              <h6>Code oublié</h6>
+              <button className="btn-close" onClick={() => setOubliOuvert(false)} />
+            </div>
+            <form onSubmit={demanderNouveauCode} className="p-4">
+              <p className="text-muted" style={{ fontSize: "0.82rem" }}>
+                Votre demande est transmise au propriétaire. Une fois qu'il
+                l'aura acceptée, il vous communiquera un nouveau code à
+                4 chiffres, que vous changerez à la connexion.
+              </p>
+              <div className="mb-3">
+                <label className="form-label">Votre identifiant</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  autoComplete="off"
+                  placeholder="Ex. : BENALY"
+                  value={oubliIdPS}
+                  onChange={(e) => setOubliIdPS(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setOubliOuvert(false)}
+                >
+                  Annuler
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" disabled={oubliEnvoi}>
+                  {oubliEnvoi ? "Envoi..." : "Envoyer la demande"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <p>
         Vous n'avez pas encore de compte?{" "}
         <span onClick={onClose}>S'inscrire</span>

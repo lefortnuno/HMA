@@ -67,6 +67,19 @@ Validation.pendingPaiements = (locataireId, result) => {
   );
 };
 
+// Demande deja en attente pour une entite donnee : evite qu'un compte
+// multiplie les demandes de reinitialisation.
+Validation.pendingPour = (entite, entiteId, result) => {
+  db.query(
+    "SELECT id FROM demande_validation WHERE entite=? AND entiteId=? AND statut='EN_ATTENTE' LIMIT 1",
+    [entite, entiteId],
+    (err, res) => {
+      if (err) result(err, null);
+      else result(null, res[0] || null);
+    }
+  );
+};
+
 Validation.getById = (id, result) => {
   db.query("SELECT * FROM demande_validation WHERE id = ?", [id], (err, res) => {
     if (err) result(err, null);

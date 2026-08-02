@@ -6,6 +6,8 @@ const connecte = require("../middlewares/connecte.middleware");
 
 router.post("/", UtilisateurController.addUtilisateur);
 router.post("/seConnecter", UtilisateurController.loginUtilisateur);
+// Code oublie : publique, puisque le demandeur ne peut pas se connecter.
+router.post("/mdp-oublie", UtilisateurController.demanderReinitialisation);
 router.post(
   "/recherche",
   admin.checkUtilisateur,

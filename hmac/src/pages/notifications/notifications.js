@@ -72,6 +72,13 @@ const CHAMPS_COMPTE = [
   ["photo", "Photo de profil"],
 ];
 
+// Demande de réinitialisation de code, faite depuis l écran de connexion.
+const CHAMPS_ACCES = [
+  ["idPS", "Identifiant"],
+  ["nom", "Nom"],
+  ["motif", "Motif"],
+];
+
 // Proposition de règle de la politique interne.
 const CHAMPS_REGLEMENT = [
   ["titre", "Titre"],
@@ -83,6 +90,7 @@ function champsDe(entite) {
   if (entite === "PAIEMENT") return CHAMPS_PAIEMENT;
   if (entite === "COMPTE") return CHAMPS_COMPTE;
   if (entite === "REGLEMENT") return CHAMPS_REGLEMENT;
+  if (entite === "ACCES") return CHAMPS_ACCES;
   return CHAMPS_LOCATAIRE;
 }
 
@@ -255,16 +263,21 @@ export default function Notifications() {
                   const estPaiement = d.entite === "PAIEMENT";
                   const estCompte = d.entite === "COMPTE";
                   const estRegle = d.entite === "REGLEMENT";
+                  const estAcces = d.entite === "ACCES";
                   const typeLabel = estPaiement
                     ? "paiement"
                     : estCompte
                       ? "compte"
                       : estRegle
                         ? "politique interne"
-                        : "locataire";
+                        : estAcces
+                          ? "accès"
+                          : "locataire";
                   const cible = estPaiement
                     ? `${src.locataireNom || "?"}${src.chambre ? ` (ch. ${src.chambre})` : ""} · ${MOIS_FULL[Number(src.mois) - 1] || ""} ${src.annee || ""}`
-                    : estRegle
+                    : estAcces
+                      ? src.nom || src.idPS || ""
+                      : estRegle
                       ? src.titre || ""
                       : d.action === "AJOUT" ? d.apres?.nom : d.avant?.nom || d.apres?.nom || "";
                   return (
@@ -307,6 +320,19 @@ export default function Notifications() {
                         {/* Diff avant/après */}
                         <div className="p-3">
                           <DiffTable demande={d} />
+                          {/* Approuver coupe l'accès : mieux vaut le dire avant. */}
+                          {estAcces && d.statut === "EN_ATTENTE" && (
+                            <div
+                              className="rounded-3 p-2 mt-3"
+                              style={{ background: "#fffbeb", border: "1px solid #fde68a" }}
+                            >
+                              <small style={{ fontSize: "0.75rem", color: "#92400e" }}>
+                                Approuver rendra son code actuel inutilisable. Transmettez-lui
+                                ensuite un nouveau code avec le bouton <strong>Accès</strong>,
+                                qui réapparaîtra sur sa ligne dans la page Utilisateurs.
+                              </small>
+                            </div>
+                          )}
                         </div>
 
                         {/* Actions admin */}
