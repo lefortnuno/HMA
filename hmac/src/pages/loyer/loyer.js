@@ -15,6 +15,7 @@ import {
   BsFileEarmarkPdf,
   BsShare,
   BsWhatsapp,
+  BsExclamationTriangleFill,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -83,6 +84,238 @@ export function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
     `Merci de régulariser dès que possible.\n` +
     `— LEFORT N. Nuno (Trofel)`;
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+}
+
+// Renvoie les {mois, annee} des 2 mois precedant le mois courant
+// (gere le passage d'annee : janvier -> decembre/novembre de l'an dernier).
+function moisPrecedents() {
+  const d = new Date();
+  return [1, 2].map((recul) => {
+    const ref = new Date(d.getFullYear(), d.getMonth() - recul, 1);
+    return { mois: ref.getMonth() + 1, annee: ref.getFullYear() };
+  });
+}
+
+const PAR_PAGE = 8;
+
+/**
+ * Alerte des loyers non regles sur les 2 mois precedents.
+ * Un onglet par mois, liste paginee, relance WhatsApp par locataire.
+ */
+function AlerteImpayes({ locataires, getCellData, annee }) {
+  const periodes = moisPrecedents();
+  const [ongletActif, setOngletActif] = useState(0);
+  const [page, setPage] = useState(1);
+
+  // Calcule les impayes d'une periode donnee.
+  const impayesDe = (p) => {
+    if (p.annee !== annee) return []; // le tableau n'affiche qu'une annee
+    return locataires
+      .filter((loc) => {
+        if (!loc.actif) return false;
+        const pay = getCellData(loc.id, p.mois);
+        return !pay || pay.statut === "IMPAYE" || pay.statut === "PARTIEL";
+      })
+      .map((loc) => {
+        const pay = getCellData(loc.id, p.mois);
+        const paye = pay && pay.statut === "PARTIEL" ? pay.montantLoyer || 0 : 0;
+        return {
+          loc,
+          du: (loc.loyer || 0) - paye,
+          partiel: !!(pay && pay.statut === "PARTIEL"),
+          jamaisSaisi: !pay,
+        };
+      });
+  };
+
+  const parPeriode = periodes.map(impayesDe);
+  const totalGlobal = parPeriode.flat().reduce((s, x) => s + x.du, 0);
+  if (parPeriode.every((l) => l.length === 0)) return null;
+
+  const courant = parPeriode[ongletActif] || [];
+  const periode = periodes[ongletActif];
+  const nbPages = Math.max(1, Math.ceil(courant.length / PAR_PAGE));
+  const pageSure = Math.min(page, nbPages);
+  const visibles = courant.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE);
+  const totalOnglet = courant.reduce((s, x) => s + x.du, 0);
+
+  return (
+    <div className="card-pro p-0 mb-4" style={{ overflow: "hidden", borderTop: "3px solid #ef4444" }}>
+      {/* En-tête */}
+      <div
+        className="px-3 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2"
+        style={{ background: "linear-gradient(90deg,#fef2f2,#fff)" }}
+      >
+        <div className="d-flex align-items-center gap-2">
+          <span
+            className="d-inline-flex align-items-center justify-content-center rounded-3"
+            style={{ background: "#fee2e2", color: "#dc2626", width: 38, height: 38 }}
+          >
+            <BsExclamationTriangleFill size={18} />
+          </span>
+          <div>
+            <h6 className="mb-0 fw-bold" style={{ color: "#991b1b", fontSize: "0.95rem" }}>
+              Loyers à recouvrer
+            </h6>
+            <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+              Sur les deux mois précédents
+            </small>
+          </div>
+        </div>
+        <div className="text-end">
+          <div className="fw-bold" style={{ color: "#b91c1c", fontSize: "1.15rem", lineHeight: 1.1 }}>
+            {totalGlobal.toLocaleString()} Ar
+          </div>
+          <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+            total en attente
+          </small>
+        </div>
+      </div>
+
+      {/* Onglets par mois */}
+      <div className="d-flex gap-1 px-3" style={{ borderBottom: "1px solid #e2e8f0" }}>
+        {periodes.map((p, i) => {
+          const actif = i === ongletActif;
+          const nb = parPeriode[i].length;
+          return (
+            <button
+              key={`${p.mois}-${p.annee}`}
+              onClick={() => { setOngletActif(i); setPage(1); }}
+              className="btn btn-sm d-flex align-items-center gap-2 fw-semibold"
+              style={{
+                borderRadius: 0,
+                border: "none",
+                borderBottom: actif ? "2px solid #dc2626" : "2px solid transparent",
+                color: actif ? "#b91c1c" : "#64748b",
+                background: "transparent",
+                fontSize: "0.82rem",
+                padding: "8px 12px",
+              }}
+            >
+              {MOIS_FULL[p.mois - 1]} {p.annee}
+              <span
+                className="rounded-pill px-2"
+                style={{
+                  background: nb ? (actif ? "#dc2626" : "#e2e8f0") : "#dcfce7",
+                  color: nb ? (actif ? "#fff" : "#475569") : "#16a34a",
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                }}
+              >
+                {nb || "✓"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Liste */}
+      <div className="p-3">
+        {courant.length === 0 ? (
+          <p className="text-muted text-center mb-0 py-3" style={{ fontSize: "0.85rem" }}>
+            Aucun impayé pour {MOIS_FULL[periode.mois - 1]} {periode.annee} 🎉
+          </p>
+        ) : (
+          <>
+            <div className="row g-2">
+              {visibles.map(({ loc, du, partiel, jamaisSaisi }) => {
+                const lien = lienRelanceWhatsApp(loc, MOIS_FULL[periode.mois - 1], periode.annee, du);
+                return (
+                  <div className="col-12 col-md-6 col-xl-4" key={loc.id}>
+                    <div
+                      className="h-100 rounded-3 p-2 d-flex align-items-center gap-2"
+                      style={{ border: "1px solid #e2e8f0", background: "#fff" }}
+                    >
+                      <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
+                        {loc.chambre}
+                      </span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div className="fw-semibold text-truncate" style={{ fontSize: "0.83rem" }} title={loc.nom}>
+                          {loc.nom}
+                        </div>
+                        <div className="d-flex align-items-center gap-1" style={{ fontSize: "0.72rem" }}>
+                          <span className="fw-bold" style={{ color: "#b91c1c" }}>
+                            {du.toLocaleString()} Ar
+                          </span>
+                          {partiel && (
+                            <span className="rounded-pill px-1" style={{ background: "#fef3c7", color: "#92400e" }}>
+                              partiel
+                            </span>
+                          )}
+                          {jamaisSaisi && (
+                            <span className="rounded-pill px-1" style={{ background: "#f1f5f9", color: "#94a3b8" }}>
+                              non saisi
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {lien ? (
+                        <a
+                          href={lien}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-sm py-1 px-2 fw-semibold d-flex align-items-center gap-1"
+                          style={{ background: "#25D366", color: "#fff", fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                          title={`Relancer ${loc.nom} sur WhatsApp`}
+                        >
+                          <BsWhatsapp size={12} /> Relancer
+                        </a>
+                      ) : (
+                        <span
+                          className="rounded-pill px-2 py-1"
+                          style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.68rem", whiteSpace: "nowrap" }}
+                        >
+                          pas de n°
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination + total du mois */}
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+              <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+                {courant.length} locataire{courant.length > 1 ? "s" : ""} ·{" "}
+                <span className="fw-bold" style={{ color: "#b91c1c" }}>
+                  {totalOnglet.toLocaleString()} Ar
+                </span>{" "}
+                pour {MOIS_FULL[periode.mois - 1]}
+              </small>
+              {nbPages > 1 && (
+                <div className="d-flex align-items-center gap-1">
+                  <button
+                    className="btn btn-sm btn-outline-secondary py-0 px-2"
+                    disabled={pageSure === 1}
+                    onClick={() => setPage(pageSure - 1)}
+                  >
+                    ‹
+                  </button>
+                  {Array.from({ length: nbPages }, (_, i) => (
+                    <button
+                      key={i}
+                      className={`btn btn-sm py-0 px-2 ${pageSure === i + 1 ? "btn-danger" : "btn-outline-secondary"}`}
+                      onClick={() => setPage(i + 1)}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    className="btn btn-sm btn-outline-secondary py-0 px-2"
+                    disabled={pageSure === nbPages}
+                    onClick={() => setPage(pageSure + 1)}
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function Loyer() {
@@ -460,98 +693,12 @@ export default function Loyer() {
               </div>
             </div>
 
-            {/* Récap impayés du mois en cours + relance WhatsApp */}
-            {(() => {
-              const moisCourant = new Date().getMonth() + 1;
-              const anneeCourante = new Date().getFullYear();
-              if (annee !== anneeCourante) return null;
-              const impayes = locataires.filter((loc) => {
-                if (!loc.actif) return false;
-                const p = getCellData(loc.id, moisCourant);
-                return !p || p.statut === "IMPAYE" || p.statut === "PARTIEL";
-              });
-              if (impayes.length === 0) return null;
-              const totalDu = impayes.reduce((s, loc) => {
-                const p = getCellData(loc.id, moisCourant);
-                return s + (loc.loyer || 0) - (p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0);
-              }, 0);
-              return (
-                <div className="card-pro p-0 mb-4" style={{ borderLeft: "4px solid #ef4444", overflow: "hidden" }}>
-                  <div
-                    className="px-3 py-2 d-flex justify-content-between align-items-center flex-wrap gap-1"
-                    style={{ background: "#fef2f2", borderBottom: "1px solid #fecaca" }}
-                  >
-                    <h6 className="mb-0 fw-bold" style={{ color: "#b91c1c", fontSize: "0.9rem" }}>
-                      Impayés — {MOIS_FULL[moisCourant - 1]} {anneeCourante}
-                      <span
-                        className="ms-2 rounded-pill px-2"
-                        style={{ background: "#dc2626", color: "#fff", fontSize: "0.72rem", padding: "2px 0" }}
-                      >
-                        {impayes.length}
-                      </span>
-                    </h6>
-                    <span className="fw-bold" style={{ color: "#b91c1c", fontSize: "0.85rem" }}>
-                      Total dû : {totalDu.toLocaleString()} Ar
-                    </span>
-                  </div>
-                  <div className="p-2">
-                    <div className="row g-2">
-                      {impayes.map((loc) => {
-                        const p = getCellData(loc.id, moisCourant);
-                        const du =
-                          (loc.loyer || 0) -
-                          (p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0);
-                        const lien = lienRelanceWhatsApp(loc, MOIS_FULL[moisCourant - 1], anneeCourante, du);
-                        return (
-                          <div className="col-6 col-md-4 col-xl-3" key={loc.id}>
-                            <div
-                              className="h-100 rounded-3 p-2 d-flex flex-column"
-                              style={{ border: "1px solid #e2e8f0", background: "#fff" }}
-                            >
-                              <div className="d-flex align-items-center gap-2 mb-1">
-                                <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
-                                  {loc.chambre}
-                                </span>
-                                <span
-                                  className="fw-semibold text-truncate"
-                                  style={{ fontSize: "0.83rem" }}
-                                  title={loc.nom}
-                                >
-                                  {loc.nom}
-                                </span>
-                              </div>
-                              <div className="d-flex align-items-center justify-content-between mt-auto gap-1">
-                                <span className="fw-bold" style={{ color: "#b91c1c", fontSize: "0.8rem" }}>
-                                  {du.toLocaleString()} Ar
-                                </span>
-                                {lien ? (
-                                  <a
-                                    href={lien}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-sm py-0 px-2 fw-semibold d-flex align-items-center gap-1"
-                                    style={{ background: "#25D366", color: "#fff", fontSize: "0.72rem" }}
-                                  >
-                                    <BsWhatsapp size={11} /> Relancer
-                                  </a>
-                                ) : (
-                                  <span
-                                    className="rounded-pill px-2"
-                                    style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.68rem" }}
-                                  >
-                                    pas de n°
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
+            {/* Alerte impayés — mois précédents (M-1 et M-2) */}
+            <AlerteImpayes
+              locataires={locataires}
+              getCellData={getCellData}
+              annee={annee}
+            />
 
             {/* Tableau principal */}
             <div className="card-pro p-0 mb-4">
