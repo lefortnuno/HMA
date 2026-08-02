@@ -70,13 +70,20 @@ Utilisateur.loginUtilisateur = (values, result) => {
 };
 
 Utilisateur.getAllUtilisateurs = (result) => {
-  dbConn.query(reqSQL + ordre, (err, res) => {
-    if (err) {
-      result(err, null);
-    } else {
-      result(null, res);
+  // Le hash du mot de passe n'est jamais renvoye.
+  // Le telephone vient de la fiche locataire (pour l'envoi des acces).
+  dbConn.query(
+    `SELECT m.id, m.nom, m.prenom, m.idPS, m.karazana, m.photo,
+            m.locataireId, m.mdpTemporaire, m.createdAt,
+            l.tel, l.chambre, l.etage
+     FROM mpampiasa m
+     LEFT JOIN locataire l ON l.id = m.locataireId
+     ORDER BY m.id DESC`,
+    (err, res) => {
+      if (err) result(err, null);
+      else result(null, res);
     }
-  });
+  );
 };
 
 Utilisateur.getMyTotalOfUser = (result) => {

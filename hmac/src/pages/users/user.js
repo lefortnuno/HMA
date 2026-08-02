@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import {
   BsFillTrashFill, BsPencilSquare, BsEye,
   BsPeopleFill, BsShieldFill, BsPersonFill, BsSearch, BsPlus,
+  BsWhatsapp, BsSend, BsClipboard, BsKey,
 } from "react-icons/bs";
 
 const url_req = "utilisateur/";
@@ -48,6 +49,34 @@ export default function User() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
+  const [acces, setAcces] = useState(null);      // { idPS, nom, code, tel }
+  const [envoiEnCours, setEnvoiEnCours] = useState(null);
+
+  // Les codes sont hachés en base : impossible de relire l'ancien.
+  // On en génère donc un nouveau, à transmettre immédiatement.
+  function envoyerAcces(u) {
+    setEnvoiEnCours(u.id);
+    axios
+      .post(`utilisateur/${u.id}/acces`, {}, u_info.opts)
+      .then((r) => {
+        setAcces({ ...r.data, tel: u.tel || "" });
+        fetchUsers(true);
+      })
+      .catch((e) => toast.error(e.response?.data?.message || "Erreur lors de la génération"))
+      .finally(() => setEnvoiEnCours(null));
+  }
+
+  function messageAcces(a) {
+    return (
+      `Bonjour ${a.nom},\n\n` +
+      `Voici vos accès à l'application de gestion de la Villa Kinya :\n` +
+      `• Identifiant : ${a.idPS}\n` +
+      `• Code : ${a.code}\n\n` +
+      `À votre première connexion, vous devrez choisir votre propre code à 4 chiffres.\n` +
+      `Vous y verrez vos loyers réglés et ceux qui restent dus.\n\n` +
+      `— Trofel`
+    );
+  }
 
   useEffect(() => { fetchUsers(); }, []);
 
@@ -168,7 +197,18 @@ export default function User() {
                         </td>
                         <td style={{ fontSize: "0.78rem", color: "#94a3b8" }}>#{u.idPS}</td>
                         <td>
-                          {u.karazana == 1
+                          {String(u.mdpTemporaire) === "1" && (
+                            <span className="d-inline-flex align-items-center gap-1 me-1"
+                              title="Code par défaut, pas encore changé"
+                              style={{ background: "#fffbeb", color: "#92400e", fontSize: "0.68rem", fontWeight: 700, padding: "3px 8px", borderRadius: 6 }}>
+                              <BsKey size={10} /> code neuf
+                            </span>
+                          )}
+                          {u.karazana == 2
+                            ? <span style={{ background: "#f0fdf4", color: "#16a34a", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
+                                Locataire
+                              </span>
+                            : u.karazana == 1
                             ? <span style={{ background: "#eff6ff", color: "#2563eb", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
                                 Admin
                               </span>
@@ -190,6 +230,15 @@ export default function User() {
                               onClick={() => navigate(`/editUser/${u.id}`, { state: { entity: u } })}>
                               <BsPencilSquare />
                             </button>
+                            {String(u.mdpTemporaire) === "1" && (
+                              <button className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+                                style={{ background: "#25D366", color: "#fff", fontSize: "0.72rem" }}
+                                title="Générer et envoyer ses accès"
+                                disabled={envoiEnCours === u.id}
+                                onClick={() => envoyerAcces(u)}>
+                                <BsSend size={11} /> {envoiEnCours === u.id ? "..." : "Accès"}
+                              </button>
+                            )}
                             <button className="btn btn-outline-danger btn-sm" title="Supprimer"
                               onClick={() => { setSelectedEntity(u); setShowDeleteModal(true); }}>
                               <BsFillTrashFill />
@@ -226,6 +275,57 @@ export default function User() {
           </main>
         </div>
       </div>
+
+      {/* ── Accès générés : à transmettre tout de suite ── */}
+      {acces && (
+        <div className="modal-overlay" onClick={() => setAcces(null)}>
+          <div className="modal-content-pro" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-pro">
+              <h6><BsKey className="me-2" />Accès de {acces.nom}</h6>
+              <button className="btn-close" onClick={() => setAcces(null)} />
+            </div>
+            <div className="p-4">
+              <div className="rounded-3 p-3 mb-3 text-center" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                <div className="text-muted" style={{ fontSize: "0.72rem" }}>Identifiant</div>
+                <div className="fw-bold mb-2" style={{ fontSize: "1.05rem" }}>{acces.idPS}</div>
+                <div className="text-muted" style={{ fontSize: "0.72rem" }}>Code à 4 chiffres</div>
+                <div className="fw-bold" style={{ fontSize: "2rem", letterSpacing: "0.35em", color: "#2563eb" }}>
+                  {acces.code}
+                </div>
+              </div>
+
+              <div className="rounded-3 p-2 mb-3" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+                <small style={{ fontSize: "0.75rem", color: "#92400e" }}>
+                  Ce code n'est affiché qu'une seule fois. Transmettez-le maintenant.
+                </small>
+              </div>
+
+              <div className="d-flex gap-2 flex-wrap justify-content-end">
+                <button className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(messageAcces(acces));
+                    toast.success("Message copié");
+                  }}>
+                  <BsClipboard /> Copier le message
+                </button>
+                {acces.tel ? (
+                  <a className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+                    style={{ background: "#25D366", color: "#fff" }}
+                    href={`https://wa.me/${acces.tel.replace(/\s+/g, "").replace(/^\+/, "")}?text=${encodeURIComponent(messageAcces(acces))}`}
+                    target="_blank" rel="noopener noreferrer">
+                    <BsWhatsapp /> Envoyer sur WhatsApp
+                  </a>
+                ) : (
+                  <span className="rounded-pill px-2 py-1 align-self-center"
+                    style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.72rem" }}>
+                    pas de numéro enregistré
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedEntity && (
         <DeleteModal

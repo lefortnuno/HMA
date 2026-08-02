@@ -38,6 +38,13 @@ router.put(
   UtilisateurController.updateUtilisateur
 );
 
+// Regenerer le code d acces d un compte (admin) : renvoie le nouveau code.
+router.post(
+  "/:id/acces",
+  admin.checkUtilisateur,
+  UtilisateurController.regenererAcces
+);
+
 router.delete(
   "/:id",
   admin.checkUtilisateur,

@@ -163,6 +163,50 @@ module.exports.updateMonCompte = (req, res) => {
     if (Object.keys(updateData).length === 0)
       return res.status(400).send({ success: false, message: "Rien à modifier." });
 
+    // Un locataire ne modifie pas son profil (nom, prenom, photo) sans l accord
+    // de l admin. Le changement de code, lui, reste immediat : il est exige des
+    // la premiere connexion et releve de la seule securite du compte.
+    const { LOCATAIRE } = require("../middlewares/roles");
+    const estLocataire = Number(moi.karazana) === LOCATAIRE;
+    const champsProfil = ["nom", "prenom", "photo"].filter((c) => c in updateData);
+
+    if (estLocataire && champsProfil.length) {
+      const Validation = require("../models/validation.model");
+      const avant = {};
+      const apres = {};
+      champsProfil.forEach((c) => {
+        avant[c] = resultat[0][c];
+        apres[c] = updateData[c];
+      });
+      return Validation.create(
+        {
+          entite: "COMPTE",
+          action: "MODIFICATION",
+          entiteId: moi.id,
+          avant: { ...avant, idPS: resultat[0].idPS },
+          apres: { ...apres, idPS: resultat[0].idPS },
+          auteurId: moi.id,
+          auteurNom: `${moi.nom} ${moi.prenom || ""}`.trim(),
+        },
+        (errV, resV) => {
+          if (errV) return sendErr(res, errV);
+          // Le code eventuel est tout de meme applique (securite du compte).
+          const suite = () =>
+            res.status(202).send({
+              ...resV,
+              message: "Demande envoyée à l administrateur pour validation.",
+            });
+          if (!updateData.pwd) return suite();
+          const dbC = require("../config/db");
+          dbC.query(
+            "UPDATE mpampiasa SET pwd = ?, mdpTemporaire = 0 WHERE id = ?",
+            [updateData.pwd, moi.id],
+            (e3) => (e3 ? sendErr(res, e3) : suite())
+          );
+        }
+      );
+    }
+
     const dbConn = require("../config/db");
     dbConn.query("UPDATE mpampiasa SET ? WHERE id = ?", [updateData, moi.id], (err2) => {
       if (err2) return sendErr(res, err2);
@@ -175,5 +219,37 @@ module.exports.updateMonCompte = (req, res) => {
         mdpTemporaire: updateData.mdpTemporaire !== undefined ? updateData.mdpTemporaire : resultat[0].mdpTemporaire,
       });
     });
+  });
+};
+
+// ─── Renvoyer les accès d'un compte (admin) ────────────────────
+// Les codes sont hachés : impossible de relire l'ancien. On en génère
+// donc un nouveau, et le changement à la 1re connexion redevient obligatoire.
+module.exports.regenererAcces = (req, res) => {
+  const Compte = require("../utils/compte");
+  const dbConn = require("../config/db");
+
+  Utilisateur.getIdUtilisateur(req.params.id, (err, resultat) => {
+    if (err) return sendErr(res, err);
+    if (!resultat || !resultat[0])
+      return res.status(404).send({ success: false, message: "Compte introuvable." });
+
+    const compte = resultat[0];
+    const code = Compte.codeAleatoire();
+    dbConn.query(
+      "UPDATE mpampiasa SET pwd = ?, mdpTemporaire = 1 WHERE id = ?",
+      [bcrypt.hashSync(code, 10), compte.id],
+      (err2) => {
+        if (err2) return sendErr(res, err2);
+        // Le code en clair n'est renvoyé qu'ici, une seule fois.
+        res.send({
+          success: true,
+          idPS: compte.idPS,
+          nom: compte.nom,
+          code,
+          message: "Nouveau code généré.",
+        });
+      }
+    );
   });
 };
