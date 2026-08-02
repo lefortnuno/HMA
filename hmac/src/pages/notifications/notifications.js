@@ -65,13 +65,25 @@ const CHAMPS_PAIEMENT = [
   ["datePaiement", "Date de paiement"],
 ];
 
+// Un locataire ne modifie que son identité et son avatar.
+const CHAMPS_COMPTE = [
+  ["nom", "Nom"],
+  ["prenom", "Prénom"],
+  ["photo", "Photo de profil"],
+];
+
 function champsDe(entite) {
-  return entite === "PAIEMENT" ? CHAMPS_PAIEMENT : CHAMPS_LOCATAIRE;
+  if (entite === "PAIEMENT") return CHAMPS_PAIEMENT;
+  if (entite === "COMPTE") return CHAMPS_COMPTE;
+  return CHAMPS_LOCATAIRE;
 }
 
 function fmtVal(champ, v) {
   if (v === null || v === undefined || v === "") return "—";
   if (champ === "actif") return Number(v) ? "Oui" : "Non";
+  // Une photo est une data URL de plusieurs milliers de caractères :
+  // on n'affiche que le fait qu'elle change.
+  if (champ === "photo") return "Photo définie";
   if (["loyer", "caution", "montantLoyer", "montantJIRAMA"].includes(champ))
     return Number(v).toLocaleString();
   if (champ === "mois") return MOIS_FULL[Number(v) - 1] || String(v);
@@ -233,6 +245,8 @@ export default function Notifications() {
                   const s = STATUTS[d.statut] || STATUTS.EN_ATTENTE;
                   const src = d.apres || d.avant || {};
                   const estPaiement = d.entite === "PAIEMENT";
+                  const estCompte = d.entite === "COMPTE";
+                  const typeLabel = estPaiement ? "paiement" : estCompte ? "compte" : "locataire";
                   const cible = estPaiement
                     ? `${src.locataireNom || "?"}${src.chambre ? ` (ch. ${src.chambre})` : ""} · ${MOIS_FULL[Number(src.mois) - 1] || ""} ${src.annee || ""}`
                     : d.action === "AJOUT" ? d.apres?.nom : d.avant?.nom || d.apres?.nom || "";
@@ -251,7 +265,7 @@ export default function Notifications() {
                             className="d-inline-flex align-items-center gap-1 fw-bold"
                             style={{ color: a.color, fontSize: "0.85rem" }}
                           >
-                            <a.Icon size={14} /> {a.label} — {estPaiement ? "paiement" : "locataire"} {cible && <strong>{cible}</strong>}
+                            <a.Icon size={14} /> {a.label} — {typeLabel} {cible && <strong>{cible}</strong>}
                           </span>
                           <span
                             className="d-inline-flex align-items-center gap-1 rounded-pill px-2 py-0"

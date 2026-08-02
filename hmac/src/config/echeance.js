@@ -22,17 +22,70 @@ export function estAvance(loc) {
 }
 
 /**
+ * Jour de règlement retenu pour les calculs.
+ * À défaut de jour saisi, c'est le jour d'entrée : la date anniversaire du
+ * bail est celle à laquelle le locataire se présente chaque mois.
+ */
+// Jour du mois où le locataire est entré (1 par défaut).
+export function jourEntree(loc) {
+  const d = loc?.dateEntree ? new Date(loc.dateEntree) : null;
+  return d && !isNaN(d) ? d.getDate() : 1;
+}
+
+export function jourReglement(loc) {
+  const saisi = Number(loc?.jourPaiement) || 0;
+  if (saisi) return saisi;
+  const d = loc?.dateEntree ? new Date(loc.dateEntree) : null;
+  if (d && !isNaN(d)) return d.getDate();
+  return 1; // rien de connu : échéance au changement de mois
+}
+
+/**
+ * Part du loyer d'un mois déjà exigible aujourd'hui : 0, la moitié, ou tout.
+ *
+ * Un locataire entré en cours de mois règle à cheval sur deux mois. Ben Aly,
+ * entré le 15 : son versement du 15 août solde la seconde moitié de juillet
+ * et avance la première moitié d'août. Au 2 août, juin lui est donc dû en
+ * entier, juillet pour moitié seulement, et août pas encore.
+ *
+ * Pour une entrée le 1er (la majorité des fiches), il n'y a pas de chevauchement
+ * et l'on retombe sur le comportement d'origine : 0 puis tout.
+ */
+export function partExigible(loc, mois, annee) {
+  if (!loc) return 0;
+  const now = new Date();
+  const anneeCourante = now.getFullYear();
+  const m = Number(mois);
+  const a = Number(annee);
+
+  if (a > anneeCourante) return 0;
+  if (a < anneeCourante) return 1; // année révolue : tout est dû
+
+  const jour = jourReglement(loc);
+  const moisCourant = now.getMonth() + 1;
+  // Le mois d'échéance du solde : M pour un règlement d'avance, M+1 sinon.
+  const moisSolde = estAvance(loc) ? m : m + 1;
+  const passee = (moisCible) =>
+    moisCourant > moisCible || (moisCourant === moisCible && now.getDate() >= jour);
+
+  if (passee(moisSolde)) return 1;
+  // Chevauchement uniquement pour une entrée en cours de mois : c'est elle
+  // qui décale le cycle d'une demi-période.
+  if (jourEntree(loc) > 1 && passee(moisSolde - 1)) return 0.5;
+  return 0;
+}
+
+// Montant réellement dû à ce jour pour un mois donné.
+export function montantDu(loc, mois, annee) {
+  return Math.round((Number(loc?.loyer) || 0) * partExigible(loc, mois, annee));
+}
+
+/**
  * Mois réellement à recouvrer pour un locataire, sur une année donnée :
  * de son entrée jusqu'au dernier mois dont l'échéance est passée.
  */
 export function moisExigibles(loc, annee) {
   if (!loc) return [];
-  const now = new Date();
-  const anneeCourante = now.getFullYear();
-  const moisCourant = now.getMonth() + 1;
-
-  if (Number(annee) > anneeCourante) return []; // année à venir
-
   let debut = 1;
   if (loc.dateEntree) {
     const d = new Date(loc.dateEntree);
@@ -42,29 +95,10 @@ export function moisExigibles(loc, annee) {
     }
   }
 
-  let fin;
-  if (Number(annee) !== anneeCourante) {
-    fin = 12; // année passée : tous les mois sont échus
-  } else {
-    const jour = Number(loc.jourPaiement) || 0;
-    const echeanceDuMoisPassee = jour > 0 && now.getDate() > jour;
-
-    if (estAvance(loc)) {
-      // Le mois en cours est dû dès que sa date de règlement est dépassée.
-      fin = echeanceDuMoisPassee ? moisCourant : moisCourant - 1;
-    } else if (jour > 0) {
-      // À terme échu : c'est le mois PRÉCÉDENT qui se règle ce mois-ci.
-      // Avant la date habituelle, il n'est pas encore en retard.
-      fin = echeanceDuMoisPassee ? moisCourant - 1 : moisCourant - 2;
-    } else {
-      // Jour de règlement inconnu : le mois précédent reste à recouvrer
-      // pendant le mois en cours, sans qu'on puisse dire s'il est en retard.
-      fin = moisCourant - 1;
-    }
-  }
-
   const mois = [];
-  for (let m = debut; m <= fin; m++) mois.push(m);
+  for (let m = debut; m <= 12; m++) {
+    if (partExigible(loc, m, annee) > 0) mois.push(m);
+  }
   return mois;
 }
 

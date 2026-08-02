@@ -184,4 +184,18 @@ Utilisateur.updateUtilisateur = (updateUtilisateur, id, result) => {
   });
 };
 
+// Profil seul (nom, prenom, photo) : sert a appliquer une demande de
+// modification validee par l'admin, sans toucher a l'idPS ni au role.
+Utilisateur.updateProfil = (id, data, result) => {
+  const champs = {};
+  ["nom", "prenom", "photo"].forEach((c) => {
+    if (data[c] !== undefined) champs[c] = data[c];
+  });
+  if (!Object.keys(champs).length) return result(null, { success: true });
+  dbConn.query("UPDATE mpampiasa SET ? WHERE id = ?", [champs, id], (err) => {
+    if (err) result(err, null);
+    else result(null, { success: true });
+  });
+};
+
 module.exports = Utilisateur;

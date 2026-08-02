@@ -309,6 +309,19 @@ module.exports.decideValidation = (req, res) => {
       });
     }
 
+    // ── Comptes : modification de profil demandee par un locataire ──
+    // Sans cette branche, entiteId (un id de compte) etait pris pour un id de
+    // locataire et l'approbation echouait sur une mise a jour impossible.
+    if (demande.entite === "COMPTE") {
+      const a = demande.apres || {};
+      const Utilisateur = require("../models/utilisateur.model");
+      return Utilisateur.updateProfil(
+        demande.entiteId,
+        { nom: a.nom, prenom: a.prenom, photo: a.photo },
+        finir
+      );
+    }
+
     // ── Locataires ──
     if (demande.action === "AJOUT") {
       const data = demande.apres;

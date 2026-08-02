@@ -30,7 +30,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger, TEL_BAILLEUR } from "../../config/contact";
-import { moisExigibles, libelleEcheance, libelleJour } from "../../config/echeance";
+import { moisExigibles, montantDu, libelleEcheance, libelleJour } from "../../config/echeance";
 import "./loyer.css";
 
 const MOIS = [
@@ -115,7 +115,9 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
         const p = getCellData(loc.id, m);
         if (p && p.statut === "PAYE") return;
         const paye = p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
-        const reste = (loc.loyer || 0) - paye;
+        // On ne réclame que la part déjà échue : un locataire entré en cours
+        // de mois ne doit que la moitié du mois en cours de règlement.
+        const reste = montantDu(loc, m, annee) - paye;
         if (reste <= 0) return;
         (parMois[m] = parMois[m] || []).push({
           loc,

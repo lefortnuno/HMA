@@ -11,7 +11,7 @@ import {
   BsCashCoin, BsHourglassSplit, BsSendCheck,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
-import { moisExigibles as calcMoisExigibles, libelleEcheance } from "../../config/echeance";
+import { moisExigibles as calcMoisExigibles, montantDu, libelleEcheance } from "../../config/echeance";
 import "../loyer/loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -60,15 +60,17 @@ export default function MonEspace() {
   // consommation ou d'avance) et de sa date de règlement habituelle.
   const moisExigibles = calcMoisExigibles(loc, annee);
 
-  const impayes = moisExigibles.filter((m) => {
+  // Reste dû sur un mois : uniquement la part déjà échue (voir config/echeance.js),
+  // diminuée de ce qui a déjà été réglé.
+  const resteDe = (m) => {
     const p = parMois[m];
-    return (!p || p.statut !== "PAYE") && !declares[m];
-  });
-  const totalDu = impayes.reduce((s, m) => {
-    const p = parMois[m];
+    if (p && p.statut === "PAYE") return 0;
     const paye = p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
-    return s + (loc?.loyer || 0) - paye;
-  }, 0);
+    return Math.max(0, montantDu(loc, m, annee) - paye);
+  };
+
+  const impayes = moisExigibles.filter((m) => !declares[m] && resteDe(m) > 0);
+  const totalDu = impayes.reduce((s, m) => s + resteDe(m), 0);
   const totalPaye = paiements
     .filter((p) => p.statut === "PAYE" || p.statut === "PARTIEL")
     .reduce((s, p) => s + (p.montantLoyer || 0) + (p.montantJIRAMA || 0), 0);
@@ -76,10 +78,9 @@ export default function MonEspace() {
   // Ouvre le formulaire de déclaration, pré-rempli avec ce qui reste dû.
   function ouvrirDeclaration(m) {
     const p = parMois[m];
-    const dejaLoyer = p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
     setDeclaration({
       mois: m,
-      montantLoyer: Math.max(0, (loc?.loyer || 0) - dejaLoyer),
+      montantLoyer: resteDe(m),
       montantJIRAMA: p?.montantJIRAMA || 0,
       datePaiement: new Date().toISOString().split("T")[0],
     });
@@ -136,7 +137,7 @@ export default function MonEspace() {
     }
 
     // On ne déclare que ce qui reste dû, et une seule fois par mois.
-    const declarable = !attente && p?.statut !== "PAYE" && (exigible || p?.statut === "PARTIEL");
+    const declarable = !attente && resteDe(m) > 0;
 
     return (
       <div className="col-6 col-sm-4 col-md-3 col-lg-2">
