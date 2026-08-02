@@ -36,7 +36,9 @@ export default function PremierAcces() {
       .then(() => {
         localStorage.setItem("mdpTemporaire", "0");
         toast.success("Code enregistré, bienvenue !");
-        navigate("/home/");
+        // Un locataire n a acces qu a son espace personnel.
+        const locataire = String(localStorage.getItem("karazana")) === "2";
+        navigate(locataire ? "/mon-espace/" : "/loyer/");
       })
       .catch((err) =>
         toast.error(err.response?.data?.message || "Erreur lors du changement")

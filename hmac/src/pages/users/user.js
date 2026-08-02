@@ -5,7 +5,7 @@ import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
 import DeleteModal from "../../components/modals/delete";
 import { SkTableRows } from "../../components/skeleton/skeleton";
-import { copierEtOuvrirMessenger } from "../../config/contact";
+import { copierEtOuvrirMessenger, extraireMessengerId, URL_APP } from "../../config/contact";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -77,9 +77,14 @@ export default function User() {
       `• Code : ${a.code}\n\n` +
       `À votre première connexion, vous devrez choisir votre propre code à 4 chiffres.\n` +
       `Vous y verrez vos loyers réglés et ceux qui restent dus.\n\n` +
+      `Lien de l'application : ${URL_APP}\n\n` +
       `— Trofel`
     );
   }
+
+  // Canaux d envoi réellement disponibles pour le compte affiché.
+  const aMessenger = !!extraireMessengerId(acces?.messengerId);
+  const aWhatsApp = !!String(acces?.tel || "").replace(/\s+/g, "");
 
   useEffect(() => { fetchUsers(); }, []);
 
@@ -349,25 +354,50 @@ export default function User() {
                   }}>
                   <BsClipboard /> Copier le message
                 </button>
-                {/* Messenger ne pré-remplit pas : on copie puis on ouvre la conversation. */}
+                {/* Sans identifiant Messenger / sans numero, le bouton n ouvrirait
+                    qu une recherche inutile : on le laisse visible mais inactif. */}
                 <button className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
-                  style={{ background: "#0866FF", color: "#fff" }}
-                  title="Copie le message et ouvre Messenger"
+                  style={{
+                    background: aMessenger ? "#0866FF" : "#e2e8f0",
+                    color: aMessenger ? "#fff" : "#94a3b8",
+                    cursor: aMessenger ? "pointer" : "not-allowed",
+                  }}
+                  disabled={!aMessenger}
+                  title={aMessenger
+                    ? "Copie le message et ouvre Messenger"
+                    : "Aucun lien Messenger enregistré pour ce compte"}
                   onClick={() => {
                     copierEtOuvrirMessenger(messageAcces(acces), acces.nom, acces.messengerId);
                     toast.info("Message copié — collez-le dans la conversation");
                   }}>
                   <BsMessenger /> Messenger
                 </button>
-                {acces.tel && (
+                {aWhatsApp ? (
                   <a className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
                     style={{ background: "#25D366", color: "#fff" }}
                     href={`https://wa.me/${acces.tel.replace(/\s+/g, "").replace(/^\+/, "")}?text=${encodeURIComponent(messageAcces(acces))}`}
                     target="_blank" rel="noopener noreferrer">
                     <BsWhatsapp /> WhatsApp
                   </a>
+                ) : (
+                  <button className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+                    style={{ background: "#e2e8f0", color: "#94a3b8", cursor: "not-allowed" }}
+                    disabled
+                    title="Aucun numéro de téléphone enregistré pour ce compte">
+                    <BsWhatsapp /> WhatsApp
+                  </button>
                 )}
               </div>
+
+              {(!aMessenger || !aWhatsApp) && (
+                <small className="text-muted d-block mt-2" style={{ fontSize: "0.72rem" }}>
+                  {!aMessenger && !aWhatsApp
+                    ? "Ni numéro ni lien Messenger sur cette fiche : copiez le message pour le transmettre."
+                    : !aMessenger
+                    ? "Aucun lien Messenger sur cette fiche."
+                    : "Aucun numéro de téléphone sur cette fiche."}
+                </small>
+              )}
             </div>
           </div>
         </div>

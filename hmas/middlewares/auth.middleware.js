@@ -23,7 +23,10 @@ module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
             });
           }
           const karazana = resultat[0].karazana;
+          // `tous` : route ouverte a n importe quel compte authentifie
+          // (ex. modification de son propre compte), quel que soit son role.
           if (
+            myUserRole.tous ||
             estRole(karazana, myUserRole.admin) ||
             estRole(karazana, myUserRole.user)
           ) {
