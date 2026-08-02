@@ -362,6 +362,7 @@ export default function Locataires() {
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Téléphone</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Loyer</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Date entrée</th>
+                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Paiement habituel</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Statut</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Actions</th>
               </tr>
@@ -404,6 +405,21 @@ export default function Locataires() {
                     </span>
                   </td>
                   <td style={{ fontSize: "0.875rem" }}>{formatDate(loc.dateEntree)}</td>
+                  <td>
+                    {loc.jourPaiement ? (
+                      <span
+                        className="rounded-pill px-2 fw-semibold"
+                        title={`Règle habituellement le ${loc.jourPaiement} de chaque mois`}
+                        style={{ background: "#eff6ff", color: "#2563eb", fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                      >
+                        le {loc.jourPaiement} du mois
+                      </span>
+                    ) : (
+                      <span className="text-muted" style={{ fontSize: "0.78rem" }}>
+                        non défini
+                      </span>
+                    )}
+                  </td>
                   <td>
                     <span className={loc.actif ? "badge-paye" : "badge-impaye"}>
                       {loc.actif ? "Actif" : "Inactif"}

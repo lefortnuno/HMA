@@ -92,9 +92,11 @@ export function lienRelanceWhatsApp(loc, libelle, annee, montant, libelleRedige 
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
 
-// Mois "exigibles" pour un locataire : de son entrée jusqu'au mois précédent
-// le mois courant (le mois en cours n'est pas encore échu). Limité à l'année
-// affichée par le tableau.
+// Mois "exigibles" pour un locataire : de son entrée jusqu'au dernier mois échu.
+//
+// Le mois en cours n'est en principe pas encore dû. Il le devient toutefois
+// lorsque le locataire a une date de règlement habituelle (ex. « le 10 ») et
+// que celle-ci est passée : inutile d'attendre la fin du mois pour le relancer.
 function moisExigibles(loc, annee) {
   const now = new Date();
   const anneeCourante = now.getFullYear();
@@ -111,8 +113,15 @@ function moisExigibles(loc, annee) {
       if (d.getFullYear() === annee) debut = d.getMonth() + 1;
     }
   }
-  // Dernier mois échu : M-1 si on est sur l'année en cours, sinon décembre.
-  const fin = annee === anneeCourante ? moisCourant - 1 : 12;
+
+  let fin;
+  if (annee !== anneeCourante) {
+    fin = 12; // année passée : tous les mois sont échus
+  } else {
+    const jour = Number(loc.jourPaiement) || 0;
+    const echeanceDepassee = jour > 0 && now.getDate() > jour;
+    fin = echeanceDepassee ? moisCourant : moisCourant - 1;
+  }
 
   const mois = [];
   for (let m = debut; m <= fin; m++) mois.push(m);
@@ -896,12 +905,25 @@ export default function Loyer() {
                                 width: "75px",
                                 maxWidth: "75px",
                               }}
-                              title={`${loc.nom} ${loc.prenom}`}
+                              title={
+                                `${loc.nom} ${loc.prenom || ""}`.trim() +
+                                (loc.jourPaiement
+                                  ? `\nPaiement habituel : le ${loc.jourPaiement} du mois`
+                                  : "\nJour de paiement habituel non renseigné")
+                              }
                             >
                               {loc.nom} {loc.prenom}
                             </div>
                             <small className="text-muted">
                               {loc.loyer?.toLocaleString()} Ar
+                              {loc.jourPaiement && (
+                                <span
+                                  className="ms-1"
+                                  style={{ color: "#94a3b8", fontSize: "0.68rem" }}
+                                >
+                                  · j-{loc.jourPaiement}
+                                </span>
+                              )}
                             </small>
                           </td>
                           {MOIS.map((_, mi) => (
