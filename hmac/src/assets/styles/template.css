@@ -119,6 +119,7 @@ body::-webkit-scrollbar {
 .stat-icon.amber  { background: #fffbeb; color: #f59e0b; }
 .stat-icon.purple { background: #f5f3ff; color: #8b5cf6; }
 .stat-icon.slate  { background: #f8fafc; color: #475569; }
+.stat-icon.yellow { background: #fef9c3; color: #a16207; }
 
 .stat-content h3 {
   font-size: 1.4rem;
