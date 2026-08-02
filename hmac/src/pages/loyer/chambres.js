@@ -41,8 +41,8 @@ function initForm(etage, chambre) {
 export default function Chambres() {
   const u_info = GetUserData();
   const navigate = useNavigate();
-  const apparts = useAppartements();
   const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
   const current = apparts.find((a) => a.id === bienId) || KINYA;
   const mono = bienId !== 0;
   const monoLoyer = current.prix || 200000;

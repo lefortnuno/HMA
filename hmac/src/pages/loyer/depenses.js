@@ -31,8 +31,8 @@ function initForm(now) {
 export default function Depenses() {
   const u_info = GetUserData();
   const now = new Date();
-  const apparts = useAppartements();
   const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
   const current = apparts.find((a) => a.id === bienId) || KINYA;
   const [mois, setMois] = useState(now.getMonth() + 1);
   const [annee, setAnnee] = useState(now.getFullYear());

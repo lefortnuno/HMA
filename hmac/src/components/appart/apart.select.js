@@ -16,7 +16,12 @@ export function setSelectedBienId(id) {
 }
 
 // Liste des appartements gerables : KINYA + biens VILLA du vitrine.
-export function useAppartements() {
+//
+// bienId / onReset (optionnels) : si l'appartement memorise dans le navigateur
+// n'existe plus (bien supprime, renomme, ou selection restee sur un appart
+// vide), on revient automatiquement sur VILLA KINYA. Sans ce garde-fou, toutes
+// les pages filtrent sur un appartement introuvable et paraissent vides.
+export function useAppartements(bienId, onReset) {
   const [list, setList] = useState([KINYA]);
   useEffect(() => {
     axios
@@ -28,16 +33,26 @@ export function useAppartements() {
           mono: true,
           prix: b.prix,
         }));
-        setList([KINYA, ...biens]);
+        const complete = [KINYA, ...biens];
+        setList(complete);
+        if (
+          bienId !== undefined &&
+          !complete.some((a) => a.id === Number(bienId))
+        ) {
+          setSelectedBienId(0);
+          if (onReset) onReset(0);
+        }
       })
       .catch(() => setList([KINYA]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return list;
 }
 
 export default function ApartSelect({ list, value, onChange }) {
-  if (!list || list.length <= 1) {
-    // Un seul appartement (KINYA) : inutile d'afficher un selecteur.
+  // On masque le selecteur uniquement s'il n'y a qu'un appartement ET qu'on est
+  // deja dessus : sinon l'utilisateur serait bloque sur un appart sans donnees.
+  if ((!list || list.length <= 1) && Number(value) === 0) {
     return null;
   }
   return (

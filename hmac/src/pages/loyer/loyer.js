@@ -322,8 +322,8 @@ export default function Loyer() {
   const u_info = GetUserData();
   const tableauRef = useRef(null);
   const moisCourant = new Date().getMonth() + 1;
-  const apparts = useAppartements();
   const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
   const current = apparts.find((a) => a.id === bienId) || KINYA;
   const [annee, setAnnee] = useState(new Date().getFullYear());
   const [locataires, setLocataires] = useState([]);

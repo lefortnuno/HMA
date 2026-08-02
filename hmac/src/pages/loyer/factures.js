@@ -19,8 +19,8 @@ const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep",
 
 export default function Factures() {
   const u_info = GetUserData();
-  const apparts = useAppartements();
   const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
   const current = apparts.find((a) => a.id === bienId) || KINYA;
   const mono = bienId !== 0; // appart "loyer seul" : pas de JIRAMA
   const now = new Date();

@@ -30,8 +30,8 @@ const ACTIONS = {
 
 export default function Historique() {
   const u_info = GetUserData();
-  const apparts = useAppartements();
   const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
   const [histo, setHisto] = useState([]);
   const [loading, setLoading] = useState(true);
 
