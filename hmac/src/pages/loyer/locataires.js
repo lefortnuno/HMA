@@ -18,6 +18,8 @@ import {
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
 import JourPaiementPicker from "../../components/jour/jour.paiement";
+import ModePaiementPicker from "../../components/jour/mode.paiement";
+import { libelleEcheance, estAvance } from "../../config/echeance";
 import ApartSelect, {
   useAppartements,
   getSelectedBienId,
@@ -124,6 +126,8 @@ function initForm() {
     photo: "",
     messengerId: "",
     jourPaiement: "",
+    // Les nouveaux locataires reglent d avance (ils paient puis consomment).
+    modePaiement: "AVANCE",
   };
 }
 
@@ -288,6 +292,7 @@ export default function Locataires() {
         photo: loc.photo || "",
         messengerId: loc.messengerId || "",
         jourPaiement: loc.jourPaiement || "",
+        modePaiement: loc.modePaiement || "ECHU",
       });
       setShowEditModal(true);
     } else {
@@ -406,11 +411,10 @@ export default function Locataires() {
                     </span>
                   </td>
                   <td style={{ fontSize: "0.875rem" }}>{formatDate(loc.dateEntree)}</td>
-                  <td>
+                  <td title={libelleEcheance(loc)}>
                     {loc.jourPaiement ? (
                       <span
                         className="rounded-pill px-2 fw-semibold"
-                        title={`Règle habituellement le ${loc.jourPaiement} de chaque mois`}
                         style={{ background: "#eff6ff", color: "#2563eb", fontSize: "0.72rem", whiteSpace: "nowrap" }}
                       >
                         le {loc.jourPaiement} du mois
@@ -420,6 +424,10 @@ export default function Locataires() {
                         non défini
                       </span>
                     )}
+                    {/* Le sens du reglement change le mois reellement du. */}
+                    <div style={{ fontSize: "0.68rem", color: "#94a3b8", whiteSpace: "nowrap" }}>
+                      {estAvance(loc) ? "d'avance" : "après conso. (M+1)"}
+                    </div>
                   </td>
                   <td>
                     <span className={loc.actif ? "badge-paye" : "badge-impaye"}>
@@ -659,6 +667,10 @@ export default function Locataires() {
                   </div>
                 </div>
                 <div className="col-12">
+                  <label className="form-label">Sens du règlement</label>
+                  <ModePaiementPicker value={editForm.modePaiement} onChange={handleEditChange} />
+                </div>
+                <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
                   <input type="text" name="messengerId" className="form-control form-control-sm"
                     autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
@@ -773,6 +785,10 @@ export default function Locataires() {
                   <div>
                     <JourPaiementPicker value={addForm.jourPaiement} onChange={handleAddChange} />
                   </div>
+                </div>
+                <div className="col-12">
+                  <label className="form-label">Sens du règlement</label>
+                  <ModePaiementPicker value={addForm.modePaiement} onChange={handleAddChange} />
                 </div>
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>

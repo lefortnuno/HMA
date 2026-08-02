@@ -9,6 +9,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { BsPeople, BsArrowLeft } from "react-icons/bs";
 import AvatarPicker from "../../components/avatar/avatar";
 import JourPaiementPicker from "../../components/jour/jour.paiement";
+import ModePaiementPicker from "../../components/jour/mode.paiement";
 import { getSelectedBienId } from "../../components/appart/apart.select";
 import "./loyer.css";
 
@@ -33,6 +34,8 @@ export default function AddLocataire() {
     caution: 0,
     photo: "",
     jourPaiement: "",
+    // Les nouveaux locataires reglent d avance (ils paient puis consomment).
+    modePaiement: "AVANCE",
     messengerId: "",
   });
   const [saving, setSaving] = useState(false);
@@ -245,6 +248,10 @@ export default function AddLocataire() {
                       <JourPaiementPicker value={form.jourPaiement} onChange={handleChange} />
                     </div>
                   </div>
+                    <div className="col-12">
+                      <label className="form-label">Sens du règlement</label>
+                      <ModePaiementPicker value={form.modePaiement} onChange={handleChange} />
+                    </div>
                   <div className="col-12">
                     <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
                     <input type="text" name="messengerId" className="form-control"

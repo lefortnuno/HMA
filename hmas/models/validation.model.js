@@ -52,6 +52,21 @@ Validation.countPending = (result) => {
   );
 };
 
+// Demandes de paiement encore en attente pour un locataire donne.
+// Le locataire est stocke dans le JSON `apres` : on filtre apres lecture.
+Validation.pendingPaiements = (locataireId, result) => {
+  db.query(
+    "SELECT * FROM demande_validation WHERE entite='PAIEMENT' AND statut='EN_ATTENTE' ORDER BY id DESC LIMIT 300",
+    (err, res) => {
+      if (err) return result(err, null);
+      const miennes = res
+        .map(parse)
+        .filter((d) => String(d.apres?.locataireId) === String(locataireId));
+      result(null, miennes);
+    }
+  );
+};
+
 Validation.getById = (id, result) => {
   db.query("SELECT * FROM demande_validation WHERE id = ?", [id], (err, res) => {
     if (err) result(err, null);

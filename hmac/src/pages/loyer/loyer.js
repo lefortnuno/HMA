@@ -30,6 +30,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger, TEL_BAILLEUR } from "../../config/contact";
+import { moisExigibles, libelleEcheance, libelleJour } from "../../config/echeance";
 import "./loyer.css";
 
 const MOIS = [
@@ -90,42 +91,6 @@ export function lienRelanceWhatsApp(loc, libelle, annee, montant, libelleRedige 
     `Merci de régulariser dès que possible.\n` +
     `— Trofel`;
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-}
-
-// Mois "exigibles" pour un locataire : de son entrée jusqu'au dernier mois échu.
-//
-// Le mois en cours n'est en principe pas encore dû. Il le devient toutefois
-// lorsque le locataire a une date de règlement habituelle (ex. « le 10 ») et
-// que celle-ci est passée : inutile d'attendre la fin du mois pour le relancer.
-function moisExigibles(loc, annee) {
-  const now = new Date();
-  const anneeCourante = now.getFullYear();
-  const moisCourant = now.getMonth() + 1;
-
-  // Aucun mois échu pour une année future.
-  if (annee > anneeCourante) return [];
-
-  let debut = 1;
-  if (loc.dateEntree) {
-    const d = new Date(loc.dateEntree);
-    if (!isNaN(d)) {
-      if (d.getFullYear() > annee) return []; // pas encore entré cette année-là
-      if (d.getFullYear() === annee) debut = d.getMonth() + 1;
-    }
-  }
-
-  let fin;
-  if (annee !== anneeCourante) {
-    fin = 12; // année passée : tous les mois sont échus
-  } else {
-    const jour = Number(loc.jourPaiement) || 0;
-    const echeanceDepassee = jour > 0 && now.getDate() > jour;
-    fin = echeanceDepassee ? moisCourant : moisCourant - 1;
-  }
-
-  const mois = [];
-  for (let m = debut; m <= fin; m++) mois.push(m);
-  return mois;
 }
 
 const PAR_PAGE = 9;
@@ -907,21 +872,21 @@ export default function Loyer() {
                               }}
                               title={
                                 `${loc.nom} ${loc.prenom || ""}`.trim() +
-                                (loc.jourPaiement
-                                  ? `\nPaiement habituel : le ${loc.jourPaiement} du mois`
-                                  : "\nJour de paiement habituel non renseigné")
+                                "\n" +
+                                libelleEcheance(loc)
                               }
                             >
                               {loc.nom} {loc.prenom}
                             </div>
                             <small className="text-muted">
                               {loc.loyer?.toLocaleString()} Ar
-                              {loc.jourPaiement && (
+                              {libelleJour(loc) && (
                                 <span
                                   className="ms-1"
                                   style={{ color: "#94a3b8", fontSize: "0.68rem" }}
+                                  title={libelleEcheance(loc)}
                                 >
-                                  · j-{loc.jourPaiement}
+                                  · {libelleJour(loc)}
                                 </span>
                               )}
                             </small>

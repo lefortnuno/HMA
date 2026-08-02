@@ -58,7 +58,7 @@ function execCreateLocataire(data, cb) {
 }
 
 function normaliseLocataire(body) {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId, jourPaiement } = body;
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId, jourPaiement, modePaiement } = body;
   return {
     nom, prenom, chambre, etage, loyer, tel, email,
     dateEntree: dateEntree || null,
@@ -69,6 +69,9 @@ function normaliseLocataire(body) {
     messengerId: messengerId || null, // identifiant de conversation Messenger
     // Jour habituel de reglement (1 a 31), null si non renseigne.
     jourPaiement: jourPaiement ? Math.min(31, Math.max(1, Number(jourPaiement))) : null,
+    // ECHU : il consomme puis il paie (le mois M se regle au mois M+1).
+    // AVANCE : il paie puis il consomme (le mois M se regle dans le mois M).
+    modePaiement: String(modePaiement).toUpperCase() === "AVANCE" ? "AVANCE" : "ECHU",
   };
 }
 
@@ -298,7 +301,12 @@ module.exports.decideValidation = (req, res) => {
         datePaiement: a.datePaiement ? String(a.datePaiement).split("T")[0] : null,
       };
       if (!data.locataireId) return badRequest(res, "Demande de paiement invalide.");
-      return execUpsertPaiement(data, finir);
+      // L'ecriture est portee au journal au nom de l'admin qui approuve,
+      // avec le demandeur rappele en clair.
+      return execUpsertPaiement(data, finir, {
+        id: req.user.id,
+        nom: `${decideurNom} (validation de ${demande.auteurNom || "?"})`,
+      });
     }
 
     // ── Locataires ──
@@ -737,15 +745,109 @@ module.exports.getMonEspace = (req, res) => {
       const miens = (tous || []).filter(
         (p) => String(p.locataireId) === String(locataireId)
       );
+      // Declarations encore en attente : le locataire doit voir qu'il a deja
+      // signale un reglement, sans pouvoir le declarer deux fois.
+      Validation.pendingPaiements(locataireId, (err3, attentes) => {
+      const enAttente = (err3 ? [] : attentes)
+        .filter((d) => String(d.apres?.annee) === String(annee))
+        .map((d) => ({
+          id: d.id,
+          mois: d.apres.mois,
+          annee: d.apres.annee,
+          montantLoyer: d.apres.montantLoyer || 0,
+          montantJIRAMA: d.apres.montantJIRAMA || 0,
+          datePaiement: d.apres.datePaiement || null,
+          dateDemande: d.dateDemande,
+        }));
       // Aucune donnee des autres locataires ne sort d'ici.
       res.send({
         locataire: {
           id: loc.id, nom: loc.nom, prenom: loc.prenom,
           chambre: loc.chambre, etage: loc.etage, loyer: loc.loyer,
           caution: loc.caution, dateEntree: loc.dateEntree, photo: loc.photo,
+          jourPaiement: loc.jourPaiement, modePaiement: loc.modePaiement || "ECHU",
         },
         annee: +annee,
         paiements: miens,
+        enAttente,
+      });
+      });
+    });
+  });
+};
+
+// Le locataire signale lui-meme un reglement : rien n'est ecrit dans les
+// paiements, la declaration part en validation chez l'admin. Le locataire
+// vise est TOUJOURS celui du compte connecte, jamais celui du corps de requete.
+module.exports.declarerPaiement = (req, res) => {
+  const locataireId = req.user.locataireId;
+  if (!locataireId)
+    return res.status(403).send({
+      success: false,
+      message: "Ce compte n'est rattaché à aucune fiche locataire.",
+    });
+
+  const { mois, annee, montantLoyer, montantJIRAMA, datePaiement } = req.body;
+  if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  if (!V.isMontantValide(montantLoyer)) return badRequest(res, "Montant du loyer invalide.");
+  if (montantJIRAMA !== undefined && montantJIRAMA !== "" && !V.isMontantValide(montantJIRAMA))
+    return badRequest(res, "Montant JIRAMA invalide.");
+  if (Number(montantLoyer) + Number(montantJIRAMA || 0) <= 0)
+    return badRequest(res, "Indiquez le montant réglé.");
+
+  Validation.pendingPaiements(locataireId, (errP, attentes) => {
+    if (errP) return sendErr(res, errP);
+    const doublon = (attentes || []).some(
+      (d) => String(d.apres?.mois) === String(mois) && String(d.apres?.annee) === String(annee)
+    );
+    if (doublon)
+      return res.status(409).send({
+        success: false,
+        message: "Vous avez déjà déclaré ce mois : la demande est en cours de vérification.",
+      });
+
+    Locataire.getById(locataireId, (err, loc) => {
+      if (err) return sendErr(res, err);
+      if (!loc) return res.status(404).send({ success: false, message: "Fiche introuvable." });
+
+      // Reglement partiel tant que le loyer du mois n'est pas couvert.
+      const du = Number(loc.loyer) || 0;
+      const data = {
+        locataireId,
+        mois: Number(mois),
+        annee: Number(annee),
+        montantLoyer: Number(montantLoyer),
+        montantJIRAMA: Number(montantJIRAMA) || 0,
+        statut: Number(montantLoyer) >= du ? "PAYE" : "PARTIEL",
+        datePaiement: datePaiement ? String(datePaiement).split("T")[0] : null,
+      };
+
+      Paiement.getExisting(locataireId, data.mois, data.annee, (err2, existing) => {
+        if (err2) return sendErr(res, err2);
+        const meta = {
+          locataireNom: `${loc.nom} ${loc.prenom || ""}`.trim(),
+          chambre: loc.chambre,
+          etage: loc.etage,
+          declareParLocataire: true,
+        };
+        Validation.create(
+          {
+            entite: "PAIEMENT",
+            action: existing ? "MODIFICATION" : "AJOUT",
+            entiteId: existing ? existing.id : null,
+            avant: existing ? { ...existing, ...meta } : null,
+            apres: { ...data, ...meta },
+            ...auteurDe(req),
+          },
+          (err3, result) => {
+            if (err3) return sendErr(res, err3);
+            res.status(202).send({
+              ...result,
+              message: "Déclaration envoyée : elle sera vérifiée par le propriétaire.",
+            });
+          }
+        );
       });
     });
   });

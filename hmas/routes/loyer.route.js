@@ -44,5 +44,7 @@ router.post("/validations/:id/decision", admin.checkUtilisateur, ctrl.decideVali
 
 // ── Espace personnel du locataire ─────────────────────────────
 router.get("/mon-espace", locataire.checkUtilisateur, ctrl.getMonEspace);
+// Le locataire declare un reglement : part en validation chez l'admin.
+router.post("/mon-espace/paiement", locataire.checkUtilisateur, ctrl.declarerPaiement);
 
 module.exports = router;

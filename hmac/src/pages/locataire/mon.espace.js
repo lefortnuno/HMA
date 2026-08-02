@@ -5,10 +5,13 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { Avatar } from "../../components/avatar/avatar";
+import { toast } from "react-toastify";
 import {
   BsHouseHeart, BsCheckCircleFill, BsXCircleFill, BsDashCircle, BsExclamationTriangleFill,
+  BsCashCoin, BsHourglassSplit, BsSendCheck,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import { moisExigibles as calcMoisExigibles, libelleEcheance } from "../../config/echeance";
 import "../loyer/loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -26,35 +29,40 @@ export default function MonEspace() {
   const [loading, setLoading] = useState(true);
   const [erreur, setErreur] = useState("");
 
-  useEffect(() => {
-    if (!data) setLoading(true);
-    axios
+  // Déclaration d'un règlement, soumise à la validation du propriétaire.
+  const [declaration, setDeclaration] = useState(null); // { mois, montantLoyer, montantJIRAMA, datePaiement }
+  const [envoi, setEnvoi] = useState(false);
+
+  function charger(silencieux = false) {
+    if (!silencieux && !data) setLoading(true);
+    return axios
       .get(`loyer/mon-espace?annee=${annee}`, u_info.opts)
       .then((r) => { setData(r.data); setErreur(""); })
       .catch((e) => setErreur(e.response?.data?.message || "Impossible de charger votre espace."))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    charger();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annee]);
 
   const loc = data?.locataire;
   const paiements = data?.paiements || [];
+  const enAttente = data?.enAttente || [];
   const parMois = {};
   paiements.forEach((p) => (parMois[p.mois] = p));
+  // Mois déjà déclarés et en cours de vérification chez le propriétaire.
+  const declares = {};
+  enAttente.forEach((d) => (declares[d.mois] = d));
 
-  // Mois exigibles : de la date d'entrée jusqu'au mois précédent.
-  const now = new Date();
-  const moisExigibles = [];
-  if (loc) {
-    let debut = 1;
-    const d = loc.dateEntree ? new Date(loc.dateEntree) : null;
-    if (d && !isNaN(d) && d.getFullYear() === annee) debut = d.getMonth() + 1;
-    const fin = annee === now.getFullYear() ? now.getMonth() : 12;
-    for (let m = debut; m <= fin; m++) moisExigibles.push(m);
-  }
+  // Mois exigibles : dépend du sens de règlement du locataire (après
+  // consommation ou d'avance) et de sa date de règlement habituelle.
+  const moisExigibles = calcMoisExigibles(loc, annee);
 
   const impayes = moisExigibles.filter((m) => {
     const p = parMois[m];
-    return !p || p.statut !== "PAYE";
+    return (!p || p.statut !== "PAYE") && !declares[m];
   });
   const totalDu = impayes.reduce((s, m) => {
     const p = parMois[m];
@@ -65,12 +73,55 @@ export default function MonEspace() {
     .filter((p) => p.statut === "PAYE" || p.statut === "PARTIEL")
     .reduce((s, p) => s + (p.montantLoyer || 0) + (p.montantJIRAMA || 0), 0);
 
+  // Ouvre le formulaire de déclaration, pré-rempli avec ce qui reste dû.
+  function ouvrirDeclaration(m) {
+    const p = parMois[m];
+    const dejaLoyer = p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
+    setDeclaration({
+      mois: m,
+      montantLoyer: Math.max(0, (loc?.loyer || 0) - dejaLoyer),
+      montantJIRAMA: p?.montantJIRAMA || 0,
+      datePaiement: new Date().toISOString().split("T")[0],
+    });
+  }
+
+  function envoyerDeclaration(e) {
+    e.preventDefault();
+    if (!declaration) return;
+    setEnvoi(true);
+    axios
+      .post(
+        "loyer/mon-espace/paiement",
+        {
+          mois: declaration.mois,
+          annee,
+          montantLoyer: Number(declaration.montantLoyer) || 0,
+          montantJIRAMA: Number(declaration.montantJIRAMA) || 0,
+          datePaiement: declaration.datePaiement || null,
+        },
+        u_info.opts
+      )
+      .then((r) => {
+        toast.success(r.data?.message || "Déclaration envoyée au propriétaire.");
+        setDeclaration(null);
+        charger(true);
+      })
+      .catch((err) =>
+        toast.error(err.response?.data?.message || "Erreur lors de l'envoi.")
+      )
+      .finally(() => setEnvoi(false));
+  }
+
   function Cellule({ m }) {
     const p = parMois[m];
     const exigible = moisExigibles.includes(m);
+    const attente = declares[m];
     let bg = "#f8fafc", couleur = "#cbd5e1", Icone = BsDashCircle, libelle = "—";
 
-    if (p?.statut === "PAYE") {
+    if (attente) {
+      bg = "#eff6ff"; couleur = "#2563eb"; Icone = BsHourglassSplit;
+      libelle = "en attente";
+    } else if (p?.statut === "PAYE") {
       bg = "#f0fdf4"; couleur = "#16a34a"; Icone = BsCheckCircleFill;
       libelle = `${(((p.montantLoyer || 0) + (p.montantJIRAMA || 0)) / 1000).toFixed(0)}k`;
     } else if (p?.statut === "PARTIEL") {
@@ -84,12 +135,25 @@ export default function MonEspace() {
       libelle = "à payer";
     }
 
+    // On ne déclare que ce qui reste dû, et une seule fois par mois.
+    const declarable = !attente && p?.statut !== "PAYE" && (exigible || p?.statut === "PARTIEL");
+
     return (
       <div className="col-6 col-sm-4 col-md-3 col-lg-2">
-        <div className="rounded-3 p-2 text-center h-100" style={{ background: bg, border: "1px solid #e2e8f0" }}>
+        <div className="rounded-3 p-2 text-center h-100 d-flex flex-column" style={{ background: bg, border: "1px solid #e2e8f0" }}>
           <div className="text-muted" style={{ fontSize: "0.7rem", fontWeight: 600 }}>{MOIS[m - 1]}</div>
           <Icone color={couleur} size={18} className="my-1" />
           <div className="fw-bold" style={{ fontSize: "0.78rem", color: couleur }}>{libelle}</div>
+          {declarable && (
+            <button
+              className="btn btn-sm mt-2 w-100 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
+              style={{ background: "#2563eb", color: "#fff", fontSize: "0.68rem", padding: "3px 4px" }}
+              onClick={() => ouvrirDeclaration(m)}
+              title={`Signaler le règlement de ${MOIS_FULL[m - 1]}`}
+            >
+              <BsCashCoin size={10} /> J'ai payé
+            </button>
+          )}
         </div>
       </div>
     );
@@ -133,6 +197,9 @@ export default function MonEspace() {
                     <div className="text-muted" style={{ fontSize: "0.8rem" }}>
                       Chambre <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>{loc.chambre}</span>
                       {" · "}{loc.etage === "1ER" ? "1er étage" : "Rez-de-chaussée"}
+                    </div>
+                    <div style={{ fontSize: "0.74rem", color: "#94a3b8" }}>
+                      {libelleEcheance(loc)}
                     </div>
                   </div>
                   <div className="text-end">
@@ -195,6 +262,24 @@ export default function MonEspace() {
                   </div>
                 )}
 
+                {/* Déclarations en cours de vérification */}
+                {enAttente.length > 0 && (
+                  <div
+                    className="rounded-3 p-3 mb-4 d-flex align-items-center gap-2 flex-wrap"
+                    style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}
+                  >
+                    <BsHourglassSplit color="#2563eb" />
+                    <span style={{ fontSize: "0.85rem", color: "#1e40af" }}>
+                      <strong>
+                        {enAttente.length} déclaration{enAttente.length > 1 ? "s" : ""} en
+                        cours de vérification :
+                      </strong>{" "}
+                      {enAttente.map((d) => MOIS_FULL[d.mois - 1]).join(", ")}. Le
+                      propriétaire les confirmera prochainement.
+                    </span>
+                  </div>
+                )}
+
                 {/* Calendrier des paiements */}
                 <div className="card-pro">
                   <h6 className="fw-bold mb-3">Mes paiements — {annee}</h6>
@@ -204,6 +289,7 @@ export default function MonEspace() {
                   <div className="legende mt-3">
                     <span className="legende-item"><BsCheckCircleFill color="#16a34a" /> Payé</span>
                     <span className="legende-item"><BsExclamationTriangleFill color="#d97706" /> Partiel</span>
+                    <span className="legende-item"><BsHourglassSplit color="#2563eb" /> En attente de validation</span>
                     <span className="legende-item"><BsXCircleFill color="#dc2626" /> À payer</span>
                     <span className="legende-item"><BsDashCircle color="#cbd5e1" /> Hors période</span>
                   </div>
@@ -213,6 +299,88 @@ export default function MonEspace() {
           </main>
         </div>
       </div>
+
+      {/* ── Déclaration d'un règlement ── */}
+      {declaration && (
+        <div className="modal-overlay" onClick={() => setDeclaration(null)}>
+          <div className="modal-content-pro" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-pro">
+              <h6><BsCashCoin className="me-2" />J'ai payé — {MOIS_FULL[declaration.mois - 1]} {annee}</h6>
+              <button className="btn-close" onClick={() => setDeclaration(null)} />
+            </div>
+            <form onSubmit={envoyerDeclaration} className="p-4">
+              <div
+                className="rounded-3 p-2 mb-3 d-flex align-items-start gap-2"
+                style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}
+              >
+                <BsHourglassSplit color="#2563eb" size={15} style={{ flexShrink: 0, marginTop: 2 }} />
+                <small style={{ fontSize: "0.75rem", color: "#1e40af" }}>
+                  Votre déclaration est envoyée au propriétaire : elle n'apparaîtra
+                  comme réglée qu'une fois vérifiée de son côté.
+                </small>
+              </div>
+
+              <div className="row g-3">
+                <div className="col-12">
+                  <label className="form-label">Montant du loyer réglé (Ar)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-control form-control-sm"
+                    value={declaration.montantLoyer}
+                    onChange={(e) =>
+                      setDeclaration((d) => ({ ...d, montantLoyer: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">
+                    Électricité / eau (JIRAMA){" "}
+                    <span className="text-muted" style={{ fontWeight: 400 }}>(si réglée)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-control form-control-sm"
+                    value={declaration.montantJIRAMA}
+                    onChange={(e) =>
+                      setDeclaration((d) => ({ ...d, montantJIRAMA: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">Date du règlement</label>
+                  <input
+                    type="date"
+                    className="form-control form-control-sm"
+                    value={declaration.datePaiement || ""}
+                    onChange={(e) =>
+                      setDeclaration((d) => ({ ...d, datePaiement: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setDeclaration(null)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1"
+                  disabled={envoi}
+                >
+                  <BsSendCheck /> {envoi ? "Envoi..." : "Envoyer au propriétaire"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Template>
   );
 }
