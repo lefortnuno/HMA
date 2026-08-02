@@ -73,71 +73,102 @@ async function imgToBase64(url) {
 }
 
 // Lien WhatsApp de relance avec message pré-rempli.
-export function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
+// `libelle` vaut soit un mois seul ("Juillet"), soit — quand plusieurs mois
+// sont dus — une formule déjà rédigée ("des mois de Juin et Juillet") ;
+// dans ce cas `libelleRedige` est vrai.
+export function lienRelanceWhatsApp(loc, libelle, annee, montant, libelleRedige = false) {
   if (!loc.tel) return null;
   const num = loc.tel.replace(/\s+/g, "").replace(/^\+/, "");
+  const periode = libelleRedige ? libelle : `du mois de ${libelle}`;
   const msg =
     `Bonjour ${loc.nom},\n` +
-    `Petit rappel concernant votre loyer de ${moisNom} ${annee} ` +
-    `(chambre ${loc.chambre}) d'un montant de ${(montant || 0).toLocaleString()} Ar ` +
+    `Petit rappel concernant le loyer ${periode} ${annee} ` +
+    `(chambre ${loc.chambre}), d'un montant de ${(montant || 0).toLocaleString()} Ar ` +
     `qui reste en attente de paiement.\n` +
     `Merci de régulariser dès que possible.\n` +
-    `— LEFORT N. Nuno (Trofel)`;
+    `— Trofel`;
   return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 }
 
-// Renvoie les {mois, annee} des 2 mois precedant le mois courant
-// (gere le passage d'annee : janvier -> decembre/novembre de l'an dernier).
-function moisPrecedents() {
-  const d = new Date();
-  return [1, 2].map((recul) => {
-    const ref = new Date(d.getFullYear(), d.getMonth() - recul, 1);
-    return { mois: ref.getMonth() + 1, annee: ref.getFullYear() };
-  });
+// Mois "exigibles" pour un locataire : de son entrée jusqu'au mois précédent
+// le mois courant (le mois en cours n'est pas encore échu). Limité à l'année
+// affichée par le tableau.
+function moisExigibles(loc, annee) {
+  const now = new Date();
+  const anneeCourante = now.getFullYear();
+  const moisCourant = now.getMonth() + 1;
+
+  // Aucun mois échu pour une année future.
+  if (annee > anneeCourante) return [];
+
+  let debut = 1;
+  if (loc.dateEntree) {
+    const d = new Date(loc.dateEntree);
+    if (!isNaN(d)) {
+      if (d.getFullYear() > annee) return []; // pas encore entré cette année-là
+      if (d.getFullYear() === annee) debut = d.getMonth() + 1;
+    }
+  }
+  // Dernier mois échu : M-1 si on est sur l'année en cours, sinon décembre.
+  const fin = annee === anneeCourante ? moisCourant - 1 : 12;
+
+  const mois = [];
+  for (let m = debut; m <= fin; m++) mois.push(m);
+  return mois;
 }
 
-const PAR_PAGE = 8;
+const PAR_PAGE = 6;
 
 /**
- * Alerte des loyers non regles sur les 2 mois precedents.
- * Un onglet par mois, liste paginee, relance WhatsApp par locataire.
+ * Loyers à recouvrer : pour chaque locataire, tous les mois impayés
+ * depuis sa date d'entrée (et non plus seulement les deux derniers).
  */
 function AlerteImpayes({ locataires, getCellData, annee }) {
-  const periodes = moisPrecedents();
-  const [ongletActif, setOngletActif] = useState(0);
   const [page, setPage] = useState(1);
 
-  // Calcule les impayes d'une periode donnee.
-  const impayesDe = (p) => {
-    if (p.annee !== annee) return []; // le tableau n'affiche qu'une annee
-    return locataires
-      .filter((loc) => {
-        if (!loc.actif) return false;
-        const pay = getCellData(loc.id, p.mois);
-        return !pay || pay.statut === "IMPAYE" || pay.statut === "PARTIEL";
-      })
-      .map((loc) => {
-        const pay = getCellData(loc.id, p.mois);
-        const paye = pay && pay.statut === "PARTIEL" ? pay.montantLoyer || 0 : 0;
-        return {
-          loc,
-          du: (loc.loyer || 0) - paye,
-          partiel: !!(pay && pay.statut === "PARTIEL"),
-          jamaisSaisi: !pay,
-        };
+  // Retards par locataire.
+  const retards = locataires
+    .filter((loc) => loc.actif)
+    .map((loc) => {
+      const impayes = [];
+      let du = 0;
+      moisExigibles(loc, annee).forEach((m) => {
+        const p = getCellData(loc.id, m);
+        if (p && p.statut === "PAYE") return;
+        const paye = p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
+        const reste = (loc.loyer || 0) - paye;
+        if (reste <= 0) return;
+        impayes.push({
+          mois: m,
+          reste,
+          partiel: !!(p && p.statut === "PARTIEL"),
+          jamaisSaisi: !p,
+        });
+        du += reste;
       });
-  };
+      return { loc, impayes, du };
+    })
+    .filter((r) => r.impayes.length > 0)
+    // Les plus gros retards d'abord (nombre de mois, puis montant).
+    .sort((a, b) => b.impayes.length - a.impayes.length || b.du - a.du);
 
-  const parPeriode = periodes.map(impayesDe);
-  const totalGlobal = parPeriode.flat().reduce((s, x) => s + x.du, 0);
-  if (parPeriode.every((l) => l.length === 0)) return null;
+  if (retards.length === 0) return null;
 
-  const courant = parPeriode[ongletActif] || [];
-  const periode = periodes[ongletActif];
-  const nbPages = Math.max(1, Math.ceil(courant.length / PAR_PAGE));
+  const totalGlobal = retards.reduce((s, r) => s + r.du, 0);
+  const maxMois = Math.max(...retards.map((r) => r.impayes.length));
+  const nbPages = Math.max(1, Math.ceil(retards.length / PAR_PAGE));
   const pageSure = Math.min(page, nbPages);
-  const visibles = courant.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE);
-  const totalOnglet = courant.reduce((s, x) => s + x.du, 0);
+  const visibles = retards.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE);
+
+  // Message de relance couvrant tous les mois dus.
+  const lienRelance = (r) => {
+    const noms = r.impayes.map((i) => MOIS_FULL[i.mois - 1]);
+    const libelle =
+      noms.length === 1
+        ? `du mois de ${noms[0]}`
+        : `des mois de ${noms.slice(0, -1).join(", ")} et ${noms[noms.length - 1]}`;
+    return lienRelanceWhatsApp(r.loc, libelle, annee, r.du, true);
+  };
 
   return (
     <div className="card-pro p-0 mb-4" style={{ overflow: "hidden", borderTop: "3px solid #ef4444" }}>
@@ -158,7 +189,8 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
               Loyers à recouvrer
             </h6>
             <small className="text-muted" style={{ fontSize: "0.75rem" }}>
-              Sur les deux mois précédents
+              {retards.length} locataire{retards.length > 1 ? "s" : ""} en retard · depuis leur date d'entrée
+              {maxMois > 1 && ` · jusqu'à ${maxMois} mois de retard`}
             </small>
           </div>
         </div>
@@ -172,151 +204,126 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
         </div>
       </div>
 
-      {/* Onglets par mois */}
-      <div className="d-flex gap-1 px-3" style={{ borderBottom: "1px solid #e2e8f0" }}>
-        {periodes.map((p, i) => {
-          const actif = i === ongletActif;
-          const nb = parPeriode[i].length;
-          return (
-            <button
-              key={`${p.mois}-${p.annee}`}
-              onClick={() => { setOngletActif(i); setPage(1); }}
-              className="btn btn-sm d-flex align-items-center gap-2 fw-semibold"
-              style={{
-                borderRadius: 0,
-                border: "none",
-                borderBottom: actif ? "2px solid #dc2626" : "2px solid transparent",
-                color: actif ? "#b91c1c" : "#64748b",
-                background: "transparent",
-                fontSize: "0.82rem",
-                padding: "8px 12px",
-              }}
-            >
-              {MOIS_FULL[p.mois - 1]} {p.annee}
-              <span
-                className="rounded-pill px-2"
-                style={{
-                  background: nb ? (actif ? "#dc2626" : "#e2e8f0") : "#dcfce7",
-                  color: nb ? (actif ? "#fff" : "#475569") : "#16a34a",
-                  fontSize: "0.68rem",
-                  fontWeight: 700,
-                }}
-              >
-                {nb || "✓"}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Liste */}
+      {/* Liste : une ligne par locataire, avec ses mois impayés */}
       <div className="p-3">
-        {courant.length === 0 ? (
-          <p className="text-muted text-center mb-0 py-3" style={{ fontSize: "0.85rem" }}>
-            Aucun impayé pour {MOIS_FULL[periode.mois - 1]} {periode.annee} 🎉
-          </p>
-        ) : (
-          <>
-            <div className="row g-2">
-              {visibles.map(({ loc, du, partiel, jamaisSaisi }) => {
-                const lien = lienRelanceWhatsApp(loc, MOIS_FULL[periode.mois - 1], periode.annee, du);
-                return (
-                  <div className="col-12 col-md-6 col-xl-4" key={loc.id}>
-                    <div
-                      className="h-100 rounded-3 p-2 d-flex align-items-center gap-2"
-                      style={{ border: "1px solid #e2e8f0", background: "#fff" }}
-                    >
-                      <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
-                        {loc.chambre}
+        <div className="row g-2">
+          {visibles.map(({ loc, impayes, du }) => {
+            const lien = lienRelance({ loc, impayes, du });
+            return (
+              <div className="col-12 col-xl-6" key={loc.id}>
+                <div
+                  className="h-100 rounded-3 p-2 d-flex flex-column gap-2"
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    background: "#fff",
+                    borderLeft: `3px solid ${impayes.length >= 3 ? "#b91c1c" : impayes.length === 2 ? "#dc2626" : "#f59e0b"}`,
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-2">
+                    <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
+                      {loc.chambre}
+                    </span>
+                    <span className="fw-semibold text-truncate" style={{ fontSize: "0.85rem", flex: 1 }} title={loc.nom}>
+                      {loc.nom}
+                    </span>
+                    <span className="fw-bold" style={{ color: "#b91c1c", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                      {du.toLocaleString()} Ar
+                    </span>
+                  </div>
+
+                  {/* Pastille par mois impayé */}
+                  <div className="d-flex align-items-center gap-1 flex-wrap">
+                    {impayes.map((i) => (
+                      <span
+                        key={i.mois}
+                        title={
+                          i.partiel
+                            ? `${MOIS_FULL[i.mois - 1]} : paiement partiel, reste ${i.reste.toLocaleString()} Ar`
+                            : i.jamaisSaisi
+                              ? `${MOIS_FULL[i.mois - 1]} : aucun paiement saisi`
+                              : `${MOIS_FULL[i.mois - 1]} : impayé`
+                        }
+                        className="rounded-pill px-2 fw-semibold"
+                        style={{
+                          fontSize: "0.7rem",
+                          background: i.partiel ? "#fef3c7" : i.jamaisSaisi ? "#f1f5f9" : "#fee2e2",
+                          color: i.partiel ? "#92400e" : i.jamaisSaisi ? "#64748b" : "#b91c1c",
+                          border: `1px solid ${i.partiel ? "#fde68a" : i.jamaisSaisi ? "#e2e8f0" : "#fecaca"}`,
+                        }}
+                      >
+                        {MOIS[i.mois - 1]}
+                        {i.partiel && " ½"}
                       </span>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div className="fw-semibold text-truncate" style={{ fontSize: "0.83rem" }} title={loc.nom}>
-                          {loc.nom}
-                        </div>
-                        <div className="d-flex align-items-center gap-1" style={{ fontSize: "0.72rem" }}>
-                          <span className="fw-bold" style={{ color: "#b91c1c" }}>
-                            {du.toLocaleString()} Ar
-                          </span>
-                          {partiel && (
-                            <span className="rounded-pill px-1" style={{ background: "#fef3c7", color: "#92400e" }}>
-                              partiel
-                            </span>
-                          )}
-                          {jamaisSaisi && (
-                            <span className="rounded-pill px-1" style={{ background: "#f1f5f9", color: "#94a3b8" }}>
-                              non saisi
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    ))}
+
+                    <span className="ms-auto">
                       {lien ? (
                         <a
                           href={lien}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn btn-sm py-1 px-2 fw-semibold d-flex align-items-center gap-1"
+                          className="btn btn-sm py-0 px-2 fw-semibold d-inline-flex align-items-center gap-1"
                           style={{ background: "#25D366", color: "#fff", fontSize: "0.72rem", whiteSpace: "nowrap" }}
                           title={`Relancer ${loc.nom} sur WhatsApp`}
                         >
-                          <BsWhatsapp size={12} /> Relancer
+                          <BsWhatsapp size={11} /> Relancer
                         </a>
                       ) : (
                         <span
-                          className="rounded-pill px-2 py-1"
+                          className="rounded-pill px-2"
                           style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.68rem", whiteSpace: "nowrap" }}
                         >
                           pas de n°
                         </span>
                       )}
-                    </div>
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Pagination + total du mois */}
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
-              <small className="text-muted" style={{ fontSize: "0.75rem" }}>
-                {courant.length} locataire{courant.length > 1 ? "s" : ""} ·{" "}
-                <span className="fw-bold" style={{ color: "#b91c1c" }}>
-                  {totalOnglet.toLocaleString()} Ar
-                </span>{" "}
-                pour {MOIS_FULL[periode.mois - 1]}
-              </small>
-              {nbPages > 1 && (
-                <div className="d-flex align-items-center gap-1">
-                  <button
-                    className="btn btn-sm btn-outline-secondary py-0 px-2"
-                    disabled={pageSure === 1}
-                    onClick={() => setPage(pageSure - 1)}
-                  >
-                    ‹
-                  </button>
-                  {Array.from({ length: nbPages }, (_, i) => (
-                    <button
-                      key={i}
-                      className={`btn btn-sm py-0 px-2 ${pageSure === i + 1 ? "btn-danger" : "btn-outline-secondary"}`}
-                      onClick={() => setPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button
-                    className="btn btn-sm btn-outline-secondary py-0 px-2"
-                    disabled={pageSure === nbPages}
-                    onClick={() => setPage(pageSure + 1)}
-                  >
-                    ›
-                  </button>
                 </div>
-              )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Légende + pagination */}
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+          <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+            <span className="rounded-pill px-2 me-1" style={{ background: "#fee2e2", color: "#b91c1c" }}>Mois</span> impayé ·
+            <span className="rounded-pill px-2 mx-1" style={{ background: "#fef3c7", color: "#92400e" }}>Mois ½</span> partiel ·
+            <span className="rounded-pill px-2 mx-1" style={{ background: "#f1f5f9", color: "#64748b" }}>Mois</span> non saisi
+          </small>
+          {nbPages > 1 && (
+            <div className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-sm btn-outline-secondary py-0 px-2"
+                disabled={pageSure === 1}
+                onClick={() => setPage(pageSure - 1)}
+              >
+                ‹
+              </button>
+              {Array.from({ length: nbPages }, (_, i) => (
+                <button
+                  key={i}
+                  className={`btn btn-sm py-0 px-2 ${pageSure === i + 1 ? "btn-danger" : "btn-outline-secondary"}`}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                className="btn btn-sm btn-outline-secondary py-0 px-2"
+                disabled={pageSure === nbPages}
+                onClick={() => setPage(pageSure + 1)}
+              >
+                ›
+              </button>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
 
 export default function Loyer() {
   const u_info = GetUserData();
