@@ -197,25 +197,29 @@ export default function User() {
                         </td>
                         <td style={{ fontSize: "0.78rem", color: "#94a3b8" }}>#{u.idPS}</td>
                         <td>
-                          {String(u.mdpTemporaire) === "1" && (
-                            <span className="d-inline-flex align-items-center gap-1 me-1"
-                              title="Code par défaut, pas encore changé"
-                              style={{ background: "#fffbeb", color: "#92400e", fontSize: "0.68rem", fontWeight: 700, padding: "3px 8px", borderRadius: 6 }}>
-                              <BsKey size={10} /> code neuf
-                            </span>
-                          )}
-                          {u.karazana == 2
-                            ? <span style={{ background: "#f0fdf4", color: "#16a34a", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
-                                Locataire
+                          {/* Les badges se replient l'un sous l'autre si la colonne
+                              est trop etroite, sans jamais couper un libelle. */}
+                          <div className="d-flex flex-wrap align-items-center gap-1">
+                            {u.karazana == 2
+                              ? <span style={{ background: "#f0fdf4", color: "#16a34a", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>
+                                  Locataire
+                                </span>
+                              : u.karazana == 1
+                              ? <span style={{ background: "#eff6ff", color: "#2563eb", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>
+                                  Admin
+                                </span>
+                              : <span style={{ background: "#f8fafc", color: "#475569", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6, whiteSpace: "nowrap" }}>
+                                  Utilisateur
+                                </span>
+                            }
+                            {String(u.mdpTemporaire) === "1" && (
+                              <span className="d-inline-flex align-items-center gap-1"
+                                title="Code par défaut, pas encore changé"
+                                style={{ background: "#fffbeb", color: "#92400e", fontSize: "0.68rem", fontWeight: 700, padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>
+                                <BsKey size={10} /> code neuf
                               </span>
-                            : u.karazana == 1
-                            ? <span style={{ background: "#eff6ff", color: "#2563eb", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
-                                Admin
-                              </span>
-                            : <span style={{ background: "#f8fafc", color: "#475569", fontSize: "0.72rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6 }}>
-                                Utilisateur
-                              </span>
-                          }
+                            )}
+                          </div>
                         </td>
                         <td style={{ fontSize: "0.78rem", color: "#64748b", whiteSpace: "nowrap" }}>
                           {fmtDate(u.created_at || u.createdAt || u.date_creation)}
