@@ -4,6 +4,9 @@ export const WHATSAPP_NUM = "261348658868"; // 034 86 588 68
 export const TEL_AFFICHE = "034 86 588 68";
 export const NOM_CONTACT = "LEFORT N. Nuno (Trofel)";
 
+// Numero du bailleur imprime sur les quittances de loyer.
+export const TEL_BAILLEUR = "+212 42 359 184";
+
 /**
  * Identifiant de conversation Messenger.
  *

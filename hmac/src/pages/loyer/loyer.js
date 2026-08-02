@@ -29,7 +29,7 @@ import ApartSelect, {
   setSelectedBienId,
   KINYA,
 } from "../../components/appart/apart.select";
-import { copierEtOuvrirMessenger } from "../../config/contact";
+import { copierEtOuvrirMessenger, TEL_BAILLEUR } from "../../config/contact";
 import "./loyer.css";
 
 const MOIS = [
@@ -1067,7 +1067,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
     y += 7;
     doc.text("- LEFORT Nomenjanahry Nuno", mg, y);
     y += 7;
-    doc.text("- Tél : 034 86 588 68 / Facebook : Trofel", mg, y);
+    doc.text(`- Tél : ${TEL_BAILLEUR} / Facebook : Trofel`, mg, y);
     y += 9;
 
     // ── Locataire (centré) ──
