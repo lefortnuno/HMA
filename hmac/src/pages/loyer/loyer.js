@@ -55,7 +55,7 @@ const MOIS = [
   "Oct",
   "Nov",
   "Déc",
-];
+];
 const MOIS_FULL = [
   "Janvier",
   "Février",
@@ -1305,6 +1305,67 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     }
   }
 
+  const messageRecu = () =>
+    `Bonjour ${cell.loc.nom},\n` +
+    `Voici votre reçu de loyer pour ${moisNomFull} ${cell.annee} ` +
+    `(chambre ${cell.loc.chambre}), d'un montant de ` +
+    `${(form.montantLoyer || 0).toLocaleString()} Ar.\n` +
+    `Merci et bonne journée.\n— Trofel`;
+
+  /**
+   * Partage du reçu au locataire.
+   *
+   * Sur téléphone, la feuille de partage du système reçoit le PDF en pièce
+   * jointe : on y choisit WhatsApp ou Messenger, puis le contact — le fichier
+   * part vraiment dans la conversation.
+   *
+   * Sur ordinateur, aucune API web ne permet d'attacher un fichier à WhatsApp
+   * Web ou à Messenger. On fait donc au plus près : le reçu est téléchargé et
+   * la conversation s'ouvre avec le message prêt, la pièce jointe restant à
+   * glisser. Le prétendre autrement serait mentir sur ce que fait le bouton.
+   */
+  async function handleShare() {
+    let doc;
+    try {
+      doc = await genRecuPDF();
+    } catch {
+      return toast.error("Erreur génération PDF");
+    }
+
+    const message = messageRecu();
+    const fichier = new File([doc.output("blob")], pdfFileName, {
+      type: "application/pdf",
+    });
+
+    if (navigator.canShare?.({ files: [fichier] })) {
+      try {
+        await navigator.share({
+          files: [fichier],
+          title: `Reçu de loyer — ${moisNomFull} ${cell.annee}`,
+          text: message,
+        });
+        return;
+      } catch (err) {
+        if (err?.name === "AbortError") return; // partage annulé, rien à signaler
+        // Tout autre échec bascule sur le repli ci-dessous.
+      }
+    }
+
+    doc.save(pdfFileName);
+    const tel = (cell.loc.tel || "").replace(/\s+/g, "").replace(/^\+/, "");
+    if (tel) {
+      window.open(
+        `https://wa.me/${tel}?text=${encodeURIComponent(message)}`,
+        "_blank",
+        "noopener"
+      );
+      toast.info("Reçu téléchargé — joignez-le à la conversation WhatsApp.");
+    } else {
+      copierEtOuvrirMessenger(message, cell.loc.nom, cell.loc.messengerId);
+      toast.info("Reçu téléchargé et message copié — joignez le PDF dans Messenger.");
+    }
+  }
+
   const hasExisting = !!cell.existing;
 
   return (
@@ -1461,7 +1522,8 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
                 <button
                   type="button"
                   className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-                  onClick={handleDownload}
+                  onClick={handleShare}
+                  title={`Envoyer le reçu à ${cell.loc.nom}`}
                 >
                   <BsShare /> Partager
                 </button>
