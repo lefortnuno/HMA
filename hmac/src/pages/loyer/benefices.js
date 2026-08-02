@@ -34,8 +34,12 @@ export default function Benefices() {
   const [bienId, setBienId] = useState(getSelectedBienId());
   const apparts = useAppartements(bienId, setBienId);
   const current = apparts.find((a) => a.id === bienId) || KINYA;
-  const [mois, setMois] = useState(now.getMonth() + 1);
-  const [annee, setAnnee] = useState(now.getFullYear());
+  // Le résultat mensuel porte sur le mois clos : on ouvre donc sur M-1
+  // (en janvier, cela renvoie à décembre de l'année précédente).
+  // Le graphique annuel, lui, couvre les 12 mois de l'année sélectionnée.
+  const moisPrecedent = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const [mois, setMois] = useState(moisPrecedent.getMonth() + 1);
+  const [annee, setAnnee] = useState(moisPrecedent.getFullYear());
   const [data, setData] = useState(null);
   const [anneeData, setAnneeData] = useState([]);
   const [loading, setLoading] = useState(true);
