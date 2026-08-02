@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+// Script Bootstrap servi depuis le bundle : il fait vivre les attributs
+// data-bs-* (repli de la barre latérale sur mobile) sans dépendre d'un CDN.
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import SignInProtection from "./contexts/ptotections/signin.protection";
 import AdminProtection from "./contexts/ptotections/admin.protection";

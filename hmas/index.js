@@ -12,24 +12,45 @@ const vitrineRoute = require("./routes/vitrine.route");
 const financeRoute = require("./routes/finance.route");
 
 const app = express();
+// Inutile d'annoncer la pile technique a qui interroge le serveur.
+app.disable("x-powered-by");
+
+// Durcissement des reponses de l'API.
+app.use((req, res, next) => {
+  res.header("X-Content-Type-Options", "nosniff");
+  res.header("Referrer-Policy", "no-referrer");
+  // L'API ne renvoie que du JSON : rien qui ait vocation a etre encadre.
+  res.header("X-Frame-Options", "DENY");
+  next();
+});
+
 // Limite relevee : les photos de profil transitent en data URL base64.
 app.use(bodyParser.urlencoded({ extended: true, limit: "2mb" }));
 app.use(bodyParser.json({ limit: "2mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-// CORS restreint : liste des origines autorisees via la variable CORS_ORIGINS
-// (separees par des virgules). Si absente, tout est autorise (compatibilite),
-// mais il FAUT la definir en production (domaine Vercel).
+// CORS restreint aux origines connues. CORS_ORIGINS (valeurs separees par des
+// virgules) permet d'en ajouter sans toucher au code ; en son absence on
+// retient cette liste plutot que "*", pour ne pas dependre d'une variable
+// d'environnement oubliee sur le serveur.
+//
+// A noter : le CORS n'est applique QUE par les navigateurs. Les appels
+// serveur-a-serveur (le bot de keep-alive, un cron, curl) ne sont pas
+// concernes et continuent de fonctionner sans en-tete Origin.
+const ORIGINES_PAR_DEFAUT = [
+  "https://e-hma.vercel.app",
+  "http://localhost:1103",
+  "http://localhost:3000",
+];
 const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
+if (allowedOrigins.length === 0) allowedOrigins.push(...ORIGINES_PAR_DEFAUT);
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (allowedOrigins.length === 0) {
-    res.header("Access-Control-Allow-Origin", "*");
-  } else if (origin && allowedOrigins.includes(origin)) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Vary", "Origin");
   }
