@@ -17,6 +17,7 @@ import {
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
+import JourPaiementPicker from "../../components/jour/jour.paiement";
 import ApartSelect, {
   useAppartements,
   getSelectedBienId,
@@ -653,13 +654,9 @@ export default function Locataires() {
                 </div>
                 <div className="col-sm-6">
                   <label className="form-label">Jour de paiement habituel</label>
-                  <select name="jourPaiement" className="form-select form-select-sm"
-                    value={editForm.jourPaiement || ""} onChange={handleEditChange}>
-                    <option value="">Non défini</option>
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
-                      <option key={j} value={j}>le {j} du mois</option>
-                    ))}
-                  </select>
+                  <div>
+                    <JourPaiementPicker value={editForm.jourPaiement} onChange={handleEditChange} />
+                  </div>
                 </div>
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
@@ -773,13 +770,9 @@ export default function Locataires() {
                 </div>
                 <div className="col-sm-6">
                   <label className="form-label">Jour de paiement habituel</label>
-                  <select name="jourPaiement" className="form-select form-select-sm"
-                    value={addForm.jourPaiement || ""} onChange={handleAddChange}>
-                    <option value="">Non défini</option>
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
-                      <option key={j} value={j}>le {j} du mois</option>
-                    ))}
-                  </select>
+                  <div>
+                    <JourPaiementPicker value={addForm.jourPaiement} onChange={handleAddChange} />
+                  </div>
                 </div>
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>

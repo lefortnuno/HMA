@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
 import { BsPeople, BsArrowLeft } from "react-icons/bs";
 import AvatarPicker from "../../components/avatar/avatar";
+import JourPaiementPicker from "../../components/jour/jour.paiement";
 import "./loyer.css";
 
 const CHAMBRES_RDC = ["1","2","3","4","5","6","7","8","9","10"];
@@ -174,13 +175,9 @@ export default function EditLocataire() {
                   </div>
                   <div className="col-sm-6">
                     <label className="form-label">Jour de paiement habituel</label>
-                    <select name="jourPaiement" className="form-select"
-                      value={form.jourPaiement || ""} onChange={handleChange}>
-                      <option value="">Non défini</option>
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
-                        <option key={j} value={j}>le {j} du mois</option>
-                      ))}
-                    </select>
+                    <div>
+                      <JourPaiementPicker value={form.jourPaiement} onChange={handleChange} />
+                    </div>
                   </div>
                   <div className="col-12">
                     <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>

@@ -1,0 +1,168 @@
+/* ─── Sélecteur du jour de règlement ─────────────────────────
+   Compact au repos, panneau en grille à l'ouverture. */
+.jour-picker {
+  position: relative;
+  display: inline-block;
+  width: 140px;
+  max-width: 100%;
+}
+
+.jour-declencheur {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.jour-declencheur:hover {
+  border-color: #93c5fd;
+}
+
+.jour-declencheur.rempli {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.jour-icone {
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.jour-valeur {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jour-fleche {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.jour-fleche.ouverte {
+  transform: rotate(180deg);
+}
+
+/* ── Panneau ── */
+.jour-panneau {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 1200;
+  width: 236px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+  padding: 10px;
+  animation: jour-apparition 0.14s ease-out;
+}
+
+.jour-panneau.vers-haut {
+  top: auto;
+  bottom: calc(100% + 6px);
+  animation-name: jour-apparition-haut;
+}
+
+@keyframes jour-apparition-haut {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes jour-apparition {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.jour-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  padding: 0 2px 8px;
+}
+
+.jour-effacer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  color: #dc2626;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.jour-grille {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.jour-case {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.jour-case:hover {
+  background: #e0f2fe;
+  color: #1d4ed8;
+}
+
+.jour-case.actif {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.jour-pied {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.7rem;
+  color: #64748b;
+  text-align: center;
+}

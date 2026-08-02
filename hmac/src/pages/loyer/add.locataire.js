@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import { BsPeople, BsArrowLeft } from "react-icons/bs";
 import AvatarPicker from "../../components/avatar/avatar";
+import JourPaiementPicker from "../../components/jour/jour.paiement";
 import { getSelectedBienId } from "../../components/appart/apart.select";
 import "./loyer.css";
 
@@ -240,13 +241,9 @@ export default function AddLocataire() {
                   </div>
                   <div className="col-sm-6">
                     <label className="form-label">Jour de paiement habituel</label>
-                    <select name="jourPaiement" className="form-select"
-                      value={form.jourPaiement || ""} onChange={handleChange}>
-                      <option value="">Non défini</option>
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
-                        <option key={j} value={j}>le {j} du mois</option>
-                      ))}
-                    </select>
+                    <div>
+                      <JourPaiementPicker value={form.jourPaiement} onChange={handleChange} />
+                    </div>
                   </div>
                   <div className="col-12">
                     <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
