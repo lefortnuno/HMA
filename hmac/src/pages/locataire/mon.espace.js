@@ -76,6 +76,9 @@ export default function MonEspace() {
     } else if (p?.statut === "PARTIEL") {
       bg = "#fffbeb"; couleur = "#d97706"; Icone = BsExclamationTriangleFill;
       libelle = `${((p.montantLoyer || 0) / 1000).toFixed(0)}k`;
+    } else if (p?.statut === "DOUTE") {
+      bg = "#fef9c3"; couleur = "#854d0e"; Icone = BsExclamationTriangleFill;
+      libelle = "à confirmer";
     } else if (exigible) {
       bg = "#fef2f2"; couleur = "#dc2626"; Icone = BsXCircleFill;
       libelle = "à payer";

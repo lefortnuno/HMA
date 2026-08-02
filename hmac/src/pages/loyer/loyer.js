@@ -147,6 +147,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
           loc,
           reste,
           partiel: !!(p && p.statut === "PARTIEL"),
+          doute: !!(p && p.statut === "DOUTE"),
           jamaisSaisi: !p,
         });
       });
@@ -258,7 +259,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
       {/* Liste du mois sélectionné */}
       <div className="p-3">
         <div className="row g-2">
-          {visibles.map(({ loc, reste, partiel, jamaisSaisi }) => {
+          {visibles.map(({ loc, reste, partiel, doute, jamaisSaisi }) => {
             const lien = lienRelanceWhatsApp(loc, MOIS_FULL[moisActif - 1], annee, reste);
             const nbMois = moisDusDe(loc.id);
             return (
@@ -268,7 +269,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                   style={{
                     border: "1px solid #e2e8f0",
                     background: "#fff",
-                    borderLeft: `3px solid ${nbMois >= 3 ? "#b91c1c" : nbMois === 2 ? "#dc2626" : "#fecaca"}`,
+                    borderLeft: `3px solid ${doute ? "#eab308" : nbMois >= 3 ? "#b91c1c" : nbMois === 2 ? "#dc2626" : "#fecaca"}`,
                   }}
                 >
                   <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
@@ -294,6 +295,15 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                       {partiel && (
                         <span className="rounded-pill px-1" style={{ background: "#fef3c7", color: "#92400e" }}>
                           partiel
+                        </span>
+                      )}
+                      {doute && (
+                        <span
+                          className="d-inline-flex align-items-center gap-1 rounded-pill px-1"
+                          title="Dit avoir payé — en attente de confirmation sur place"
+                          style={{ background: "#fef9c3", color: "#854d0e", border: "1px solid #fde047" }}
+                        >
+                          <span className="pastille-doute">!</span> doute
                         </span>
                       )}
                       {jamaisSaisi && (
@@ -520,7 +530,26 @@ export default function Loyer() {
         ? "cell-paye"
         : p.statut === "PARTIEL"
           ? "cell-partiel"
-          : "cell-impaye";
+          : p.statut === "DOUTE"
+            ? "cell-doute"
+            : "cell-impaye";
+
+    // Doute : le locataire dit avoir payé, en attente de confirmation.
+    if (p.statut === "DOUTE") {
+      return (
+        <span
+          className={cls}
+          title={`${loc.nom} affirme avoir payé — en attente de confirmation`}
+          onClick={() =>
+            setModalCell({ loc, mois: moisIndex + 1, annee, existing: p })
+          }
+        >
+          <span className="pastille-doute">!</span>
+          {total > 0 ? `${total.toFixed(0)}k` : "à vérifier"}
+        </span>
+      );
+    }
+
     return (
       <span
         className={cls}
@@ -775,6 +804,9 @@ export default function Loyer() {
                     </span>
                     <span className="legende-item">
                       <span className="cell-partiel">150k</span> Partiel
+                    </span>
+                    <span className="legende-item">
+                      <span className="cell-doute"><span className="pastille-doute">!</span>150k</span> Doute
                     </span>
                     <span className="legende-item">
                       <span className="badge-rdc">1</span> RDC
@@ -1259,13 +1291,16 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
                 setForm({
                   ...form,
                   statut: s,
-                  montantLoyer: s === "PAYE" ? cell.loc.loyer || 0 : 0,
+                  // En "doute", on note le montant annoncé par le locataire.
+                  montantLoyer:
+                    s === "PAYE" || s === "DOUTE" ? cell.loc.loyer || 0 : 0,
                   montantJIRAMA: s === "IMPAYE" ? 0 : form.montantJIRAMA,
                 });
               }}
             >
               <option value="PAYE">Payé</option>
               <option value="PARTIEL">Partiel</option>
+              <option value="DOUTE">Doute — dit avoir payé, à confirmer</option>
               <option value="IMPAYE">Impayé</option>
             </select>
           </div>

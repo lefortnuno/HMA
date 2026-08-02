@@ -59,7 +59,9 @@ function isChambreValide(chambre, etage, bienId) {
 }
 
 function isStatutValide(statut) {
-  return ["PAYE", "PARTIEL", "IMPAYE"].includes(statut);
+  // DOUTE : le locataire affirme avoir paye, en attente de confirmation
+  // sur place. Le loyer reste compte comme a recouvrer.
+  return ["PAYE", "PARTIEL", "IMPAYE", "DOUTE"].includes(statut);
 }
 
 module.exports = {

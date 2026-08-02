@@ -115,3 +115,8 @@ test("valeurs par defaut des roles quand les variables d'env sont absentes", () 
   assert.strictEqual(Number.isNaN(USER), false);
   assert.notStrictEqual(ADMIN, USER);
 });
+
+test("statut DOUTE accepte (dit avoir paye, a confirmer)", () => {
+  assert.ok(V.isStatutValide("DOUTE"));
+  assert.ok(!V.isStatutValide("DOUTEUX"));
+});
