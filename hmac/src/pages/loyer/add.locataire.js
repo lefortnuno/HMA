@@ -31,6 +31,8 @@ export default function AddLocataire() {
     actif: true,
     caution: 0,
     photo: "",
+    jourPaiement: "",
+    messengerId: "",
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -236,6 +238,24 @@ export default function AddLocataire() {
                     <input type="number" name="caution" min="0" className="form-control"
                       value={form.caution} onChange={handleChange} placeholder="0" />
                   </div>
+                  <div className="col-sm-6">
+                    <label className="form-label">Jour de paiement habituel</label>
+                    <select name="jourPaiement" className="form-select"
+                      value={form.jourPaiement || ""} onChange={handleChange}>
+                      <option value="">Non défini</option>
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
+                        <option key={j} value={j}>le {j} du mois</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
+                    <input type="text" name="messengerId" className="form-control"
+                      autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                      value={form.messengerId || ""} onChange={handleChange}
+                      placeholder="Collez l&apos;URL de la conversation Messenger" />
+                  </div>
+
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">
                     <Link to="/loyer/locataires/" className="btn btn-outline-secondary">

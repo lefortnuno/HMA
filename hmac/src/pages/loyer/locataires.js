@@ -654,7 +654,7 @@ export default function Locataires() {
                 <div className="col-sm-6">
                   <label className="form-label">Jour de paiement habituel</label>
                   <select name="jourPaiement" className="form-select form-select-sm"
-                    value={addForm.jourPaiement || ""} onChange={handleAddChange}>
+                    value={editForm.jourPaiement || ""} onChange={handleEditChange}>
                     <option value="">Non défini</option>
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
                       <option key={j} value={j}>le {j} du mois</option>
@@ -774,7 +774,7 @@ export default function Locataires() {
                 <div className="col-sm-6">
                   <label className="form-label">Jour de paiement habituel</label>
                   <select name="jourPaiement" className="form-select form-select-sm"
-                    value={editForm.jourPaiement || ""} onChange={handleEditChange}>
+                    value={addForm.jourPaiement || ""} onChange={handleAddChange}>
                     <option value="">Non défini</option>
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
                       <option key={j} value={j}>le {j} du mois</option>
