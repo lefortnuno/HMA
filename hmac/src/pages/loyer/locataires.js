@@ -122,6 +122,7 @@ function initForm() {
     caution: 0,
     photo: "",
     messengerId: "",
+    jourPaiement: "",
   };
 }
 
@@ -285,6 +286,7 @@ export default function Locataires() {
         caution: loc.caution || 0,
         photo: loc.photo || "",
         messengerId: loc.messengerId || "",
+        jourPaiement: loc.jourPaiement || "",
       });
       setShowEditModal(true);
     } else {
@@ -633,6 +635,16 @@ export default function Locataires() {
                   <input type="number" name="caution" min="0" className="form-control form-control-sm"
                     value={editForm.caution} onChange={handleEditChange} placeholder="0" />
                 </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Jour de paiement habituel</label>
+                  <select name="jourPaiement" className="form-select form-select-sm"
+                    value={addForm.jourPaiement || ""} onChange={handleAddChange}>
+                    <option value="">Non défini</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
+                      <option key={j} value={j}>le {j} du mois</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
                   <input type="text" name="messengerId" className="form-control form-control-sm"
@@ -742,6 +754,16 @@ export default function Locataires() {
                   <label className="form-label">Caution / dépôt de garantie (Ar)</label>
                   <input type="number" name="caution" min="0" className="form-control form-control-sm"
                     value={addForm.caution} onChange={handleAddChange} placeholder="0" />
+                </div>
+                <div className="col-sm-6">
+                  <label className="form-label">Jour de paiement habituel</label>
+                  <select name="jourPaiement" className="form-select form-select-sm"
+                    value={editForm.jourPaiement || ""} onChange={handleEditChange}>
+                    <option value="">Non défini</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((j) => (
+                      <option key={j} value={j}>le {j} du mois</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>

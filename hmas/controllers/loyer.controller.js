@@ -8,6 +8,7 @@ const Validation = require("../models/validation.model");
 const { sendErr, badRequest } = require("../utils/http");
 const V = require("../utils/calc");
 const Compte = require("../utils/compte");
+const PaiementHisto = require("../models/paiementhisto.model");
 
 
 const isAdmin = (req) => req.user && Number(req.user.karazana) === 1;
@@ -57,7 +58,7 @@ function execCreateLocataire(data, cb) {
 }
 
 function normaliseLocataire(body) {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId } = body;
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId, jourPaiement } = body;
   return {
     nom, prenom, chambre, etage, loyer, tel, email,
     dateEntree: dateEntree || null,
@@ -66,6 +67,8 @@ function normaliseLocataire(body) {
     caution: Number(caution) || 0,
     photo: photo || null, // data URL base64 ou avatar predefini
     messengerId: messengerId || null, // identifiant de conversation Messenger
+    // Jour habituel de reglement (1 a 31), null si non renseigne.
+    jourPaiement: jourPaiement ? Math.min(31, Math.max(1, Number(jourPaiement))) : null,
   };
 }
 
@@ -458,15 +461,47 @@ module.exports.getPaiements = (req, res) => {
 };
 
 // Upsert reel d'un paiement (admin direct, ou approbation d'une demande).
-function execUpsertPaiement(data, cb) {
+function execUpsertPaiement(data, cb, auteur) {
+  // Chaque ecriture est journalisee : sans cela, un reglement attribue au
+  // mauvais locataire est impossible a retracer apres coup.
+  const journaliser = (action, paiementId, avant) =>
+    Locataire.getById(data.locataireId, (e, loc) => {
+      PaiementHisto.log({
+        paiementId: paiementId || null,
+        locataireId: data.locataireId,
+        locataireNom: loc ? `${loc.nom} ${loc.prenom || ""}`.trim() : null,
+        chambre: loc ? loc.chambre : null,
+        etage: loc ? loc.etage : null,
+        mois: data.mois,
+        annee: data.annee,
+        action,
+        montantLoyer: data.montantLoyer || 0,
+        montantJIRAMA: data.montantJIRAMA || 0,
+        statut: data.statut,
+        avant: avant || null,
+        auteurId: auteur ? auteur.id : null,
+        auteurNom: auteur ? auteur.nom : null,
+      });
+    });
+
   Paiement.getExisting(data.locataireId, data.mois, data.annee, (err, existing) => {
     if (err) return cb(err);
     if (existing) {
-      Paiement.update(existing.id, data, (err2, result) =>
-        err2 ? cb(err2) : cb(null, { ...result, id: existing.id })
-      );
+      Paiement.update(existing.id, data, (err2, result) => {
+        if (err2) return cb(err2);
+        journaliser("MODIFICATION", existing.id, {
+          montantLoyer: existing.montantLoyer,
+          montantJIRAMA: existing.montantJIRAMA,
+          statut: existing.statut,
+        });
+        cb(null, { ...result, id: existing.id });
+      });
     } else {
-      Paiement.create(data, cb);
+      Paiement.create(data, (err2, result) => {
+        if (err2) return cb(err2);
+        journaliser("AJOUT", result ? result.id : null, null);
+        cb(null, result);
+      });
     }
   });
 }
@@ -498,10 +533,14 @@ module.exports.createPaiement = (req, res) => {
   const data = { locataireId, mois, annee, montantLoyer, montantJIRAMA: montantJIRAMA || 0, statut, datePaiement: datePaiement || null };
 
   if (isAdmin(req)) {
-    return execUpsertPaiement(data, (err, result) => {
-      if (err) sendErr(res, err);
-      else res.send(result);
-    });
+    return execUpsertPaiement(
+      data,
+      (err, result) => {
+        if (err) sendErr(res, err);
+        else res.send(result);
+      },
+      { id: req.user.id, nom: auteurDe(req).auteurNom }
+    );
   }
 
   // Simple user : demande de validation (avec l'eventuel paiement existant en "avant").
@@ -709,5 +748,27 @@ module.exports.getMonEspace = (req, res) => {
         paiements: miens,
       });
     });
+  });
+};
+
+
+// ─── Journal des paiements ────────────────────────────────────
+module.exports.getHistoriquePaiements = (req, res) => {
+  const { annee } = req.query;
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  PaiementHisto.getByAnnee(annee, (err, data) => {
+    if (err) sendErr(res, err);
+    else res.send(data);
+  });
+};
+
+// Liste chronologique des paiements enregistres (etat actuel) : permet de
+// reperer un reglement attribue au mauvais locataire.
+module.exports.getPaiementsDetail = (req, res) => {
+  const { annee, bienId } = req.query;
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  Paiement.getDetailAnnee(annee, bienId, (err, data) => {
+    if (err) sendErr(res, err);
+    else res.send(data);
   });
 };

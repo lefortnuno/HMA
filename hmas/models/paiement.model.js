@@ -30,6 +30,23 @@ Paiement.getByMoisAnnee = (mois, annee, bienId, result) => {
   });
 };
 
+// Liste chronologique des paiements d'une annee, avec le locataire concerne.
+Paiement.getDetailAnnee = (annee, bienId, result) => {
+  let sql = `SELECT p.*, l.nom, l.prenom, l.chambre, l.etage, l.bienId, l.jourPaiement
+     FROM paiement_loyer p
+     JOIN locataire l ON l.id = p.locataireId
+     WHERE p.annee = ?`;
+  const params = [annee];
+  if (bienId !== undefined && bienId !== null && bienId !== "") {
+    sql += " AND l.bienId = ?";
+    params.push(Number(bienId));
+  }
+  db.query(sql + " ORDER BY p.datePaiement DESC, p.id DESC", params, (err, res) => {
+    if (err) result(err, null);
+    else result(null, res);
+  });
+};
+
 Paiement.getById = (id, result) => {
   db.query("SELECT * FROM paiement_loyer WHERE id = ?", [id], (err, res) => {
     if (err) result(err, null);

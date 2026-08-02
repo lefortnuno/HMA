@@ -33,6 +33,10 @@ router.get("/benefices/annee", user.checkUtilisateur, ctrl.getBeneficesAnnee);
 // ── Historique d'occupation ───────────────────────────────────
 router.get("/historique", user.checkUtilisateur, ctrl.getHistorique);
 
+// ── Historique des paiements ──────────────────────────────────
+router.get("/paiements/detail",     user.checkUtilisateur, ctrl.getPaiementsDetail);
+router.get("/paiements/historique", user.checkUtilisateur, ctrl.getHistoriquePaiements);
+
 // ── Demandes de validation (workflow admin) ───────────────────
 router.get("/validations",        user.checkUtilisateur,  ctrl.getValidations);
 router.get("/validations/count",  user.checkUtilisateur,  ctrl.countValidations);
