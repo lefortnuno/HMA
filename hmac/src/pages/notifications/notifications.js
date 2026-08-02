@@ -43,6 +43,9 @@ const STATUTS = {
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
 // Champs affichés dans le diff, par type d'entité.
+// Ils doivent couvrir TOUT ce que le serveur enregistre dans avant/apres :
+// un champ oublié ici ne s'affiche pas, et une modification qui ne porte que
+// sur lui donne un tableau vide — l'admin approuverait alors à l'aveugle.
 const CHAMPS_LOCATAIRE = [
   ["nom", "Nom"],
   ["prenom", "Prénom"],
@@ -53,20 +56,28 @@ const CHAMPS_LOCATAIRE = [
   ["tel", "Téléphone"],
   ["email", "Email"],
   ["dateEntree", "Date d'entrée"],
+  ["jourPaiement", "Jour de paiement"],
+  ["modePaiement", "Sens du règlement"],
+  ["jiramaForfait", "Forfait JIRAMA (Ar)"],
+  ["messengerId", "Lien Messenger"],
+  ["photo", "Photo"],
   ["actif", "Actif"],
 ];
 
 const CHAMPS_PAIEMENT = [
+  ["volet", "Concerne"],
   ["mois", "Mois"],
   ["annee", "Année"],
   ["montantLoyer", "Loyer payé (Ar)"],
+  ["statut", "Statut du loyer"],
   ["montantJIRAMA", "JIRAMA payé (Ar)"],
-  ["statut", "Statut"],
+  ["statutJIRAMA", "Statut JIRAMA"],
   ["datePaiement", "Date de paiement"],
 ];
 
 // Un locataire ne modifie que son identité et son avatar.
 const CHAMPS_COMPTE = [
+  ["idPS", "Identifiant"],
   ["nom", "Nom"],
   ["prenom", "Prénom"],
   ["photo", "Photo de profil"],
@@ -76,6 +87,7 @@ const CHAMPS_COMPTE = [
 const CHAMPS_ACCES = [
   ["idPS", "Identifiant"],
   ["nom", "Nom"],
+  ["prenom", "Prénom"],
   ["motif", "Motif"],
 ];
 
@@ -83,6 +95,7 @@ const CHAMPS_ACCES = [
 const CHAMPS_REGLEMENT = [
   ["titre", "Titre"],
   ["texte", "Explication"],
+  ["icone", "Illustration"],
   ["actif", "Publiée"],
 ];
 
@@ -94,16 +107,48 @@ function champsDe(entite) {
   return CHAMPS_LOCATAIRE;
 }
 
+// Identifiants techniques et champs déjà repris dans l'en-tête de la carte :
+// les répéter dans le tableau n'apprendrait rien.
+const CHAMPS_TECHNIQUES = [
+  "id", "locataireId", "factureId", "bienId", "auteurId",
+  "locataireNom", "chambre", "etage", "declareParLocataire",
+];
+
+/**
+ * Libellé d'un champ inconnu du catalogue ci-dessus.
+ *
+ * Filet de sécurité : le jour où le serveur enregistrera un champ de plus,
+ * il s'affichera avec un libellé approximatif plutôt que de disparaître
+ * silencieusement du tableau.
+ */
+function libelleBrut(champ) {
+  const mots = champ.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
+  return mots.charAt(0).toUpperCase() + mots.slice(1);
+}
+
+const STATUTS_LISIBLES = {
+  PAYE: "Payé",
+  PARTIEL: "Partiel",
+  DOUTE: "Doute — à confirmer",
+  IMPAYE: "Impayé",
+};
+
 function fmtVal(champ, v) {
   if (v === null || v === undefined || v === "") return "—";
   if (champ === "actif") return Number(v) ? "Oui" : "Non";
   // Une photo est une data URL de plusieurs milliers de caractères :
   // on n'affiche que le fait qu'elle change.
   if (champ === "photo") return "Photo définie";
-  if (["loyer", "caution", "montantLoyer", "montantJIRAMA"].includes(champ))
+  if (["loyer", "caution", "montantLoyer", "montantJIRAMA", "jiramaForfait"].includes(champ))
     return Number(v).toLocaleString();
   if (champ === "mois") return MOIS_FULL[Number(v) - 1] || String(v);
   if (champ === "dateEntree" || champ === "datePaiement") return String(v).split("T")[0];
+  if (champ === "statut" || champ === "statutJIRAMA")
+    return STATUTS_LISIBLES[String(v)] || String(v);
+  if (champ === "modePaiement")
+    return String(v).toUpperCase() === "AVANCE" ? "D'avance" : "Après consommation";
+  if (champ === "volet") return String(v) === "JIRAMA" ? "Eau & électricité" : "Loyer";
+  if (champ === "jourPaiement") return `le ${v} du mois`;
   return String(v);
 }
 
@@ -126,9 +171,20 @@ function DiffTable({ demande }) {
   const colonneAvant = estDiff || action === "SUPPRESSION";
   const colonneValeur = action !== "SUPPRESSION";
 
+  // Au catalogue de l'entité, on ajoute tout champ present dans la demande
+  // mais non répertorié : mieux vaut un libellé approximatif qu'une ligne
+  // manquante, surtout quand elle est la seule à avoir changé.
+  const connus = CHAMPS.map(([c]) => c);
+  const supplementaires = [
+    ...new Set([...Object.keys(avant || {}), ...Object.keys(apres || {})]),
+  ]
+    .filter((c) => !connus.includes(c) && !CHAMPS_TECHNIQUES.includes(c))
+    .map((c) => [c, libelleBrut(c)]);
+  const CATALOGUE = [...CHAMPS, ...supplementaires];
+
   const rows = estDiff
-    ? CHAMPS.filter(([c]) => estDifferent(c, avant[c], apres[c]))
-    : CHAMPS.filter(([c]) => {
+    ? CATALOGUE.filter(([c]) => estDifferent(c, avant[c], apres[c]))
+    : CATALOGUE.filter(([c]) => {
         const src = action === "SUPPRESSION" ? avant : apres || avant;
         return src && src[c] !== null && src[c] !== undefined && src[c] !== "";
       });
