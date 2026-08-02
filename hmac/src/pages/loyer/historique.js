@@ -47,7 +47,7 @@ const STATUTS = {
   IMPAYE: { label: "Impayé", color: "#dc2626", bg: "#fef2f2" },
 };
 
-const PAR_PAGE = 12;
+const TAILLES_PAGE = [8, 10, 20, 50, 100];
 
 // Pagination réutilisée par les trois tableaux.
 function Pagination({ page, nbPages, onChange }) {
@@ -100,6 +100,7 @@ export default function Historique() {
   const [filtreStatut, setFiltreStatut] = useState("TOUS");
   const [filtreMois, setFiltreMois] = useState("TOUS");
   const [filtreAction, setFiltreAction] = useState("TOUTES");
+  const [parPage, setParPage] = useState(8);
   const [pagePaiements, setPagePaiements] = useState(1);
   const [pageJournal, setPageJournal] = useState(1);
   const [pageOccupation, setPageOccupation] = useState(1);
@@ -109,7 +110,7 @@ export default function Historique() {
     setPagePaiements(1);
     setPageJournal(1);
     setPageOccupation(1);
-  }, [recherche, filtreStatut, filtreMois, filtreAction, vue, annee, bienId]);
+  }, [recherche, filtreStatut, filtreMois, filtreAction, parPage, vue, annee, bienId]);
 
   const [histo, setHisto] = useState([]);
   const [paiements, setPaiements] = useState([]);
@@ -170,8 +171,8 @@ export default function Historique() {
 
   // Découpage en pages
   const pages = (liste, page) => ({
-    nbPages: Math.max(1, Math.ceil(liste.length / PAR_PAGE)),
-    visibles: liste.slice((page - 1) * PAR_PAGE, page * PAR_PAGE),
+    nbPages: Math.max(1, Math.ceil(liste.length / parPage)),
+    visibles: liste.slice((page - 1) * parPage, page * parPage),
   });
   const vuePaiements = pages(paiementsFiltres, pagePaiements);
   const vueJournal = pages(journalFiltre, pageJournal);
@@ -237,6 +238,19 @@ export default function Historique() {
 
             {/* Recherche et filtres */}
             <div className="d-flex gap-2 mb-3 flex-wrap align-items-center">
+              {/* Nombre de lignes par page */}
+              <select
+                className="form-select form-select-sm"
+                style={{ width: "auto", fontSize: "0.82rem" }}
+                value={parPage}
+                onChange={(e) => setParPage(+e.target.value)}
+                title="Nombre de lignes affichées par page"
+              >
+                {TAILLES_PAGE.map((n) => (
+                  <option key={n} value={n}>{n} par page</option>
+                ))}
+              </select>
+
               <div className="input-group input-group-sm" style={{ maxWidth: 280 }}>
                 <span className="input-group-text bg-white border-end-0">
                   <BsSearch size={13} style={{ color: "#94a3b8" }} />
