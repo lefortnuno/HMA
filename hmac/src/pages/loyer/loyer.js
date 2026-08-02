@@ -16,6 +16,7 @@ import {
   BsShare,
   BsWhatsapp,
   BsExclamationTriangleFill,
+  BsMessenger,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -28,6 +29,7 @@ import ApartSelect, {
   setSelectedBienId,
   KINYA,
 } from "../../components/appart/apart.select";
+import { copierEtOuvrirMessenger } from "../../config/contact";
 import "./loyer.css";
 
 const MOIS = [
@@ -160,15 +162,25 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
   const pageSure = Math.min(page, nbPages);
   const visibles = retards.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE);
 
-  // Message de relance couvrant tous les mois dus.
-  const lienRelance = (r) => {
+  // Libelle des mois dus, partage par WhatsApp et Messenger.
+  const libelleMois = (r) => {
     const noms = r.impayes.map((i) => MOIS_FULL[i.mois - 1]);
-    const libelle =
-      noms.length === 1
-        ? `du mois de ${noms[0]}`
-        : `des mois de ${noms.slice(0, -1).join(", ")} et ${noms[noms.length - 1]}`;
-    return lienRelanceWhatsApp(r.loc, libelle, annee, r.du, true);
+    return noms.length === 1
+      ? `du mois de ${noms[0]}`
+      : `des mois de ${noms.slice(0, -1).join(", ")} et ${noms[noms.length - 1]}`;
   };
+
+  // M\u00eame texte que la relance WhatsApp, pour un envoi manuel via Messenger.
+  const texteRelance = (r) =>
+    `Bonjour ${r.loc.nom},\n` +
+    `Petit rappel concernant le loyer ${libelleMois(r)} ${annee} ` +
+    `(chambre ${r.loc.chambre}), d'un montant de ${r.du.toLocaleString()} Ar ` +
+    `qui reste en attente de paiement.\n` +
+    `Merci de r\u00e9gulariser d\u00e8s que possible.\n` +
+    `\u2014 Trofel`;
+
+  // Lien WhatsApp couvrant tous les mois dus.
+  const lienRelance = (r) => lienRelanceWhatsApp(r.loc, libelleMois(r), annee, r.du, true);
 
   return (
     <div className="card-pro p-0 mb-4" style={{ overflow: "hidden", borderTop: "3px solid #ef4444" }}>
@@ -269,12 +281,18 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                           <BsWhatsapp size={11} /> Relancer
                         </a>
                       ) : (
-                        <span
-                          className="rounded-pill px-2"
-                          style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.68rem", whiteSpace: "nowrap" }}
+                        <button
+                          type="button"
+                          className="btn btn-sm py-0 px-2 fw-semibold d-inline-flex align-items-center gap-1"
+                          style={{ background: "#0866FF", color: "#fff", fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                          title={`Copier le rappel et ouvrir Messenger pour ${loc.nom}`}
+                          onClick={() => {
+                            copierEtOuvrirMessenger(texteRelance({ loc, impayes, du }), loc.nom);
+                            toast.info("Rappel copié — collez-le dans la conversation");
+                          }}
                         >
-                          pas de n°
-                        </span>
+                          <BsMessenger size={11} /> Messenger
+                        </button>
                       )}
                     </span>
                   </div>

@@ -4,13 +4,14 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
 import DeleteModal from "../../components/modals/delete";
+import { copierEtOuvrirMessenger } from "../../config/contact";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   BsFillTrashFill, BsPencilSquare, BsEye,
   BsPeopleFill, BsShieldFill, BsPersonFill, BsSearch, BsPlus,
-  BsWhatsapp, BsSend, BsClipboard, BsKey,
+  BsWhatsapp, BsSend, BsClipboard, BsKey, BsMessenger,
 } from "react-icons/bs";
 
 const url_req = "utilisateur/";
@@ -308,18 +309,23 @@ export default function User() {
                   }}>
                   <BsClipboard /> Copier le message
                 </button>
-                {acces.tel ? (
+                {/* Messenger ne pré-remplit pas : on copie puis on ouvre la conversation. */}
+                <button className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+                  style={{ background: "#0866FF", color: "#fff" }}
+                  title="Copie le message et ouvre Messenger"
+                  onClick={() => {
+                    copierEtOuvrirMessenger(messageAcces(acces), acces.nom);
+                    toast.info("Message copié — collez-le dans la conversation");
+                  }}>
+                  <BsMessenger /> Messenger
+                </button>
+                {acces.tel && (
                   <a className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
                     style={{ background: "#25D366", color: "#fff" }}
                     href={`https://wa.me/${acces.tel.replace(/\s+/g, "").replace(/^\+/, "")}?text=${encodeURIComponent(messageAcces(acces))}`}
                     target="_blank" rel="noopener noreferrer">
-                    <BsWhatsapp /> Envoyer sur WhatsApp
+                    <BsWhatsapp /> WhatsApp
                   </a>
-                ) : (
-                  <span className="rounded-pill px-2 py-1 align-self-center"
-                    style={{ background: "#f1f5f9", color: "#94a3b8", fontSize: "0.72rem" }}>
-                    pas de numéro enregistré
-                  </span>
                 )}
               </div>
             </div>
