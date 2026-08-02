@@ -477,8 +477,9 @@ export default function LoginForm() {
                 className="auth-modal-fermer"
                 onClick={() => setOubliOuvert(false)}
                 aria-label="Fermer"
+                title="Fermer"
               >
-                ×
+                ✕
               </button>
             </div>
             <form onSubmit={demanderNouveauCode} className="auth-modal-corps">
