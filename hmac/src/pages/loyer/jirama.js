@@ -757,8 +757,21 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
   });
   const [saving, setSaving] = useState(false);
 
+  // Le forfait est un plancher : on peut régler davantage (surplus au
+  // compteur), jamais moins — sauf à assumer un règlement partiel.
+  const plancher = cell.forfait || 0;
+  const montantSaisi = Number(form.montantJIRAMA) || 0;
+  const sousLePlancher =
+    plancher > 0 && form.statutJIRAMA !== "IMPAYE" && form.statutJIRAMA !== "PARTIEL" &&
+    montantSaisi < plancher;
+
   function handleSubmit(e) {
     e.preventDefault();
+    if (sousLePlancher)
+      return toast.warning(
+        `${cell.loc.nom} est au forfait de ${plancher.toLocaleString()} Ar : ` +
+          `saisissez au moins ce montant, ou passez le statut en « Partiel ».`
+      );
     setSaving(true);
     axios
       .post(
@@ -851,11 +864,18 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
           </div>
 
           <div className="mb-3">
-            <label className="form-label small mb-1">Montant réglé (Ar)</label>
+            <label className="form-label small mb-1">
+              Montant réglé (Ar)
+              {plancher > 0 && (
+                <span className="text-muted" style={{ fontWeight: 400 }}>
+                  {" "}— minimum {plancher.toLocaleString()} Ar
+                </span>
+              )}
+            </label>
             <input
               type="number"
-              className="form-control form-control-sm"
-              min={0}
+              className={`form-control form-control-sm ${sousLePlancher ? "is-invalid" : ""}`}
+              min={form.statutJIRAMA === "PARTIEL" ? 0 : plancher || 0}
               value={form.montantJIRAMA}
               readOnly={form.statutJIRAMA === "IMPAYE"}
               style={
@@ -865,10 +885,22 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
               }
               onChange={(e) => setForm({ ...form, montantJIRAMA: +e.target.value })}
             />
-            {cell.attendu > 0 && reste > 0 && form.statutJIRAMA !== "IMPAYE" && (
+            {sousLePlancher ? (
               <small className="text-danger" style={{ fontSize: "0.72rem" }}>
-                Reste {reste.toLocaleString()} Ar sur la consommation relevée.
+                Forfait de {plancher.toLocaleString()} Ar : impossible de saisir moins.
+                Pour un règlement incomplet, choisissez le statut « Partiel ».
               </small>
+            ) : plancher > 0 && montantSaisi > plancher ? (
+              <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                Surplus au compteur : {(montantSaisi - plancher).toLocaleString()} Ar
+                au-dessus du forfait.
+              </small>
+            ) : (
+              cell.attendu > 0 && reste > 0 && form.statutJIRAMA !== "IMPAYE" && (
+                <small className="text-danger" style={{ fontSize: "0.72rem" }}>
+                  Reste {reste.toLocaleString()} Ar sur la consommation relevée.
+                </small>
+              )
             )}
           </div>
 
@@ -876,7 +908,7 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
             <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onClose}>
               Annuler
             </button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={saving || sousLePlancher}>
               {saving ? "..." : "Enregistrer"}
             </button>
           </div>

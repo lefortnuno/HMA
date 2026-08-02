@@ -32,6 +32,18 @@ export function jourEntree(loc) {
   return d && !isNaN(d) ? d.getDate() : 1;
 }
 
+/**
+ * Le règlement du locataire chevauche-t-il deux mois ?
+ *
+ * Seulement pour une entrée à la moitié du mois ou plus, ET avec un jour de
+ * règlement habituel renseigné : sans ces deux conditions, on ne sait pas où
+ * couper la période et le locataire règle des mois entiers. Une entrée le 2
+ * du mois n'est pas un chevauchement.
+ */
+export function aChevalSurDeuxMois(loc) {
+  return jourEntree(loc) >= 15 && Number(loc?.jourPaiement) > 0;
+}
+
 export function jourReglement(loc) {
   const saisi = Number(loc?.jourPaiement) || 0;
   if (saisi) return saisi;
@@ -80,9 +92,8 @@ export function partExigible(loc, mois, annee) {
     moisCourant > moisCible || (moisCourant === moisCible && now.getDate() >= jour);
 
   if (passee(moisSolde)) return 1;
-  // Chevauchement uniquement pour une entrée en cours de mois : c'est elle
-  // qui décale le cycle d'une demi-période.
-  if (jourEntree(loc) > 1 && passee(moisSolde - 1)) return 0.5;
+  // Demi-période uniquement pour un cycle qui chevauche vraiment deux mois.
+  if (aChevalSurDeuxMois(loc) && passee(moisSolde - 1)) return 0.5;
   return 0;
 }
 

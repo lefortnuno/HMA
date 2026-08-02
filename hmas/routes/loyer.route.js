@@ -56,5 +56,6 @@ router.delete("/reglements/:id", connecte.checkUtilisateur, ctrl.deleteReglement
 router.get("/mon-espace", locataire.checkUtilisateur, ctrl.getMonEspace);
 // Le locataire declare un reglement : part en validation chez l'admin.
 router.post("/mon-espace/paiement", locataire.checkUtilisateur, ctrl.declarerPaiement);
+router.post("/mon-espace/jirama",   locataire.checkUtilisateur, ctrl.declarerJirama);
 
 module.exports = router;

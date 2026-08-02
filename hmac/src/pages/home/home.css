@@ -13,7 +13,8 @@
   width: 100%;
   height: 100%;
   display: block;
-  image-rendering: pixelated;
+  /* Le dessin est vectoriel : le lissage rend mieux que le rendu pixelisé. */
+  image-rendering: auto;
 }
 
 /* Scanline overlay for CRT effect */

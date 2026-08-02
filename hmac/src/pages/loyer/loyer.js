@@ -35,6 +35,7 @@ import {
   montantDu,
   partExigible,
   jourEntree,
+  aChevalSurDeuxMois,
   libelleEcheance,
   libelleJour,
 } from "../../config/echeance";
@@ -965,7 +966,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
   // Un locataire entré en cours de mois règle à cheval : son versement solde
   // le mois qu'on est en train de saisir ET avance la moitié du suivant.
   // Solder juillet, c'est donc aussi créditer 75 000 Ar sur août.
-  const aCheval = jourEntree(cell.loc) > 1;
+  const aCheval = aChevalSurDeuxMois(cell.loc);
   const demiLoyer = Math.round((cell.loc.loyer || 0) / 2);
   const moisSuivant = cell.mois < 12 ? cell.mois + 1 : null;
   const suivantExistant = moisSuivant
@@ -1300,7 +1301,8 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     doc.text(`Suite de fois de reçu : . . ${recuId} . .`, mg, y);
 
     // ── Logo Trofel L (bas droite) ──
-    doc.addImage(trofelB64, "PNG", R - 24, H - 34, 24, 18);
+    // Plus bas et plus discret : il encombrait le bas de page.
+    doc.addImage(trofelB64, "PNG", R - 18, H - 24, 18, 13.5);
 
     return doc;
   }

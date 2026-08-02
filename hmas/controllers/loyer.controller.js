@@ -982,6 +982,39 @@ module.exports.getMonEspace = (req, res) => {
     if (err) return sendErr(res, err);
     if (!loc) return res.status(404).send({ success: false, message: "Fiche introuvable." });
 
+    // Ce que le locataire doit au titre de l'eau et de l'electricite, mois par
+    // mois : son forfait, ou le releve de son compteur s'il est plus eleve.
+    Facture.getByMoisAnnee(null, annee, loc.bienId, (errF, factures) => {
+      const releves = {};
+      if (!errF) {
+        (factures || []).forEach((f) => {
+          (f.consommations || []).forEach((c) => {
+            if (String(c.locataireId) === String(locataireId))
+              releves[f.mois] = c.montantJIRAMA || 0;
+          });
+        });
+      }
+      const forfait = Number(loc.jiramaForfait) || 0;
+      const maintenant = new Date();
+      const jiramaDu = {};
+      for (let m = 1; m <= 12; m++) {
+        const releve = releves[m] || 0;
+        if (!forfait) {
+          jiramaDu[m] = releve;
+          continue;
+        }
+        // Le forfait ne court qu'entre l'entree du locataire et le mois en cours.
+        const entree = loc.dateEntree ? new Date(loc.dateEntree) : null;
+        const avantEntree =
+          entree && !isNaN(entree) &&
+          (entree.getFullYear() > Number(annee) ||
+            (entree.getFullYear() === Number(annee) && m < entree.getMonth() + 1));
+        const aVenir =
+          Number(annee) > maintenant.getFullYear() ||
+          (Number(annee) === maintenant.getFullYear() && m > maintenant.getMonth() + 1);
+        jiramaDu[m] = avantEntree || aVenir ? releve : Math.max(forfait, releve);
+      }
+
     Paiement.getByAnnee(annee, (err2, tous) => {
       if (err2) return sendErr(res, err2);
       const miens = (tous || []).filter(
@@ -998,6 +1031,8 @@ module.exports.getMonEspace = (req, res) => {
           annee: d.apres.annee,
           montantLoyer: d.apres.montantLoyer || 0,
           montantJIRAMA: d.apres.montantJIRAMA || 0,
+          // Une declaration ne portant que sur l'electricite n'engage pas le loyer.
+          volet: d.apres.volet || "LOYER",
           datePaiement: d.apres.datePaiement || null,
           dateDemande: d.dateDemande,
         }));
@@ -1008,11 +1043,106 @@ module.exports.getMonEspace = (req, res) => {
           chambre: loc.chambre, etage: loc.etage, loyer: loc.loyer,
           caution: loc.caution, dateEntree: loc.dateEntree, photo: loc.photo,
           jourPaiement: loc.jourPaiement, modePaiement: loc.modePaiement || "ECHU",
+          jiramaForfait: loc.jiramaForfait || null,
         },
         annee: +annee,
         paiements: miens,
+        jiramaDu,
         enAttente,
       });
+      });
+    });
+    });
+  });
+};
+
+/**
+ * Le locataire declare lui-meme un reglement d'eau et d'electricite.
+ *
+ * Meme principe que la declaration de loyer : rien n'est ecrit dans les
+ * paiements, la demande part en validation. La partie loyer de la ligne est
+ * reprise telle quelle pour ne pas etre ecrasee a l'approbation.
+ */
+module.exports.declarerJirama = (req, res) => {
+  const locataireId = req.user.locataireId;
+  if (!locataireId)
+    return res.status(403).send({
+      success: false,
+      message: "Ce compte n'est rattaché à aucune fiche locataire.",
+    });
+
+  const { mois, annee, montantJIRAMA, datePaiement } = req.body;
+  if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  if (!V.isMontantValide(montantJIRAMA) || Number(montantJIRAMA) <= 0)
+    return badRequest(res, "Indiquez le montant réglé.");
+
+  Locataire.getById(locataireId, (err, loc) => {
+    if (err) return sendErr(res, err);
+    if (!loc) return res.status(404).send({ success: false, message: "Fiche introuvable." });
+
+    if (loc.dateEntree) {
+      const entree = new Date(loc.dateEntree);
+      if (!isNaN(entree)) {
+        const debut = entree.getFullYear() * 12 + entree.getMonth();
+        const vise = Number(annee) * 12 + (Number(mois) - 1);
+        if (vise < debut) return badRequest(res, "Ce mois précède votre date d'entrée.");
+      }
+    }
+
+    Validation.pendingPaiements(locataireId, (errP, attentes) => {
+      if (errP) return sendErr(res, errP);
+      const doublon = (attentes || []).some(
+        (d) =>
+          String(d.apres?.mois) === String(mois) &&
+          String(d.apres?.annee) === String(annee) &&
+          d.apres?.volet === "JIRAMA"
+      );
+      if (doublon)
+        return res.status(409).send({
+          success: false,
+          message: "Vous avez déjà déclaré ce mois : la demande est en cours de vérification.",
+        });
+
+      Paiement.getExisting(locataireId, mois, annee, (err2, existant) => {
+        if (err2) return sendErr(res, err2);
+        const data = {
+          locataireId,
+          mois: Number(mois),
+          annee: Number(annee),
+          // Partie loyer conservee telle quelle.
+          montantLoyer: existant ? existant.montantLoyer : 0,
+          statut: existant ? existant.statut : "IMPAYE",
+          datePaiement: existant ? existant.datePaiement : null,
+          montantJIRAMA: Number(montantJIRAMA),
+          statutJIRAMA: "PAYE",
+          volet: "JIRAMA",
+        };
+        if (datePaiement && !existant) data.datePaiement = String(datePaiement).split("T")[0];
+
+        const meta = {
+          locataireNom: `${loc.nom} ${loc.prenom || ""}`.trim(),
+          chambre: loc.chambre,
+          etage: loc.etage,
+          declareParLocataire: true,
+        };
+        Validation.create(
+          {
+            entite: "PAIEMENT",
+            action: existant ? "MODIFICATION" : "AJOUT",
+            entiteId: existant ? existant.id : null,
+            avant: existant ? { ...existant, ...meta } : null,
+            apres: { ...data, ...meta },
+            ...auteurDe(req),
+          },
+          (err3, result) => {
+            if (err3) return sendErr(res, err3);
+            res.status(202).send({
+              ...result,
+              message: "Déclaration envoyée : elle sera vérifiée par le propriétaire.",
+            });
+          }
+        );
       });
     });
   });
@@ -1040,8 +1170,13 @@ module.exports.declarerPaiement = (req, res) => {
 
   Validation.pendingPaiements(locataireId, (errP, attentes) => {
     if (errP) return sendErr(res, errP);
+    // Une declaration de loyer et une declaration d'electricite sur le meme
+    // mois ne se font pas doublon : ce sont deux volets distincts.
     const doublon = (attentes || []).some(
-      (d) => String(d.apres?.mois) === String(mois) && String(d.apres?.annee) === String(annee)
+      (d) =>
+        String(d.apres?.mois) === String(mois) &&
+        String(d.apres?.annee) === String(annee) &&
+        (d.apres?.volet || "LOYER") === "LOYER"
     );
     if (doublon)
       return res.status(409).send({
@@ -1075,6 +1210,7 @@ module.exports.declarerPaiement = (req, res) => {
         statut: Number(montantLoyer) >= du ? "PAYE" : "PARTIEL",
         statutJIRAMA: Number(montantJIRAMA) > 0 ? "PAYE" : "IMPAYE",
         datePaiement: datePaiement ? String(datePaiement).split("T")[0] : null,
+        volet: "LOYER",
       };
 
       Paiement.getExisting(locataireId, data.mois, data.annee, (err2, existing) => {
