@@ -34,6 +34,8 @@ module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
               nom: resultat[0].nom,
               prenom: resultat[0].prenom,
               karazana: resultat[0].karazana,
+              locataireId: resultat[0].locataireId || null,
+              mdpTemporaire: resultat[0].mdpTemporaire || 0,
             };
             next();
           } else {

@@ -18,6 +18,8 @@ import {
   BsImages,
   BsStarFill,
   BsBell,
+  BsHouseHeart,
+  BsGear,
 } from "react-icons/bs";
 
 function NavItem({ to, Icon, label, location, exact, badge }) {
@@ -56,6 +58,7 @@ export default function Sidebar() {
   const u_info = GetUserData();
   const location = useLocation();
   const isAdmin = String(u_info.u_karazana) === "1";
+  const estLocataire = String(u_info.u_karazana) === "2";
   const [nbPending, setNbPending] = useState(0);
 
   // Close mobile sidebar on route change
@@ -87,6 +90,22 @@ export default function Sidebar() {
       badge={badge}
     />
   );
+
+  if (estLocataire) {
+    return (
+      <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block sidebar collapse">
+        <ul>
+          <div className="sidebar-section-label">Mon logement</div>
+          {nav("/mon-espace/", BsHouseHeart, "Mon espace", true)}
+          {nav("/parametres/", BsGear, "Mon compte", true)}
+
+          <div className="separator" />
+
+          {nav("/about/", BsInfoCircle, "À propos", true)}
+        </ul>
+      </nav>
+    );
+  }
 
   return (
     <nav

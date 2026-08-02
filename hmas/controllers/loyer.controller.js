@@ -7,6 +7,8 @@ const Occupation = require("../models/occupation.model");
 const Validation = require("../models/validation.model");
 const { sendErr, badRequest } = require("../utils/http");
 const V = require("../utils/calc");
+const Compte = require("../utils/compte");
+
 
 const isAdmin = (req) => req.user && Number(req.user.karazana) === 1;
 const auteurDe = (req) => ({
@@ -45,7 +47,12 @@ function execCreateLocataire(data, cb) {
       chambre: data.chambre, etage: data.etage, bienId: data.bienId,
       action: "ENTREE", details: `Entrée — chambre ${data.chambre} (${data.etage})`,
     });
-    cb(null, result);
+    // Compte de connexion cree automatiquement : le code a 4 chiffres est
+    // renvoye UNE SEULE FOIS pour etre transmis au locataire.
+    Compte.creerPourLocataire({ id: result.id, ...data }, (errC, compte) => {
+      if (errC) console.error("[compte locataire]", errC.message);
+      cb(null, compte ? { ...result, compte } : result);
+    });
   });
 }
 
@@ -655,6 +662,46 @@ module.exports.getBeneficesAnnee = (req, res) => {
         });
       }
       res.send({ annee: +annee, mois: moisData });
+    });
+  });
+};
+
+// ─── Espace personnel du locataire ────────────────────────────
+// Un compte "locataire" ne voit QUE sa propre fiche et ses propres paiements.
+module.exports.getMonEspace = (req, res) => {
+  const annee = req.query.annee;
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+
+  // L'admin peut consulter l'espace d'un locataire via ?locataireId=
+  const locataireId = isAdmin(req)
+    ? req.query.locataireId || req.user.locataireId
+    : req.user.locataireId;
+
+  if (!locataireId)
+    return res.status(403).send({
+      success: false,
+      message: "Ce compte n'est rattaché à aucune fiche locataire.",
+    });
+
+  Locataire.getById(locataireId, (err, loc) => {
+    if (err) return sendErr(res, err);
+    if (!loc) return res.status(404).send({ success: false, message: "Fiche introuvable." });
+
+    Paiement.getByAnnee(annee, (err2, tous) => {
+      if (err2) return sendErr(res, err2);
+      const miens = (tous || []).filter(
+        (p) => String(p.locataireId) === String(locataireId)
+      );
+      // Aucune donnee des autres locataires ne sort d'ici.
+      res.send({
+        locataire: {
+          id: loc.id, nom: loc.nom, prenom: loc.prenom,
+          chambre: loc.chambre, etage: loc.etage, loyer: loc.loyer,
+          caution: loc.caution, dateEntree: loc.dateEntree, photo: loc.photo,
+        },
+        annee: +annee,
+        paiements: miens,
+      });
     });
   });
 };

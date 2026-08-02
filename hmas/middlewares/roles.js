@@ -10,8 +10,11 @@
  */
 const ADMIN = Number(process.env.xADMIN ?? 1);
 const USER = Number(process.env.xUSER ?? 0);
+// Locataire : acces limite a SON propre espace (ses paiements), jamais aux
+// donnees des autres locataires.
+const LOCATAIRE = Number(process.env.xLOCATAIRE ?? 2);
 
 // Compare des roles de maniere sure (chaine "1" ou nombre 1 -> 1).
 const estRole = (karazana, role) => Number(karazana) === Number(role);
 
-module.exports = { ADMIN, USER, estRole };
+module.exports = { ADMIN, USER, LOCATAIRE, estRole };

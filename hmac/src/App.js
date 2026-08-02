@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import SignInProtection from "./contexts/ptotections/signin.protection";
 import AdminProtection from "./contexts/ptotections/admin.protection";
+import LocataireProtection from "./contexts/ptotections/locataire.protection";
 import LogOutProtection from "./contexts/ptotections/logout.protection";
 
 import PageNotFound from "./pages/404/page404";
@@ -46,6 +47,8 @@ import Chambres from "./pages/loyer/chambres";
 import Historique from "./pages/loyer/historique";
 import Notifications from "./pages/notifications/notifications";
 import Parametres from "./pages/parametres/parametres";
+import PremierAcces from "./pages/parametres/premier.acces";
+import MonEspace from "./pages/locataire/mon.espace";
 import AddLocataire from "./pages/loyer/add.locataire";
 import EditLocataire from "./pages/loyer/edit.locataire";
 import Factures from "./pages/loyer/factures";
@@ -75,8 +78,10 @@ function App() {
           {/* Auth */}
           <Route index element={<LogOutProtection Cmp={LogIn} />} />
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
-          <Route path="home/" element={<SignInProtection Cmp={Home} />} />
+          <Route path="home/" element={<LocataireProtection Cmp={Home} />} />
           <Route path="about/" element={<SignInProtection Cmp={About} />} />
+          <Route path="premier-acces/" element={<SignInProtection Cmp={PremierAcces} />} />
+          <Route path="mon-espace/" element={<LocataireProtection Cmp={MonEspace} autorise="LOCATAIRE" />} />
           <Route path="notifications/" element={<SignInProtection Cmp={Notifications} />} />
           <Route path="parametres/" element={<SignInProtection Cmp={Parametres} />} />
 
@@ -111,12 +116,12 @@ function App() {
           <Route path="editBoutique/:id" element={<AdminProtection Cmp={EditBoutique} />} />
 
           {/* ── Loyer (Immobilier — tous les users connectés) ── */}
-          <Route path="loyer/" element={<SignInProtection Cmp={Loyer} />} />
-          <Route path="loyer/chambres/" element={<SignInProtection Cmp={Chambres} />} />
-          <Route path="loyer/locataires/" element={<SignInProtection Cmp={Locataires} />} />
-          <Route path="loyer/locataires/new" element={<SignInProtection Cmp={AddLocataire} />} />
-          <Route path="loyer/locataires/edit/:id" element={<SignInProtection Cmp={EditLocataire} />} />
-          <Route path="loyer/factures/" element={<SignInProtection Cmp={Factures} />} />
+          <Route path="loyer/" element={<LocataireProtection Cmp={Loyer} />} />
+          <Route path="loyer/chambres/" element={<LocataireProtection Cmp={Chambres} />} />
+          <Route path="loyer/locataires/" element={<LocataireProtection Cmp={Locataires} />} />
+          <Route path="loyer/locataires/new" element={<LocataireProtection Cmp={AddLocataire} />} />
+          <Route path="loyer/locataires/edit/:id" element={<LocataireProtection Cmp={EditLocataire} />} />
+          <Route path="loyer/factures/" element={<LocataireProtection Cmp={Factures} />} />
           <Route path="loyer/depenses/" element={<AdminProtection Cmp={Depenses} />} />
           <Route path="loyer/benefices/" element={<AdminProtection Cmp={Benefices} />} />
           <Route path="loyer/historique/" element={<AdminProtection Cmp={Historique} />} />

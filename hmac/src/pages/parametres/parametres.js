@@ -5,8 +5,9 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
-import { BsGear, BsPersonCircle, BsShieldLock, BsEye, BsEyeSlash } from "react-icons/bs";
+import { BsGear, BsPersonCircle, BsShieldLock } from "react-icons/bs";
 import AvatarPicker from "../../components/avatar/avatar";
+import PinInput from "../../components/pin/pin.input";
 import "../loyer/loyer.css";
 
 export default function Parametres() {
@@ -23,7 +24,6 @@ export default function Parametres() {
   const [pwdActuel, setPwdActuel] = useState("");
   const [pwd, setPwd] = useState("");
   const [pwd2, setPwd2] = useState("");
-  const [showPwd, setShowPwd] = useState(false);
   const [savingPwd, setSavingPwd] = useState(false);
 
   function saveProfil(e) {
@@ -47,14 +47,15 @@ export default function Parametres() {
 
   function savePwd(e) {
     e.preventDefault();
-    if (!pwdActuel) return toast.warning("Entre ton mot de passe actuel");
-    if (!pwd || pwd.length < 4) return toast.warning("Nouveau mot de passe : 4 caractères minimum");
-    if (pwd !== pwd2) return toast.warning("Les deux mots de passe ne correspondent pas");
+    if (pwdActuel.length !== 4) return toast.warning("Entre ton code actuel (4 chiffres)");
+    if (pwd.length !== 4) return toast.warning("Le nouveau code doit faire 4 chiffres");
+    if (pwd !== pwd2) return toast.warning("Les deux codes ne correspondent pas");
     setSavingPwd(true);
     axios
       .put("utilisateur/me", { pwdActuel, pwd }, u_info.opts)
       .then(() => {
-        toast.success("Mot de passe changé !");
+        toast.success("Code changé !");
+        localStorage.setItem("mdpTemporaire", "0");
         setPwdActuel(""); setPwd(""); setPwd2("");
       })
       .catch((err) => toast.error(err.response?.data?.message || "Erreur lors du changement"))
@@ -127,43 +128,39 @@ export default function Parametres() {
               <div className="col-lg-6">
                 <div className="card-pro h-100">
                   <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
-                    <BsShieldLock className="text-primary" /> Changer le mot de passe
+                    <BsShieldLock className="text-primary" /> Changer mon code
                   </h6>
+                  <p className="text-muted mb-4" style={{ fontSize: "0.78rem" }}>
+                    Votre code d&apos;accès est composé de 4 chiffres, comme à la connexion.
+                  </p>
                   <form onSubmit={savePwd}>
-                    <div className="mb-3">
-                      <label className="form-label">Mot de passe actuel *</label>
-                      <input type={showPwd ? "text" : "password"} className="form-control form-control-sm"
-                        value={pwdActuel} onChange={(e) => setPwdActuel(e.target.value)}
-                        autoComplete="current-password" />
+                    <div className="mb-4">
+                      <label className="form-label fw-semibold" style={{ fontSize: "0.85rem" }}>
+                        Code actuel
+                      </label>
+                      <PinInput value={pwdActuel} onChange={setPwdActuel} id="actuel" />
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label">Nouveau mot de passe *</label>
-                      <div className="input-group input-group-sm">
-                        <input type={showPwd ? "text" : "password"} className="form-control"
-                          value={pwd} onChange={(e) => setPwd(e.target.value)}
-                          autoComplete="new-password" />
-                        <button type="button" className="btn btn-outline-secondary"
-                          onClick={() => setShowPwd((s) => !s)}
-                          title={showPwd ? "Masquer" : "Afficher"}>
-                          {showPwd ? <BsEyeSlash /> : <BsEye />}
-                        </button>
-                      </div>
+                    <div className="mb-4">
+                      <label className="form-label fw-semibold" style={{ fontSize: "0.85rem" }}>
+                        Nouveau code
+                      </label>
+                      <PinInput value={pwd} onChange={setPwd} id="nouveau" />
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label">Confirmer le nouveau mot de passe *</label>
-                      <input type={showPwd ? "text" : "password"} className="form-control form-control-sm"
-                        value={pwd2} onChange={(e) => setPwd2(e.target.value)}
-                        autoComplete="new-password" />
-                      {pwd2 && pwd !== pwd2 && (
-                        <small className="text-danger" style={{ fontSize: "0.72rem" }}>
-                          Les mots de passe ne correspondent pas.
+                    <div className="mb-4">
+                      <label className="form-label fw-semibold" style={{ fontSize: "0.85rem" }}>
+                        Confirmer le nouveau code
+                      </label>
+                      <PinInput value={pwd2} onChange={setPwd2} id="confirme" />
+                      {pwd2.length === 4 && pwd !== pwd2 && (
+                        <small className="text-danger d-block mt-1" style={{ fontSize: "0.75rem" }}>
+                          Les deux codes ne correspondent pas.
                         </small>
                       )}
                     </div>
                     <div className="d-flex justify-content-end">
                       <button type="submit" className="btn btn-primary btn-sm"
-                        disabled={savingPwd || (pwd2 && pwd !== pwd2)}>
-                        {savingPwd ? "Changement..." : "Changer le mot de passe"}
+                        disabled={savingPwd || pwdActuel.length !== 4 || pwd.length !== 4 || pwd !== pwd2}>
+                        {savingPwd ? "Changement..." : "Changer mon code"}
                       </button>
                     </div>
                   </form>

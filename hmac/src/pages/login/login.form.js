@@ -196,14 +196,20 @@ export default function LoginForm() {
         if (response.status === 200) {
           if (response.data.success) {
             toast.success(response.data.message);
-            navigate("/loyer/"); // Redirection après connexion réussie
-            console.log("Info recu du backend : ", response);
-
             localStorage.setItem("token", response.data.token);
             const utilisateur = response.data.user[0];
 
             for (const u in utilisateur) {
               if (u != "pwd") localStorage.setItem(u, utilisateur[u]);
+            }
+
+            // 1re connexion avec le code fourni : changement obligatoire.
+            if (String(utilisateur.mdpTemporaire) === "1") {
+              navigate("/premier-acces/");
+            } else if (String(utilisateur.karazana) === "2") {
+              navigate("/mon-espace/"); // locataire
+            } else {
+              navigate("/loyer/");
             }
           } else {
             setErreurs((values) => ({ ...values, messageErreur: true }));

@@ -2,6 +2,7 @@ const router  = require("express").Router();
 const ctrl    = require("../controllers/loyer.controller");
 const user    = require("../middlewares/user.middleware");
 const admin   = require("../middlewares/admin.middleware");
+const locataire = require("../middlewares/locataire.middleware");
 
 // ── Locataires ────────────────────────────────────────────────
 router.get("/locataires",        user.checkUtilisateur, ctrl.getAllLocataires);
@@ -36,5 +37,8 @@ router.get("/historique", user.checkUtilisateur, ctrl.getHistorique);
 router.get("/validations",        user.checkUtilisateur,  ctrl.getValidations);
 router.get("/validations/count",  user.checkUtilisateur,  ctrl.countValidations);
 router.post("/validations/:id/decision", admin.checkUtilisateur, ctrl.decideValidation);
+
+// ── Espace personnel du locataire ─────────────────────────────
+router.get("/mon-espace", locataire.checkUtilisateur, ctrl.getMonEspace);
 
 module.exports = router;

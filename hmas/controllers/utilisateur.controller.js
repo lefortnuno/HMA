@@ -156,6 +156,8 @@ module.exports.updateMonCompte = (req, res) => {
       if (!pwdActuel || !bcrypt.compareSync(pwdActuel, resultat[0].pwd))
         return res.status(400).send({ success: false, message: "Mot de passe actuel incorrect." });
       updateData.pwd = bcrypt.hashSync(pwd, 10);
+      // Le mot de passe par defaut a ete remplace : plus d obligation.
+      updateData.mdpTemporaire = 0;
     }
 
     if (Object.keys(updateData).length === 0)
@@ -170,6 +172,7 @@ module.exports.updateMonCompte = (req, res) => {
         nom: updateData.nom || resultat[0].nom,
         prenom: updateData.prenom !== undefined ? updateData.prenom : resultat[0].prenom,
         photo: updateData.photo !== undefined ? updateData.photo : resultat[0].photo,
+        mdpTemporaire: updateData.mdpTemporaire !== undefined ? updateData.mdpTemporaire : resultat[0].mdpTemporaire,
       });
     });
   });
