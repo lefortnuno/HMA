@@ -972,17 +972,22 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     ? ((paiements || {})[cell.loc.id] || {})[moisSuivant]
     : null;
   const dejaAvance = suivantExistant?.montantLoyer || 0;
-  // On se fie au montant saisi plutôt qu'au statut : marquer « Partiel » à
-  // 150 000 Ar solde tout autant le mois que le statut « Payé ».
+  // Visible dès que le versement couvre au moins la demi-période — donc aussi
+  // sur un « Partiel » qui n'est partiel qu'à cause du chevauchement.
+  const soldeLeMois = Number(form.montantLoyer) >= (cell.loc.loyer || 0);
   const reportPossible =
     aCheval &&
     !!moisSuivant &&
     demiLoyer > 0 &&
-    Number(form.montantLoyer) >= (cell.loc.loyer || 0) &&
+    Number(form.montantLoyer) >= demiLoyer &&
     form.statut !== "IMPAYE" &&
     suivantExistant?.statut !== "PAYE" &&
     dejaAvance < demiLoyer;
-  const [reporter, setReporter] = useState(true);
+  // Cochée d'office uniquement quand le mois est entièrement soldé : sinon
+  // le versement couvre la demi-période et il n'y a rien à avancer.
+  const [reporterManuel, setReporterManuel] = useState(null);
+  const reporter = reporterManuel === null ? soldeLeMois : reporterManuel;
+  const setReporter = setReporterManuel;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -1369,6 +1374,14 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
                   {cell.loc.nom} est entré le {jourEntree(cell.loc)} : son versement
                   solde {moisNomFull} et couvre la première moitié du mois suivant.
                 </span>
+                {!soldeLeMois && (
+                  <span className="d-block fw-semibold" style={{ fontSize: "0.72rem", color: "#b45309" }}>
+                    {moisNomFull} n'est réglé qu'à hauteur de{" "}
+                    {Number(form.montantLoyer).toLocaleString()} Ar sur{" "}
+                    {(cell.loc.loyer || 0).toLocaleString()} : à ne cocher que si le
+                    versement couvre bien les deux mois.
+                  </span>
+                )}
               </span>
             </label>
           )}

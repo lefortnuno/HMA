@@ -310,6 +310,21 @@ module.exports.decideValidation = (req, res) => {
       });
     }
 
+    // ── Reglement interieur ──
+    if (demande.entite === "REGLEMENT") {
+      if (demande.action === "SUPPRESSION")
+        return Reglement.delete(demande.entiteId, finir);
+      if (demande.action === "MODIFICATION")
+        return Reglement.update(demande.entiteId, demande.apres, finir);
+      return Reglement.prochainOrdre((e, ordre) => {
+        if (e) return sendErr(res, e);
+        Reglement.create(
+          { ...demande.apres, ordre, auteurNom: demande.auteurNom || null },
+          finir
+        );
+      });
+    }
+
     // ── Comptes : modification de profil demandee par un locataire ──
     // Sans cette branche, entiteId (un id de compte) etait pris pour un id de
     // locataire et l'approbation echouait sur une mise a jour impossible.
@@ -364,6 +379,127 @@ module.exports.decideValidation = (req, res) => {
     } else {
       badRequest(res, "Type d'action inconnu.");
     }
+  });
+};
+
+// ─── Règlement intérieur ──────────────────────────────────────
+// Visible de tous (locataires compris). L'admin gere directement ;
+// utilisateurs et locataires proposent, l'admin tranche.
+const Reglement = require("../models/reglement.model");
+
+function valideRegle(body) {
+  const titre = String(body.titre || "").trim();
+  const texte = String(body.texte || "").trim();
+  if (titre.length < 3) return "Le titre est trop court.";
+  if (titre.length > 160) return "Le titre est trop long (160 caractères max).";
+  if (texte.length < 10) return "Détaillez un peu la règle (10 caractères min).";
+  if (texte.length > 2000) return "Règle trop longue (2000 caractères max).";
+  return null;
+}
+
+const normaliseRegle = (body) => ({
+  titre: String(body.titre).trim(),
+  texte: String(body.texte).trim(),
+  icone: body.icone ? String(body.icone).slice(0, 40) : null,
+  actif: body.actif === undefined ? 1 : body.actif ? 1 : 0,
+});
+
+module.exports.getReglements = (req, res) => {
+  // Seul l'admin voit les règles désactivées.
+  Reglement.getAll(!isAdmin(req), (err, data) => {
+    if (err) sendErr(res, err);
+    else res.send(data);
+  });
+};
+
+module.exports.createReglement = (req, res) => {
+  const erreur = valideRegle(req.body);
+  if (erreur) return badRequest(res, erreur);
+  const data = normaliseRegle(req.body);
+
+  if (!isAdmin(req)) {
+    return Validation.create(
+      { entite: "REGLEMENT", action: "AJOUT", entiteId: null, avant: null, apres: data, ...auteurDe(req) },
+      (err, result) => {
+        if (err) return sendErr(res, err);
+        res.status(202).send({
+          ...result,
+          message: "Proposition envoyée : le propriétaire la validera.",
+        });
+      }
+    );
+  }
+
+  Reglement.prochainOrdre((err, ordre) => {
+    if (err) return sendErr(res, err);
+    Reglement.create(
+      { ...data, ordre: req.body.ordre || ordre, auteurNom: auteurDe(req).auteurNom },
+      (err2, result) => {
+        if (err2) sendErr(res, err2);
+        else res.send(result);
+      }
+    );
+  });
+};
+
+module.exports.updateReglement = (req, res) => {
+  const erreur = valideRegle(req.body);
+  if (erreur) return badRequest(res, erreur);
+  const data = normaliseRegle(req.body);
+  if (req.body.ordre !== undefined) data.ordre = Number(req.body.ordre) || 0;
+
+  Reglement.getById(req.params.id, (err, avant) => {
+    if (err) return sendErr(res, err);
+    if (!avant) return res.status(404).send({ success: false, message: "Règle introuvable." });
+
+    if (!isAdmin(req)) {
+      return Validation.create(
+        {
+          entite: "REGLEMENT", action: "MODIFICATION",
+          entiteId: Number(req.params.id), avant, apres: data, ...auteurDe(req),
+        },
+        (err2, result) => {
+          if (err2) return sendErr(res, err2);
+          res.status(202).send({
+            ...result,
+            message: "Modification envoyée : le propriétaire la validera.",
+          });
+        }
+      );
+    }
+
+    Reglement.update(req.params.id, data, (err2, result) => {
+      if (err2) sendErr(res, err2);
+      else res.send(result);
+    });
+  });
+};
+
+module.exports.deleteReglement = (req, res) => {
+  Reglement.getById(req.params.id, (err, avant) => {
+    if (err) return sendErr(res, err);
+    if (!avant) return res.status(404).send({ success: false, message: "Règle introuvable." });
+
+    if (!isAdmin(req)) {
+      return Validation.create(
+        {
+          entite: "REGLEMENT", action: "SUPPRESSION",
+          entiteId: Number(req.params.id), avant, apres: null, ...auteurDe(req),
+        },
+        (err2, result) => {
+          if (err2) return sendErr(res, err2);
+          res.status(202).send({
+            ...result,
+            message: "Demande de retrait envoyée à l'admin pour validation.",
+          });
+        }
+      );
+    }
+
+    Reglement.delete(req.params.id, (err2, result) => {
+      if (err2) sendErr(res, err2);
+      else res.send(result);
+    });
   });
 };
 

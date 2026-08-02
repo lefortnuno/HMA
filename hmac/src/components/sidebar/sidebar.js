@@ -97,6 +97,9 @@ export default function Sidebar() {
       <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block sidebar collapse">
         <ul>
           <div className="sidebar-section-label">Mon logement</div>
+          {/* L'accueil porte le règlement de la résidence : le locataire y a accès,
+              sans les raccourcis vers les modules de gestion. */}
+          {nav("/home/", BsHouse, "Accueil", true)}
           {nav("/mon-espace/", BsHouseHeart, "Mon espace", true)}
           {nav("/parametres/", BsGear, "Mon compte", true)}
 

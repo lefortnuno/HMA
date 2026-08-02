@@ -72,9 +72,17 @@ const CHAMPS_COMPTE = [
   ["photo", "Photo de profil"],
 ];
 
+// Proposition de règle du règlement intérieur.
+const CHAMPS_REGLEMENT = [
+  ["titre", "Titre"],
+  ["texte", "Explication"],
+  ["actif", "Publiée"],
+];
+
 function champsDe(entite) {
   if (entite === "PAIEMENT") return CHAMPS_PAIEMENT;
   if (entite === "COMPTE") return CHAMPS_COMPTE;
+  if (entite === "REGLEMENT") return CHAMPS_REGLEMENT;
   return CHAMPS_LOCATAIRE;
 }
 
@@ -246,10 +254,19 @@ export default function Notifications() {
                   const src = d.apres || d.avant || {};
                   const estPaiement = d.entite === "PAIEMENT";
                   const estCompte = d.entite === "COMPTE";
-                  const typeLabel = estPaiement ? "paiement" : estCompte ? "compte" : "locataire";
+                  const estRegle = d.entite === "REGLEMENT";
+                  const typeLabel = estPaiement
+                    ? "paiement"
+                    : estCompte
+                      ? "compte"
+                      : estRegle
+                        ? "règle"
+                        : "locataire";
                   const cible = estPaiement
                     ? `${src.locataireNom || "?"}${src.chambre ? ` (ch. ${src.chambre})` : ""} · ${MOIS_FULL[Number(src.mois) - 1] || ""} ${src.annee || ""}`
-                    : d.action === "AJOUT" ? d.apres?.nom : d.avant?.nom || d.apres?.nom || "";
+                    : estRegle
+                      ? src.titre || ""
+                      : d.action === "AJOUT" ? d.apres?.nom : d.avant?.nom || d.apres?.nom || "";
                   return (
                     <div className="col-12 col-lg-6" key={d.id}>
                       <div

@@ -3,6 +3,7 @@ const ctrl    = require("../controllers/loyer.controller");
 const user    = require("../middlewares/user.middleware");
 const admin   = require("../middlewares/admin.middleware");
 const locataire = require("../middlewares/locataire.middleware");
+const connecte = require("../middlewares/connecte.middleware");
 
 // ── Locataires ────────────────────────────────────────────────
 router.get("/locataires",        user.checkUtilisateur, ctrl.getAllLocataires);
@@ -43,6 +44,13 @@ router.get("/paiements/historique", user.checkUtilisateur, ctrl.getHistoriquePai
 router.get("/validations",        user.checkUtilisateur,  ctrl.getValidations);
 router.get("/validations/count",  user.checkUtilisateur,  ctrl.countValidations);
 router.post("/validations/:id/decision", admin.checkUtilisateur, ctrl.decideValidation);
+
+// ── Règlement intérieur ───────────────────────────────────────
+// Ouvert aux locataires : ils le lisent et peuvent proposer une règle.
+router.get("/reglements",        connecte.checkUtilisateur, ctrl.getReglements);
+router.post("/reglements",       connecte.checkUtilisateur, ctrl.createReglement);
+router.put("/reglements/:id",    connecte.checkUtilisateur, ctrl.updateReglement);
+router.delete("/reglements/:id", connecte.checkUtilisateur, ctrl.deleteReglement);
 
 // ── Espace personnel du locataire ─────────────────────────────
 router.get("/mon-espace", locataire.checkUtilisateur, ctrl.getMonEspace);

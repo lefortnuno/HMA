@@ -79,7 +79,8 @@ function App() {
           {/* Auth */}
           <Route index element={<LogOutProtection Cmp={LogIn} />} />
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
-          <Route path="home/" element={<LocataireProtection Cmp={Home} />} />
+          {/* L'accueil porte le règlement de la résidence : ouvert aux locataires. */}
+          <Route path="home/" element={<LocataireProtection Cmp={Home} autorise="COMMUN" />} />
           <Route path="about/" element={<SignInProtection Cmp={About} />} />
           <Route path="premier-acces/" element={<SignInProtection Cmp={PremierAcces} />} />
           <Route path="mon-espace/" element={<LocataireProtection Cmp={MonEspace} autorise="LOCATAIRE" />} />

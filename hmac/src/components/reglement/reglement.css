@@ -1,0 +1,257 @@
+/* ─── Règlement intérieur ─────────────────────────────────────
+   Bloc de tête de l'accueil : ce sont les règles de la maison, elles
+   doivent se lire d'un coup d'œil et se distinguer du reste de l'app. */
+
+.reglement-bloc {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 22px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #1e3a8a 100%);
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.18);
+}
+
+/* Trame discrète, pour éviter un aplat trop plat. */
+.reglement-bloc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+}
+
+.reglement-entete {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 22px;
+}
+
+.reglement-titre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.reglement-sceau {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  flex-shrink: 0;
+  background: rgba(96, 165, 250, 0.16);
+  border: 1px solid rgba(147, 197, 253, 0.3);
+  color: #93c5fd;
+  font-size: 1.25rem;
+}
+
+.reglement-titre h2 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.reglement-titre p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: rgba(191, 219, 254, 0.8);
+}
+
+.reglement-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reglement-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(147, 197, 253, 0.35);
+  background: rgba(255, 255, 255, 0.07);
+  color: #dbeafe;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reglement-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(191, 219, 254, 0.55);
+  color: #fff;
+}
+
+.reglement-btn.principal {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.reglement-btn.principal:hover {
+  background: #1d4ed8;
+}
+
+/* ── Grille des règles ── */
+.reglement-grille {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  padding: 0 22px 22px;
+}
+
+.regle-carte {
+  position: relative;
+  display: flex;
+  gap: 11px;
+  padding: 14px 14px 14px 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  backdrop-filter: blur(2px);
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.regle-carte:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(147, 197, 253, 0.45);
+}
+
+.regle-carte.inactive {
+  opacity: 0.45;
+}
+
+.regle-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  background: rgba(96, 165, 250, 0.14);
+  color: #93c5fd;
+}
+
+.regle-corps {
+  min-width: 0;
+  flex: 1;
+}
+
+.regle-titre {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.regle-num {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+
+.regle-texte {
+  font-size: 0.775rem;
+  line-height: 1.5;
+  color: rgba(226, 232, 240, 0.82);
+  margin: 0;
+}
+
+.regle-badge-inactif {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: rgba(248, 113, 113, 0.18);
+  color: #fca5a5;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+/* Boutons d'édition, discrets tant qu'on ne survole pas la carte. */
+.regle-outils {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.regle-carte:hover .regle-outils,
+.regle-outils:focus-within {
+  opacity: 1;
+}
+
+.regle-outil {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: none;
+  background: rgba(15, 23, 42, 0.55);
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.13s ease;
+}
+
+.regle-outil:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.regle-outil.danger:hover {
+  background: #dc2626;
+}
+
+.reglement-vide {
+  padding: 0 22px 22px;
+  color: rgba(203, 213, 225, 0.75);
+  font-size: 0.82rem;
+}
+
+.reglement-pied {
+  position: relative;
+  padding: 10px 22px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.25);
+  font-size: 0.72rem;
+  color: rgba(191, 219, 254, 0.65);
+}
+
+/* Repli : sur mobile la liste complète prend trop de place. */
+.reglement-grille.repliee .regle-carte:nth-child(n + 4) {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .reglement-entete { padding: 14px 16px; }
+  .reglement-grille { padding: 0 16px 16px; grid-template-columns: 1fr; }
+  .reglement-pied { padding: 10px 16px; }
+  .regle-outils { opacity: 1; }
+}

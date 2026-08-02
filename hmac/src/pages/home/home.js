@@ -8,6 +8,7 @@ import {
   BsBuilding, BsGraphUp, BsStarFill, BsImages,
   BsPeopleFill, BsClipboardData, BsCurrencyExchange, BsFileEarmarkText,
 } from "react-icons/bs";
+import Reglement from "../../components/reglement/reglement";
 import "./home.css";
 
 /* ─── Pixel rain canvas ────────────────────────────────────── */
@@ -164,6 +165,7 @@ const MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Aoû
 /* ─── Page ─────────────────────────────────────────────────── */
 export default function Home() {
   const u_info = GetUserData();
+  const estLocataire = String(localStorage.getItem("karazana")) === "2";
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -191,6 +193,9 @@ export default function Home() {
               <PixelRain />
             </div>
 
+            {/* Règlement de la résidence — visible de tous, locataires compris */}
+            <Reglement />
+
             {/* Welcome */}
             <div className="home-welcome-row">
               <div>
@@ -202,7 +207,9 @@ export default function Home() {
               <div className="home-clock">{timeStr}</div>
             </div>
 
-            {/* Module shortcuts */}
+            {/* Raccourcis vers les modules — sans objet pour un locataire,
+                qui n a acces qu a son espace personnel. */}
+            {!estLocataire && (
             <div className="home-modules-grid">
               {MODULES.map(({ to, Icon, label, color, bg, desc }) => (
                 <Link
@@ -219,6 +226,7 @@ export default function Home() {
                 </Link>
               ))}
             </div>
+            )}
 
           </main>
         </div>

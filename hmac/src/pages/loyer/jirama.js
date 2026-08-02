@@ -12,8 +12,11 @@ import {
   BsExclamationTriangleFill,
   BsWhatsapp,
   BsMessenger,
-  BsCheckCircleFill,
-  BsCashCoin,
+  BsFileEarmarkText,
+  BsBuilding,
+  BsPeople,
+  BsGraphUp,
+  BsGraphDown,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import { SkLoyerRows } from "../../components/skeleton/skeleton";
@@ -174,7 +177,7 @@ function AlerteJirama({ locataires, getCell, factureDe, annee }) {
             <div className="col-12 col-md-6 col-xl-4" key={loc.id}>
               <div className="rounded-3 p-2 h-100 d-flex align-items-center gap-2"
                 style={{ background: "#fff", border: "1px solid #fde68a" }}>
-                <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>{loc.chambre}</span>
+                <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>{loc.chambre}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="fw-semibold text-truncate" style={{ fontSize: "0.83rem" }}>
                     {loc.nom} {loc.prenom}
@@ -329,6 +332,12 @@ export default function TableauJirama() {
     return locataires.reduce((s, loc) => s + factureDe(loc.id, mois), 0);
   }
 
+  function totalReleve(locId) {
+    let t = 0;
+    for (let m = 1; m <= 12; m++) t += factureDe(locId, m);
+    return t;
+  }
+
   function totalAnnuel(locId) {
     let t = 0;
     for (let m = 1; m <= 12; m++) {
@@ -437,11 +446,14 @@ export default function TableauJirama() {
         <div className="row g-0">
           <Sidebar />
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+            {/* Page header — même structure que le Tableau Loyer */}
             <div className="page-header">
               <div>
-                <h1 className="page-title"><BsLightningCharge /> Tableau JIRAMA</h1>
+                <h1 className="page-title">
+                  <BsLightningCharge /> Gestion du JIRAMA
+                </h1>
                 <p className="text-muted small mb-0">
-                  Règlement de l'eau et de l'électricité, locataire par locataire
+                  {current.nom} · eau &amp; électricité — {annee}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -452,41 +464,70 @@ export default function TableauJirama() {
                   value={annee}
                   onChange={(e) => setAnnee(+e.target.value)}
                 >
-                  {ANNEES.map((a) => <option key={a} value={a}>{a}</option>)}
+                  {ANNEES.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
                 </select>
+                <Link
+                  to="/loyer/factures/"
+                  className="btn btn-sm btn-primary d-flex align-items-center gap-1"
+                >
+                  <BsFileEarmarkText /> Relevés
+                </Link>
+                <Link
+                  to="/loyer/"
+                  className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                >
+                  <BsBuilding /> Loyers
+                </Link>
               </div>
             </div>
 
-            {/* Rapprochement : ce que JIRAMA facture / ce que les locataires règlent */}
+            {/* Stat cards */}
             <div className="row g-3 mb-4">
-              <div className="col-6 col-lg-4">
+              <div className="col-6 col-lg-3">
                 <div className="stat-card">
-                  <div className="stat-icon amber"><BsLightningCharge /></div>
+                  <div className="stat-icon blue">
+                    <BsPeople />
+                  </div>
                   <div className="stat-content">
-                    <h3>{(stats.releve / 1000).toFixed(0)}k</h3>
-                    <p>Relevé sur {annee} (Ar)</p>
+                    <h3>{locataires.length}</h3>
+                    <p>Locataires actifs</p>
                   </div>
                 </div>
               </div>
-              <div className="col-6 col-lg-4">
+              <div className="col-6 col-lg-3">
                 <div className="stat-card">
-                  <div className="stat-icon green"><BsCheckCircleFill /></div>
+                  <div className="stat-icon amber">
+                    <BsLightningCharge />
+                  </div>
+                  <div className="stat-content">
+                    <h3>{(stats.releve / 1000).toFixed(0)}k</h3>
+                    <p>Relevé (Ar)</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6 col-lg-3">
+                <div className="stat-card">
+                  <div className="stat-icon green">
+                    <BsGraphUp />
+                  </div>
                   <div className="stat-content">
                     <h3>{(stats.encaisse / 1000).toFixed(0)}k</h3>
                     <p>Encaissé (Ar)</p>
                   </div>
                 </div>
               </div>
-              <div className="col-12 col-lg-4">
+              <div className="col-6 col-lg-3">
                 <div className="stat-card">
-                  <div className={`stat-icon ${stats.reste > 0 ? "red" : "green"}`}>
-                    {stats.reste > 0 ? <BsExclamationTriangleFill /> : <BsCheckCircleFill />}
+                  <div className="stat-icon red">
+                    <BsGraphDown />
                   </div>
                   <div className="stat-content">
-                    <h3 className={stats.reste > 0 ? "text-danger" : "text-success"}>
-                      {(stats.reste / 1000).toFixed(0)}k
-                    </h3>
-                    <p>Reste à recouvrer (Ar)</p>
+                    <h3>{(stats.reste / 1000).toFixed(0)}k</h3>
+                    <p>Reste dû (Ar)</p>
                   </div>
                 </div>
               </div>
@@ -501,37 +542,47 @@ export default function TableauJirama() {
               />
             )}
 
-            <div className="card-pro p-0">
-              <div className="px-3 py-3 d-flex justify-content-between align-items-start flex-wrap gap-2 border-bottom">
+            <div className="card-pro p-0 mb-4">
+              <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                  <h6 className="fw-bold mb-1">
-                    {current.nom} — {annee}
-                  </h6>
+                  <h6 className="mb-0 fw-bold">Tableau JIRAMA — {annee}</h6>
                   <div className="legende mt-1">
-                    <span className="legende-item"><span className="cell-paye">12k</span> Réglé</span>
-                    <span className="legende-item"><span className="cell-partiel">12k</span> Partiel</span>
+                    <span className="legende-item">
+                      <span className="cell-paye">12k</span> Réglé
+                    </span>
+                    <span className="legende-item">
+                      <span className="cell-impaye">12k</span> Dû, non réglé
+                    </span>
+                    <span className="legende-item">
+                      <span className="cell-partiel">12k</span> Partiel
+                    </span>
                     <span className="legende-item">
                       <span className="cell-doute"><span className="pastille-doute">!</span>12k</span> Doute
                     </span>
-                    <span className="legende-item"><span className="cell-impaye">12k</span> Dû, non réglé</span>
+                    <span className="legende-item">
+                      <span className="badge-rdc">1</span> RDC
+                    </span>
+                    <span className="legende-item">
+                      <span className="badge-1er">I</span> 1er étage
+                    </span>
                   </div>
                 </div>
                 <div className="d-flex gap-2">
-                  <Link to="/loyer/factures/" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
-                    <BsCashCoin /> Saisir les relevés
-                  </Link>
-                  <button className="btn btn-outline-success btn-sm d-flex align-items-center gap-1" onClick={exportExcel}>
+                  <button
+                    className="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
+                    onClick={exportExcel}
+                  >
                     <BsFileEarmarkExcel /> Excel
                   </button>
                 </div>
               </div>
 
-              <div className="tableau-scroll" ref={tableauRef}>
-                <table className="table table-loyer mb-0">
+              <div className="tableau-loyer" ref={tableauRef}>
+                <table className="table table-bordered mb-0">
                   <thead>
                     <tr>
                       <th>N°</th>
-                      <th>Locataire</th>
+                      <th style={{ width: "75px", maxWidth: "75px" }}>Locataire</th>
                       {MOIS.map((m, i) => (
                         <th
                           key={m}
@@ -546,7 +597,7 @@ export default function TableauJirama() {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <SkLoyerRows rows={8} />
+                      <SkLoyerRows cols={15} />
                     ) : locataires.length === 0 ? (
                       <tr>
                         <td colSpan={15} className="text-center text-muted py-4" style={{ fontSize: "0.85rem" }}>
@@ -557,7 +608,7 @@ export default function TableauJirama() {
                       locataires.map((loc) => (
                         <tr key={loc.id}>
                           <td>
-                            <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
+                            <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
                               {loc.chambre}
                             </span>
                           </td>
@@ -576,7 +627,9 @@ export default function TableauJirama() {
                             >
                               {loc.nom} {loc.prenom}
                             </div>
-                            <small className="text-muted">consommation</small>
+                            <small className="text-muted">
+                              {(totalReleve(loc.id) / 1000).toFixed(0)}k relevés
+                            </small>
                           </td>
                           {MOIS.map((_, mi) => (
                             <td key={mi} className={mi + 1 === moisCourant ? "td-mois-courant" : ""}>
