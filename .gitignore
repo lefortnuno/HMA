@@ -24,3 +24,4 @@ hmas/backups/
 
 # fichiers de relance (donnees personnelles locataires) - ne pas publier
 relances_*.xlsx
+relances_messages.html
