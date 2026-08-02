@@ -51,6 +51,7 @@ export default function User() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
+  const [filtreRole, setFiltreRole] = useState("TOUS"); // "TOUS" | "0" | "1" | "2"
   const [acces, setAcces] = useState(null);      // { idPS, nom, code, tel }
   const [envoiEnCours, setEnvoiEnCours] = useState(null);
 
@@ -91,9 +92,11 @@ export default function User() {
       .finally(() => { if (!silent) setLoading(false); });
   }
 
-  const filtered = users.filter(u =>
-    !search || `${u.nom} ${u.prenom}`.toLowerCase().includes(search.toLowerCase())
-  );
+  // Les cartes de statistiques servent aussi de filtre : "TOUS" ou un role.
+  const filtered = users.filter(u => {
+    if (filtreRole !== "TOUS" && String(u.karazana) !== String(filtreRole)) return false;
+    return !search || `${u.nom} ${u.prenom}`.toLowerCase().includes(search.toLowerCase());
+  });
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const page = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
   // Les locataires (karazana 2) etaient comptes comme de simples utilisateurs.
@@ -134,44 +137,63 @@ export default function User() {
             </div>
 
             {/* Stat cards */}
+            {/* Chaque carte filtre la liste sur son rôle ; un second clic
+                (ou "Total comptes") revient à l'affichage complet. */}
             <div className="row g-3 mb-4">
-              <div className="col-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="stat-icon blue"><BsPeopleFill /></div>
-                  <div className="stat-content">
-                    <h3>{users.length}</h3>
-                    <p>Total comptes</p>
+              {[
+                { cle: "TOUS", n: users.length,      libelle: "Total comptes", icone: <BsPeopleFill />, couleur: "blue",   accent: "#2563eb" },
+                { cle: "1",    n: totalAdmins,       libelle: `Administrateur${totalAdmins > 1 ? "s" : ""}`,  icone: <BsShieldFill />, couleur: "purple", accent: "#7c3aed" },
+                { cle: "0",    n: totalUsers,        libelle: `Utilisateur${totalUsers > 1 ? "s" : ""}`,      icone: <BsPersonFill />, couleur: "slate",  accent: "#475569" },
+                { cle: "2",    n: totalLocataires,   libelle: `Locataire${totalLocataires > 1 ? "s" : ""}`,   icone: <BsHouseHeart />, couleur: "green",  accent: "#16a34a" },
+              ].map(({ cle, n, libelle, icone, couleur, accent }) => {
+                const actif = filtreRole === cle;
+                return (
+                  <div className="col-6 col-lg-3" key={cle}>
+                    <div
+                      className="stat-card"
+                      role="button"
+                      tabIndex={0}
+                      title={cle === "TOUS" ? "Afficher tous les comptes" : `N'afficher que : ${libelle}`}
+                      onClick={() => { setFiltreRole(actif ? "TOUS" : cle); setCurrentPage(1); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setFiltreRole(actif ? "TOUS" : cle);
+                          setCurrentPage(1);
+                        }
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        border: `2px solid ${actif ? accent : "transparent"}`,
+                        boxShadow: actif ? `0 4px 14px ${accent}33` : undefined,
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <div className={`stat-icon ${couleur}`}>{icone}</div>
+                      <div className="stat-content">
+                        <h3>{n}</h3>
+                        <p>{libelle}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="col-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="stat-icon purple"><BsShieldFill /></div>
-                  <div className="stat-content">
-                    <h3>{totalAdmins}</h3>
-                    <p>Administrateur{totalAdmins > 1 ? "s" : ""}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="stat-icon slate"><BsPersonFill /></div>
-                  <div className="stat-content">
-                    <h3>{totalUsers}</h3>
-                    <p>Utilisateur{totalUsers > 1 ? "s" : ""}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="stat-icon green"><BsHouseHeart /></div>
-                  <div className="stat-content">
-                    <h3>{totalLocataires}</h3>
-                    <p>Locataire{totalLocataires > 1 ? "s" : ""}</p>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
+
+            {filtreRole !== "TOUS" && (
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+                  {filtered.length} compte{filtered.length > 1 ? "s" : ""} affiché{filtered.length > 1 ? "s" : ""}
+                </span>
+                <button
+                  className="btn btn-sm btn-outline-secondary py-0 px-2"
+                  style={{ fontSize: "0.75rem" }}
+                  onClick={() => { setFiltreRole("TOUS"); setCurrentPage(1); }}
+                >
+                  ✕ Retirer le filtre
+                </button>
+              </div>
+            )}
 
             {/* Table */}
             <div className="table-pro">
@@ -193,7 +215,11 @@ export default function User() {
                     ) : page.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center py-4 text-muted" style={{ fontSize: "0.85rem" }}>
-                          {search ? "Aucun résultat pour cette recherche" : "Aucun utilisateur"}
+                          {search
+                            ? "Aucun résultat pour cette recherche"
+                            : filtreRole !== "TOUS"
+                            ? "Aucun compte de ce type"
+                            : "Aucun utilisateur"}
                         </td>
                       </tr>
                     ) : page.map(u => (
