@@ -11,7 +11,7 @@ import {
 import Reglement from "../../components/reglement/reglement";
 import "./home.css";
 
-import PaysageBanner from "./paysage";
+import BanniereAccueil from "./banniere";
 
 /* ─── Module shortcuts ─────────────────────────────────────── */
 const MODULES = [
@@ -56,7 +56,7 @@ export default function Home() {
 
             {/* Pixel animation banner */}
             <div className="pixel-banner-wrap">
-              <PaysageBanner />
+              <BanniereAccueil />
             </div>
 
             {/* Welcome */}

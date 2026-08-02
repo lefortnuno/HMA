@@ -70,10 +70,10 @@ const REGLES = [
     ordre: 5,
   },
   {
-    titre: "Calme de 22 h à 6 h",
+    titre: "Tappage Interdit",
     texte:
-      "Musique, travaux et réunions bruyantes s'arrêtent à 22 h. " +
-      "Chacun a droit au repos, en particulier ceux qui travaillent tôt.",
+      "Musique, travaux et réunions bruyantes à prevenir au moins 12h à l'avance. " +
+      "Chacun a droit au repos, les etudiant comme les travailleur.",
     icone: "calme",
     ordre: 6,
   },
