@@ -251,6 +251,15 @@ export default function LoginForm() {
   //#endregion
 
   //#region // USE EFFECT
+  // Message affiche quand l'utilisateur a ete deconnecte pour session expiree.
+  useEffect(() => {
+    const msg = sessionStorage.getItem("sessionExpiree");
+    if (msg) {
+      sessionStorage.removeItem("sessionExpiree");
+      toast.info(msg);
+    }
+  }, []);
+
   useEffect(() => {
     if (incorrect) {
       setInputs((prevState) => ({
