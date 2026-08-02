@@ -16,11 +16,11 @@ import ApartSelect, {
   getSelectedBienId,
   setSelectedBienId,
 } from "../../components/appart/apart.select";
+import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 
 const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const ANNEES = [2025, 2026, 2027];
 
 function formatDateTime(str) {
   if (!str) return "—";
@@ -285,14 +285,7 @@ export default function Historique() {
               <div className="d-flex gap-2 align-items-center flex-wrap">
                 <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
                 {vue === "PAIEMENTS" && (
-                  <select
-                    className="form-select form-select-sm"
-                    style={{ width: "auto" }}
-                    value={annee}
-                    onChange={(e) => setAnnee(+e.target.value)}
-                  >
-                    {ANNEES.map((a) => <option key={a} value={a}>{a}</option>)}
-                  </select>
+                  <AnneePicker value={annee} onChange={setAnnee} />
                 )}
               </div>
             </div>

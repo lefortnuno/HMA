@@ -17,12 +17,11 @@ import {
   estAvantEntree,
   libelleEcheance,
 } from "../../config/echeance";
+import { AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const ANNEES = [2025, 2026, 2027];
-
+const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 /**
  * Espace personnel : le locataire ne voit QUE sa fiche et ses paiements.
  * Aucune donnée des autres locataires n'est chargée ici.
@@ -201,14 +200,7 @@ export default function MonEspace() {
                 <h1 className="page-title"><BsHouseHeart /> Tableau de Loyer</h1>
                 <p className="text-muted small mb-0">Le suivi de vos loyers, mois par mois</p>
               </div>
-              <select
-                className="form-select form-select-sm"
-                style={{ width: "auto" }}
-                value={annee}
-                onChange={(e) => setAnnee(+e.target.value)}
-              >
-                {ANNEES.map((a) => <option key={a} value={a}>{a}</option>)}
-              </select>
+              <AnneePicker value={annee} onChange={setAnnee} />
             </div>
 
             {loading ? (

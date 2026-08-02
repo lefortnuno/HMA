@@ -231,3 +231,66 @@
   color: #94a3b8;
   line-height: 1.3;
 }
+
+/* ─── Sélecteurs de mois et d'année ───────────────────────────
+   Même panneau que le jour de règlement, mais sur 3 colonnes : les
+   libellés « Jan », « 2026 » sont trop larges pour une grille de 7. */
+.periode-panneau {
+  width: 208px;
+}
+
+.periode-grille {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.periode-case {
+  padding: 7px 4px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.periode-case:hover {
+  background: #e0f2fe;
+  color: #1d4ed8;
+}
+
+.periode-case.actif {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+/* En-tête de la grille des années : flèches de part et d'autre. */
+.periode-nav {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.periode-fleche {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.periode-fleche:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+}

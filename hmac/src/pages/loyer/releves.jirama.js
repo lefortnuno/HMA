@@ -4,9 +4,9 @@ import GetUserData from "../../contexts/api/udata";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { BsCheckCircle, BsExclamationTriangle, BsLightningCharge } from "react-icons/bs";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const ANNEES = [2023, 2024, 2025, 2026, 2027];
 
 /**
  * Saisie de la facture JIRAMA d'un mois : prix unitaire, montant reçu de la
@@ -157,17 +157,11 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         <div className="row g-3">
           <div className="col-sm-3">
             <label className="form-label">Mois</label>
-            <select className="form-select" value={mois} onChange={(e) => setMois(+e.target.value)}>
-              {MOIS_LABELS.slice(1).map((m, i) => (
-                <option key={i + 1} value={i + 1}>{m}</option>
-              ))}
-            </select>
+            <div><MoisPicker value={mois} onChange={setMois} /></div>
           </div>
           <div className="col-sm-3">
             <label className="form-label">Année</label>
-            <select className="form-select" value={annee} onChange={(e) => setAnnee(+e.target.value)}>
-              {ANNEES.map((a) => <option key={a} value={a}>{a}</option>)}
-            </select>
+            <div><AnneePicker value={annee} onChange={setAnnee} /></div>
           </div>
           <div className="col-sm-3">
             <label className="form-label">Prix unitaire (Ar/kWh)</label>

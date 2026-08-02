@@ -13,6 +13,7 @@ import ApartSelect, {
   setSelectedBienId,
   KINYA,
 } from "../../components/appart/apart.select";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -137,8 +138,6 @@ export default function Factures() {
       .finally(() => setSaving(false));
   }
 
-  const annees = [2023, 2024, 2025, 2026, 2027];
-
   return (
     <Template>
       <Header />
@@ -177,17 +176,11 @@ export default function Factures() {
               <div className="row g-3">
                 <div className="col-sm-3">
                   <label className="form-label">Mois</label>
-                  <select className="form-select" value={mois} onChange={(e) => setMois(+e.target.value)}>
-                    {MOIS_LABELS.slice(1).map((m, i) => (
-                      <option key={i + 1} value={i + 1}>{m}</option>
-                    ))}
-                  </select>
+                  <div><MoisPicker value={mois} onChange={setMois} /></div>
                 </div>
                 <div className="col-sm-3">
                   <label className="form-label">Année</label>
-                  <select className="form-select" value={annee} onChange={(e) => setAnnee(+e.target.value)}>
-                    {annees.map((a) => <option key={a} value={a}>{a}</option>)}
-                  </select>
+                  <div><AnneePicker value={annee} onChange={setAnnee} /></div>
                 </div>
                 <div className="col-sm-3">
                   <label className="form-label">Prix unitaire (Ar/kWh)</label>

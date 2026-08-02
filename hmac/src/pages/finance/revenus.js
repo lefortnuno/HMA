@@ -10,12 +10,11 @@ import {
   BsChevronLeft, BsChevronRight, BsCalendar3, BsSearch,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 import "./finance.css";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const ANNEES      = [2023, 2024, 2025, 2026, 2027];
-
+const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 function getWeekBounds(date) {
   const d   = new Date(date);
   const day = d.getDay();
@@ -211,16 +210,8 @@ export default function FinanceRevenus() {
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
-                <select className="form-select form-select-sm" style={{ width: "auto" }}
-                  value={mois} onChange={e => jumpTo(+e.target.value, annee)}>
-                  {MOIS_LABELS.slice(1).map((m, i) => (
-                    <option key={i + 1} value={i + 1}>{m}</option>
-                  ))}
-                </select>
-                <select className="form-select form-select-sm" style={{ width: "auto" }}
-                  value={annee} onChange={e => jumpTo(mois, +e.target.value)}>
-                  {ANNEES.map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
+                <MoisPicker value={mois} onChange={(m) => jumpTo(m, annee)} />
+                <AnneePicker value={annee} onChange={(a) => jumpTo(mois, a)} />
                 <button className="btn btn-success btn-sm d-flex align-items-center gap-1" onClick={openAddRev}>
                   <BsPlus size={16} /> Revenu
                 </button>

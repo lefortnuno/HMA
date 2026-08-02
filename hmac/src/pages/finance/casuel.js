@@ -10,13 +10,12 @@ import {
   BsChevronLeft, BsChevronRight, BsCalendar3, BsSearch,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 import "./finance.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_FR     = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const ANNEES      = [2023, 2024, 2025, 2026, 2027];
-
+const MOIS_FR     = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 function fmtDate(dt) {
   if (!dt) return "—";
   const s = String(dt).replace(" ", "T");
@@ -216,16 +215,8 @@ export default function FinanceCasuel() {
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
-                <select className="form-select form-select-sm" style={{ width: "auto" }}
-                  value={moisC} onChange={e => jumpTo(+e.target.value, anneeC)}>
-                  {MOIS_LABELS.slice(1).map((m, i) => (
-                    <option key={i + 1} value={i + 1}>{m}</option>
-                  ))}
-                </select>
-                <select className="form-select form-select-sm" style={{ width: "auto" }}
-                  value={anneeC} onChange={e => jumpTo(moisC, +e.target.value)}>
-                  {ANNEES.map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
+                <MoisPicker value={moisC} onChange={(m) => jumpTo(m, anneeC)} />
+                <AnneePicker value={anneeC} onChange={(a) => jumpTo(moisC, a)} />
                 <button
                   className="btn btn-warning btn-sm d-flex align-items-center gap-1 text-white"
                   onClick={openCasModal}

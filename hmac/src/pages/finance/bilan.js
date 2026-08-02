@@ -24,6 +24,7 @@ import {
   BsStarFill,
 } from "react-icons/bs";
 import { SkBenefices } from "../../components/skeleton/skeleton";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 import "./finance.css";
 
@@ -41,9 +42,7 @@ const MOIS_LABELS = [
   "Oct",
   "Nov",
   "Déc",
-];
-const ANNEES = [2023, 2024, 2025, 2026, 2027];
-
+];
 function fmtK(v) {
   return v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v;
 }
@@ -134,30 +133,8 @@ export default function FinanceBilan() {
                 </p>
               </div>
               <div className="d-flex gap-2">
-                <select
-                  className="form-select form-select-sm"
-                  style={{ width: "auto" }}
-                  value={mois}
-                  onChange={(e) => setMois(+e.target.value)}
-                >
-                  {MOIS_LABELS.slice(1).map((m, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="form-select form-select-sm"
-                  style={{ width: "auto" }}
-                  value={annee}
-                  onChange={(e) => setAnnee(+e.target.value)}
-                >
-                  {ANNEES.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
+                <MoisPicker value={mois} onChange={setMois} />
+                <AnneePicker value={annee} onChange={setAnnee} />
               </div>
             </div>
 

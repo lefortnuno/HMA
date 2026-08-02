@@ -39,6 +39,7 @@ import {
   libelleEcheance,
   libelleJour,
 } from "../../config/echeance";
+import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 
 const MOIS = [
@@ -54,10 +55,7 @@ const MOIS = [
   "Oct",
   "Nov",
   "Déc",
-];
-
-const ANNEES = [2023, 2024, 2025, 2026, 2027];
-
+];
 const MOIS_FULL = [
   "Janvier",
   "Février",
@@ -685,18 +683,7 @@ export default function Loyer() {
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
                 <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
-                <select
-                  className="form-select form-select-sm"
-                  style={{ width: "auto" }}
-                  value={annee}
-                  onChange={(e) => setAnnee(+e.target.value)}
-                >
-                  {ANNEES.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
+                <AnneePicker value={annee} onChange={setAnnee} />
                 <Link
                   to="/loyer/locataires/"
                   className="btn btn-sm btn-primary d-flex align-items-center gap-1"

@@ -30,11 +30,11 @@ import ApartSelect, {
 import { copierEtOuvrirMessenger } from "../../config/contact";
 import SaisieReleves from "./releves.jirama";
 import { estAvantEntree } from "../../config/echeance";
+import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const ANNEES = [2023, 2024, 2025, 2026, 2027];
 const PAR_PAGE = 9;
 
 function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
@@ -490,18 +490,7 @@ export default function TableauJirama() {
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
                 <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
-                <select
-                  className="form-select form-select-sm"
-                  style={{ width: "auto" }}
-                  value={annee}
-                  onChange={(e) => setAnnee(+e.target.value)}
-                >
-                  {ANNEES.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
+                <AnneePicker value={annee} onChange={setAnnee} />
                 <Link
                   to="/loyer/"
                   className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"

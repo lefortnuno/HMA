@@ -12,6 +12,7 @@ import ApartSelect, {
   setSelectedBienId,
   KINYA,
 } from "../../components/appart/apart.select";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -86,9 +87,7 @@ export default function Depenses() {
       .catch(() => toast.error("Erreur de suppression"));
   }
 
-  const totalMois = depenses.reduce((s, d) => s + (+d.montant || 0), 0);
-  const annees = [2023, 2024, 2025, 2026, 2027];
-
+  const totalMois = depenses.reduce((s, d) => s + (+d.montant || 0), 0);
   return (
     <Template>
       <Header />
@@ -108,12 +107,8 @@ export default function Depenses() {
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
                 <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
-                <select className="form-select form-select-sm" style={{ width: "auto" }} value={mois} onChange={(e) => setMois(+e.target.value)}>
-                  {MOIS_LABELS.slice(1).map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-                </select>
-                <select className="form-select form-select-sm" style={{ width: "auto" }} value={annee} onChange={(e) => setAnnee(+e.target.value)}>
-                  {annees.map((a) => <option key={a} value={a}>{a}</option>)}
-                </select>
+                <MoisPicker value={mois} onChange={setMois} />
+                <AnneePicker value={annee} onChange={setAnnee} />
                 <button
                   className="btn btn-primary btn-sm d-flex align-items-center gap-1"
                   onClick={() => { setForm(initForm(now)); setShowModal(true); }}

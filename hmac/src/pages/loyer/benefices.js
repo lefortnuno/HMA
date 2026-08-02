@@ -24,6 +24,7 @@ import ApartSelect, {
   setSelectedBienId,
   KINYA,
 } from "../../components/appart/apart.select";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -83,9 +84,7 @@ export default function Benefices() {
   const jirama = data?.totalJIRAMA || 0;
   const depenses = data?.totalDepenses || 0;
   const recettes = loyers + jirama;
-  const benefice = recettes - depenses;
-  const annees = [2023, 2024, 2025, 2026, 2027];
-
+  const benefice = recettes - depenses;
   return (
     <Template>
       <Header />
@@ -105,12 +104,8 @@ export default function Benefices() {
               </div>
               <div className="d-flex gap-2 flex-wrap align-items-center">
                 <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
-                <select className="form-select form-select-sm" style={{ width: "auto" }} value={mois} onChange={(e) => setMois(+e.target.value)}>
-                  {MOIS_LABELS.slice(1).map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-                </select>
-                <select className="form-select form-select-sm" style={{ width: "auto" }} value={annee} onChange={(e) => setAnnee(+e.target.value)}>
-                  {annees.map((a) => <option key={a} value={a}>{a}</option>)}
-                </select>
+                <MoisPicker value={mois} onChange={setMois} />
+                <AnneePicker value={annee} onChange={setAnnee} />
               </div>
             </div>
 

@@ -8,11 +8,10 @@ import { toast } from "react-toastify";
 import { BsGraphDown, BsPlus, BsPencilSquare, BsFillTrashFill } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
+import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./finance.css";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const ANNEES = [2023, 2024, 2025, 2026, 2027];
-
+const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 export default function FinanceCharges() {
   const u_info = GetUserData();
   const now    = new Date();
@@ -76,12 +75,8 @@ export default function FinanceCharges() {
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
-                <select className="form-select form-select-sm" style={{ width: "auto" }} value={mois} onChange={e => setMois(+e.target.value)}>
-                  {MOIS_LABELS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-                </select>
-                <select className="form-select form-select-sm" style={{ width: "auto" }} value={annee} onChange={e => setAnnee(+e.target.value)}>
-                  {ANNEES.map(a => <option key={a} value={a}>{a}</option>)}
-                </select>
+                <MoisPicker value={mois} onChange={setMois} />
+                <AnneePicker value={annee} onChange={setAnnee} />
                 <button className="btn btn-primary btn-sm d-flex align-items-center gap-1" onClick={openAdd}>
                   <BsPlus size={16} /> Ajouter
                 </button>

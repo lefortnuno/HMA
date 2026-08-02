@@ -10,11 +10,11 @@ import {
   BsExclamationTriangleFill, BsCashCoin, BsHourglassSplit, BsSendCheck,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
+import { AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const ANNEES = [2025, 2026, 2027];
 
 /**
  * Factures d'eau et d'électricité du locataire.
@@ -180,14 +180,7 @@ export default function MesFactures() {
                 <h1 className="page-title"><BsLightningCharge /> Facture JIRAMA</h1>
                 <p className="text-muted small mb-0">Vos consommations d'eau et d'électricité</p>
               </div>
-              <select
-                className="form-select form-select-sm"
-                style={{ width: "auto" }}
-                value={annee}
-                onChange={(e) => setAnnee(+e.target.value)}
-              >
-                {ANNEES.map((a) => <option key={a} value={a}>{a}</option>)}
-              </select>
+              <AnneePicker value={annee} onChange={setAnnee} />
             </div>
 
             {loading ? (
