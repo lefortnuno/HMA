@@ -873,7 +873,12 @@ export default function Loyer() {
                             </small>
                           </td>
                           {MOIS.map((_, mi) => (
-                            <td key={mi}>{renderCell(loc, mi)}</td>
+                            <td
+                              key={mi}
+                              className={mi + 1 === moisCourant ? "td-mois-courant" : ""}
+                            >
+                              {renderCell(loc, mi)}
+                            </td>
                           ))}
                           <td>
                             <span

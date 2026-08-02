@@ -213,3 +213,16 @@
   background: #fff;
   transform: translateX(-50%);
 }
+
+/* ─── Colonne du mois courant ─────────────────────────────────
+   Teintée comme le survol des lignes : en descendant dans un long
+   tableau, on garde le repère du mois en cours. */
+.tableau-loyer tbody td.td-mois-courant {
+  background: #f0f9ff;
+  box-shadow: inset 1px 0 0 #bae6fd, inset -1px 0 0 #bae6fd;
+}
+
+/* Le survol de la ligne reste prioritaire sur la colonne. */
+.tableau-loyer tbody tr:hover td.td-mois-courant {
+  background: #e0f2fe;
+}
