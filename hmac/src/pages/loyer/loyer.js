@@ -325,7 +325,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                         toast.info("Rappel copié — collez-le dans la conversation");
                       }}
                     >
-                      <BsMessenger size={12} /> Messenger
+                      <BsMessenger size={12} /> Relancer
                     </button>
                   )}
                 </div>
