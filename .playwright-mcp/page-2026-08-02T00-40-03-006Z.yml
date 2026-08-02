@@ -1,0 +1,460 @@
+- generic [ref=f27e3]:
+  - generic [ref=f27e5]:
+    - banner:
+      - generic [ref=f27e6]:
+        - generic:
+          - generic:
+            - button [disabled]
+        - link "Facebook" [ref=f27e7] [cursor=pointer]:
+          - /url: /
+      - generic [ref=f27e16]:
+        - generic [ref=f27e17]:
+          - generic:
+            - generic:
+              - generic:
+                - button
+        - combobox "Rechercher sur Facebook" [ref=f27e20] [cursor=pointer]
+      - navigation "Facebook" [ref=f27e24]:
+        - list [ref=f27e25]:
+          - listitem [ref=f27e26]:
+            - link "Accueil" [ref=f27e29] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f27e33]:
+            - link "Reels" [ref=f27e36] [cursor=pointer]:
+              - /url: /reel/?s=tab
+          - listitem [ref=f27e41]:
+            - link "Marketplace" [ref=f27e44] [cursor=pointer]:
+              - /url: /marketplace/?ref=app_tab
+          - listitem [ref=f27e48]:
+            - link "Groupes" [ref=f27e51] [cursor=pointer]:
+              - /url: /groups/
+          - listitem [ref=f27e55]:
+            - link "Gaming" [ref=f27e58] [cursor=pointer]:
+              - /url: /gaming/play/?store_visit_source=gaming_tab
+      - navigation "Contrôles et paramètres du compte" [ref=f27e64]:
+        - button "Menu Facebook" [ref=f27e68] [cursor=pointer]
+        - button "Notifications" [ref=f27e75] [cursor=pointer]
+        - button "Votre profil" [ref=f27e80] [cursor=pointer]:
+          - img "Votre profil" [ref=f27e82]
+    - generic [ref=f27e96]:
+      - heading "Messenger" [level=1] [ref=f27e97]
+      - button "Passer au contenu principal" [ref=f27e98] [cursor=pointer]
+      - button "Passer aux messages" [ref=f27e99] [cursor=pointer]
+      - button "Ignorer et rédiger" [ref=f27e100] [cursor=pointer]
+      - generic [ref=f27e101]:
+        - navigation "Liste des discussions" [ref=f27e102]:
+          - generic [ref=f27e104]:
+            - generic [ref=f27e109]:
+              - heading "Discussions" [level=1] [ref=f27e114]
+              - generic [ref=f27e116]:
+                - button "Paramètres, aide et autres" [ref=f27e119] [cursor=pointer]
+                - link "Nouveau message" [ref=f27e124] [cursor=pointer]:
+                  - /url: /messages/new/
+            - combobox "Rechercher dans Messenger" [ref=f27e135]
+            - tablist [ref=f27e141]:
+              - tab "Tout" [selected] [ref=f27e142] [cursor=pointer]
+              - tab "Non lu" [ref=f27e145] [cursor=pointer]
+              - tab "Groupes" [ref=f27e148] [cursor=pointer]
+              - tab [ref=f27e219] [cursor=pointer]:
+                - generic [ref=f27e152]: Communautés
+              - button "Plus" [ref=f27e157] [cursor=pointer]
+            - tabpanel "Toutes les discussions" [ref=f27e161]:
+              - grid "Discussions" [ref=f27e164]:
+                - generic [ref=f27e167]:
+                  - row [ref=f27e355]:
+                    - gridcell [ref=f27e356]:
+                      - button [pressed] [ref=f27e357] [cursor=pointer]:
+                        - heading "Nouveau message à Judianne Mariano" [level=3] [ref=f27e358]
+                    - gridcell [ref=f27e240]:
+                      - button "Supprimer le brouillon de message" [ref=f27e241] [cursor=pointer]
+                  - generic [ref=f27e169]:
+                    - row [ref=f27e1590]:
+                      - gridcell [ref=f27e1591]:
+                        - 'link "Razafindratsiamoro Hangivory Chirley Canddis Vous: Salut Canddis 👋 Je m''appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l''entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j''espère que vous allez bien ! Je me permets de vous écrire car, en reprenant les registres de la chambre 3, je ne retrouve pas trace du règlement des loyers de juin et juillet 2026 (soit 300 000 Ar au total). Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ? Merci beaucoup pour votre retour, et bonne journée à vous 🙏 — Trofel il y a environ une minute" [ref=f27e1592] [cursor=pointer]':
+                          - /url: /messages/e2ee/t/2572878726508568/
+                          - generic [ref=f27e193]:
+                            - generic [ref=f27e194]: Razafindratsiamoro Hangivory Chirley Canddis
+                            - generic [ref=f27e247]:
+                              - generic [ref=f27e250]:
+                                - text: "Vous: Salut Canddis"
+                                - img "👋" [ref=f27e252]
+                                - text: Je m'appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l'entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j'espère que vous allez bien ! Je me permets de vous écrire car, en reprenant les registres de la chambre 3, je ne retrouve pas trace du règlement des loyers de juin et juillet 2026 (soit 300 000 Ar au total). Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ? Merci beaucoup pour votre retour, et bonne journée à vous
+                                - img "🙏" [ref=f27e254]
+                                - text: — Trofel
+                              - generic [ref=f27e255]: ·
+                              - generic "il y a environ une minute" [ref=f27e1593]: 1 min
+                      - gridcell [ref=f27e199]:
+                        - button "Autres options pour Razafindratsiamoro Hangivory Chirley Canddis" [ref=f27e202] [cursor=pointer]
+                    - row [ref=f27e1594]:
+                      - gridcell [ref=f27e1595]:
+                        - 'link "Trecy Safidiniaina Vous: Salut Trecy 👋 Je m''appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l''entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j''espère que vous allez bien ! Je me permets de vous écrire car, en reprenant les registres de la chambre 1, je ne retrouve pas trace du règlement du loyer de juillet 2026 (150 000 Ar). Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ? Merci beaucoup pour votre retour, et bonne journée à vous 🙏 — Trofel il y a 5 minutes" [ref=f27e1596] [cursor=pointer]':
+                          - /url: /messages/t/100057917358121/
+                          - generic [ref=f27e382]:
+                            - generic [ref=f27e383]: Trecy Safidiniaina
+                            - generic [ref=f27e386]:
+                              - generic [ref=f27e389]:
+                                - text: "Vous: Salut Trecy"
+                                - img "👋" [ref=f27e391]
+                                - text: Je m'appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l'entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j'espère que vous allez bien ! Je me permets de vous écrire car, en reprenant les registres de la chambre 1, je ne retrouve pas trace du règlement du loyer de juillet 2026 (150 000 Ar). Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ? Merci beaucoup pour votre retour, et bonne journée à vous
+                                - img "🙏" [ref=f27e393]
+                                - text: — Trofel
+                              - generic [ref=f27e394]: ·
+                              - generic "il y a 5 minutes" [ref=f27e1597]: 5 min
+                      - gridcell [ref=f27e404]:
+                        - button "Autres options pour Trecy Safidiniaina" [ref=f27e407] [cursor=pointer]
+                    - row [ref=f27e1585]:
+                      - gridcell [ref=f27e1586]:
+                        - 'link ".𝕼𝖚𝖊𝖊𝖓 ♥️ . ೃ࿐ Message non lu : 100000Ar 🥱 il y a environ une heure" [ref=f27e1587] [cursor=pointer]':
+                          - /url: /messages/e2ee/t/7290053064451075/
+                          - generic [ref=f27e421]:
+                            - generic [ref=f27e433]:
+                              - generic [ref=f27e435]:
+                                - text: .𝕼𝖚𝖊𝖊𝖓
+                                - img "♥️" [ref=f27e437]
+                                - text: . ೃ࿐
+                              - generic [ref=f27e439]:
+                                - generic [ref=f27e440]:
+                                  - generic [ref=f27e441]: "Message non lu :"
+                                  - generic [ref=f27e443]:
+                                    - text: 100000Ar
+                                    - img "🥱" [ref=f27e1589]
+                                - generic [ref=f27e444]: ·
+                                - generic "il y a environ une heure" [ref=f27e452]: 1 h
+                            - button [ref=f27e455]
+                      - gridcell [ref=f27e457]:
+                        - button "Autres options pour .𝕼𝖚𝖊𝖊𝖓♥️. ೃ࿐" [ref=f27e460] [cursor=pointer]
+                    - row [ref=f27e467]:
+                      - gridcell [ref=f27e468]:
+                        - 'link "Zonirina Rakotoson Vous: Mon ami ☀️ il y a 2 heures" [ref=f27e472] [cursor=pointer]':
+                          - /url: /messages/e2ee/t/1512699663420718/
+                          - generic [ref=f27e486]:
+                            - generic [ref=f27e487]: Zonirina Rakotoson
+                            - generic [ref=f27e490]:
+                              - generic [ref=f27e493]:
+                                - text: "Vous: Mon ami"
+                                - img "☀️" [ref=f27e495]
+                              - generic [ref=f27e496]: ·
+                              - generic "il y a 2 heures" [ref=f27e504]: 2 h
+                      - gridcell [ref=f27e506]:
+                        - button "Autres options pour Zonirina Rakotoson" [ref=f27e509] [cursor=pointer]
+                    - row [ref=f27e516]:
+                      - gridcell [ref=f27e517]:
+                        - link "Nadia Randrianasolo Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 5 heures" [ref=f27e521] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/9726842920680288/
+                          - generic [ref=f27e535]:
+                            - generic [ref=f27e536]: Nadia Randrianasolo
+                            - generic [ref=f27e539]:
+                              - generic [ref=f27e540]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e543]: ·
+                              - generic "il y a 5 heures" [ref=f27e551]: 5 h
+                      - gridcell [ref=f27e553]:
+                        - button "Autres options pour Nadia Randrianasolo" [ref=f27e556] [cursor=pointer]
+                    - row [ref=f27e563]:
+                      - gridcell [ref=f27e564]:
+                        - link "Samueline Fanirisoa Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 6 heures" [ref=f27e568] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/7835183913201876/
+                          - generic [ref=f27e582]:
+                            - generic [ref=f27e583]: Samueline Fanirisoa
+                            - generic [ref=f27e586]:
+                              - generic [ref=f27e587]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e590]: ·
+                              - generic "il y a 6 heures" [ref=f27e598]: 6 h
+                      - gridcell [ref=f27e600]:
+                        - button "Autres options pour Samueline Fanirisoa" [ref=f27e603] [cursor=pointer]
+                    - row [ref=f27e610]:
+                      - gridcell [ref=f27e611]:
+                        - link ".𝕭𝖔𝖓𝖍𝖊𝖚𝖗 ♥️ .༻꧂ Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 8 heures" [ref=f27e615] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/3140065072839664/
+                          - generic [ref=f27e629]:
+                            - generic [ref=f27e631]:
+                              - text: .𝕭𝖔𝖓𝖍𝖊𝖚𝖗
+                              - img "♥️" [ref=f27e633]
+                              - text: .༻꧂
+                            - generic [ref=f27e635]:
+                              - generic [ref=f27e636]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e639]: ·
+                              - generic "il y a 8 heures" [ref=f27e647]: 8 h
+                      - gridcell [ref=f27e649]:
+                        - button "Autres options pour .𝕭𝖔𝖓𝖍𝖊𝖚𝖗 ♥️.༻꧂" [ref=f27e652] [cursor=pointer]
+                    - row [ref=f27e659]:
+                      - gridcell [ref=f27e660]:
+                        - link "Tony Braven Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 10 heures" [ref=f27e664] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/27845830585061704/
+                          - generic [ref=f27e678]:
+                            - generic [ref=f27e679]: Tony Braven
+                            - generic [ref=f27e682]:
+                              - generic [ref=f27e683]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e686]: ·
+                              - generic "il y a 10 heures" [ref=f27e694]: 10 h
+                      - gridcell [ref=f27e696]:
+                        - button "Autres options pour Tony Braven" [ref=f27e699] [cursor=pointer]
+                    - row [ref=f27e706]:
+                      - gridcell [ref=f27e707]:
+                        - link "Fanou Renantsoa Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 17 heures" [ref=f27e711] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/7535340139920032/
+                          - generic [ref=f27e725]:
+                            - generic [ref=f27e726]: Fanou Renantsoa
+                            - generic [ref=f27e729]:
+                              - generic [ref=f27e730]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e733]: ·
+                              - generic "il y a 17 heures" [ref=f27e741]: 17 h
+                      - gridcell [ref=f27e743]:
+                        - button "Autres options pour Fanou Renantsoa" [ref=f27e746] [cursor=pointer]
+                    - row [ref=f27e753]:
+                      - gridcell [ref=f27e754]:
+                        - 'link "Discussion de groupe : Tsingy Rabat Salé Temara 🇲🇬💫" [ref=f27e758] [cursor=pointer]':
+                          - /url: /messages/t/1533689146714448/
+                          - generic [ref=f27e772]:
+                            - generic [ref=f27e774]:
+                              - text: Tsingy Rabat Salé Temara
+                              - img "🇲🇬" [ref=f27e776]
+                              - img "💫" [ref=f27e778]
+                            - generic [ref=f27e780]:
+                              - generic [ref=f27e781]: Zo a supprimé un message
+                              - generic [ref=f27e784]: ·
+                              - generic "il y a un jour" [ref=f27e792]: 1 j
+                      - gridcell [ref=f27e797]:
+                        - button "Autres options pour Tsingy Rabat Salé Temara 🇲🇬💫" [ref=f27e800] [cursor=pointer]
+                    - row [ref=f27e807]:
+                      - gridcell [ref=f27e808]:
+                        - link "Dürnãud Şmãrt Zafivãvaly Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a un jour" [ref=f27e812] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/9717098711751476/
+                          - generic [ref=f27e826]:
+                            - generic [ref=f27e827]: Dürnãud Şmãrt Zafivãvaly
+                            - generic [ref=f27e830]:
+                              - generic [ref=f27e831]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e834]: ·
+                              - generic "il y a un jour" [ref=f27e842]: 1 j
+                      - gridcell [ref=f27e844]:
+                        - button "Autres options pour Dürnãud Şmãrt Zafivãvaly" [ref=f27e847] [cursor=pointer]
+                    - row [ref=f27e854]:
+                      - gridcell [ref=f27e855]:
+                        - link "🍷 LUCKY¤HUZ3R 😁 Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a un jour" [ref=f27e859] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/7557317264377886/
+                          - generic [ref=f27e873]:
+                            - generic [ref=f27e875]:
+                              - img "🍷" [ref=f27e877]
+                              - text: LUCKY¤HUZ3R
+                              - img "😁" [ref=f27e879]
+                            - generic [ref=f27e881]:
+                              - generic [ref=f27e882]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e885]: ·
+                              - generic "il y a un jour" [ref=f27e893]: 1 j
+                      - gridcell [ref=f27e895]:
+                        - button "Autres options pour 🍷LUCKY¤HUZ3R😁" [ref=f27e898] [cursor=pointer]
+                    - row [ref=f27e905]:
+                      - gridcell [ref=f27e906]:
+                        - link ". 𝖑𝖔ν𝖊 ♥️ . ೃ࿐ Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a un jour" [ref=f27e910] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/31271511775769489/
+                          - generic [ref=f27e924]:
+                            - generic [ref=f27e926]:
+                              - text: . 𝖑𝖔ν𝖊
+                              - img "♥️" [ref=f27e928]
+                              - text: . ೃ࿐
+                            - generic [ref=f27e930]:
+                              - generic [ref=f27e931]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e934]: ·
+                              - generic "il y a un jour" [ref=f27e942]: 1 j
+                      - gridcell [ref=f27e944]:
+                        - button "Autres options pour . 𝖑𝖔ν𝖊♥️. ೃ࿐" [ref=f27e947] [cursor=pointer]
+                    - row [ref=f27e954]:
+                      - gridcell [ref=f27e955]:
+                        - 'link "Michel Masindraoka Message non lu : Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 2 jours" [ref=f27e959] [cursor=pointer]':
+                          - /url: /messages/e2ee/t/8960207754098101/
+                          - generic [ref=f27e961]:
+                            - generic [ref=f27e973]:
+                              - generic [ref=f27e974]: Michel Masindraoka
+                              - generic [ref=f27e977]:
+                                - generic [ref=f27e978]:
+                                  - generic [ref=f27e979]: "Message non lu :"
+                                  - generic [ref=f27e980]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f27e982]: ·
+                                - generic "il y a 2 jours" [ref=f27e990]: 2 j
+                            - button [ref=f27e993]
+                      - gridcell [ref=f27e995]:
+                        - button "Autres options pour Michel Masindraoka" [ref=f27e998] [cursor=pointer]
+                    - row [ref=f27e1005]:
+                      - gridcell [ref=f27e1006]:
+                        - link "Wendy David Mecan Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 2 jours" [ref=f27e1010] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/23925618197138648/
+                          - generic [ref=f27e1024]:
+                            - generic [ref=f27e1025]: Wendy David Mecan
+                            - generic [ref=f27e1028]:
+                              - generic [ref=f27e1029]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e1032]: ·
+                              - generic "il y a 2 jours" [ref=f27e1040]: 2 j
+                      - gridcell [ref=f27e1042]:
+                        - button "Autres options pour Wendy David Mecan" [ref=f27e1045] [cursor=pointer]
+                    - row [ref=f27e1052]:
+                      - gridcell [ref=f27e1053]:
+                        - 'link "Discussion de groupe : VILLA KINYA" [ref=f27e1057] [cursor=pointer]':
+                          - /url: /messages/t/4517927044969063/
+                          - generic [ref=f27e1071]:
+                            - generic [ref=f27e1072]: VILLA KINYA
+                            - generic [ref=f27e1075]:
+                              - generic [ref=f27e1078]:
+                                - text: "Tantely: Iôooo"
+                                - img "🥹" [ref=f27e1080]
+                                - img "😅" [ref=f27e1082]
+                              - generic [ref=f27e1083]: ·
+                              - generic "il y a 2 jours" [ref=f27e1091]: 2 j
+                      - gridcell [ref=f27e1096]:
+                        - button "Autres options pour VILLA KINYA" [ref=f27e1099] [cursor=pointer]
+                    - row [ref=f27e1106]:
+                      - gridcell [ref=f27e1107]:
+                        - 'link "Discussion de groupe : Fianankaviam-be M2 nPro" [ref=f27e1111] [cursor=pointer]':
+                          - /url: /messages/t/1712372242195646/
+                          - generic [ref=f27e1113]:
+                            - generic [ref=f27e1125]:
+                              - generic [ref=f27e1126]: Fianankaviam-be M2 nPro
+                              - generic [ref=f27e1129]:
+                                - generic [ref=f27e1130]:
+                                  - generic [ref=f27e1131]: "Message non lu :"
+                                  - generic [ref=f27e1133]:
+                                    - text: "Jaci: Io fa tsisy kabaro"
+                                    - img "🤣" [ref=f27e1135]
+                                    - img "🤣" [ref=f27e1137]
+                                - generic [ref=f27e1138]: ·
+                                - generic "il y a 2 jours" [ref=f27e1146]: 2 j
+                            - button [ref=f27e1151]
+                      - gridcell [ref=f27e1153]:
+                        - button "Autres options pour Fianankaviam-be M2 nPro" [ref=f27e1156] [cursor=pointer]
+                    - row [ref=f27e1163]:
+                      - gridcell [ref=f27e1164]:
+                        - 'link "Emile Justin Le-Fort Andriamihaja-Nandrasana Message non lu : Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 3 jours" [ref=f27e1168] [cursor=pointer]':
+                          - /url: /messages/e2ee/t/25481955734784815/
+                          - generic [ref=f27e1170]:
+                            - generic [ref=f27e1182]:
+                              - generic [ref=f27e1183]: Emile Justin Le-Fort Andriamihaja-Nandrasana
+                              - generic [ref=f27e1186]:
+                                - generic [ref=f27e1187]:
+                                  - generic [ref=f27e1188]: "Message non lu :"
+                                  - generic [ref=f27e1189]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f27e1191]: ·
+                                - generic "il y a 3 jours" [ref=f27e1199]: 3 j
+                            - button [ref=f27e1202]
+                      - gridcell [ref=f27e1204]:
+                        - button "Autres options pour Emile Justin Le-Fort Andriamihaja-Nandrasana" [ref=f27e1207] [cursor=pointer]
+                    - row [ref=f27e1214]:
+                      - gridcell [ref=f27e1215]:
+                        - link "Luchianah Zb Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 3 jours" [ref=f27e1219] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/8048581181819185/
+                          - generic [ref=f27e1233]:
+                            - generic [ref=f27e1234]: Luchianah Zb
+                            - generic [ref=f27e1237]:
+                              - generic [ref=f27e1238]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e1241]: ·
+                              - generic "il y a 3 jours" [ref=f27e1249]: 3 j
+                      - gridcell [ref=f27e1251]:
+                        - button "Autres options pour Luchianah Zb" [ref=f27e1254] [cursor=pointer]
+                    - row [ref=f27e1261]:
+                      - gridcell [ref=f27e1262]:
+                        - link "Angelo Rama Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 4 jours" [ref=f27e1266] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/7630068487039746/
+                          - generic [ref=f27e1280]:
+                            - generic [ref=f27e1281]: Angelo Rama
+                            - generic [ref=f27e1284]:
+                              - generic [ref=f27e1285]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e1288]: ·
+                              - generic "il y a 4 jours" [ref=f27e1296]: 4 j
+                      - gridcell [ref=f27e1298]:
+                        - button "Autres options pour Angelo Rama" [ref=f27e1301] [cursor=pointer]
+                    - row [ref=f27e1308]:
+                      - gridcell [ref=f27e1309]:
+                        - link "Ricardo Sirdabson Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 5 jours" [ref=f27e1313] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/28384984304478743/
+                          - generic [ref=f27e1327]:
+                            - generic [ref=f27e1328]: Ricardo Sirdabson
+                            - generic [ref=f27e1331]:
+                              - generic [ref=f27e1332]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e1335]: ·
+                              - generic "il y a 5 jours" [ref=f27e1343]: 5 j
+                      - gridcell [ref=f27e1345]:
+                        - button "Autres options pour Ricardo Sirdabson" [ref=f27e1348] [cursor=pointer]
+                    - row [ref=f27e1355]:
+                      - gridcell [ref=f27e1356]:
+                        - 'link "Discussion de groupe : ʜɪᴅᴇ Tʜᴇ F̶u̶c̶k̶i̶n̶g̶ Fʟᴀɢ🇺🇸🇲🇦" [ref=f27e1360] [cursor=pointer]':
+                          - /url: /messages/t/3155473347858617/
+                          - generic [ref=f27e1362]:
+                            - generic [ref=f27e1374]:
+                              - generic [ref=f27e1376]:
+                                - text: ʜɪᴅᴇ Tʜᴇ F̶u̶c̶k̶i̶n̶g̶ Fʟᴀɢ
+                                - img "🇺🇸" [ref=f27e1378]
+                                - img "🇲🇦" [ref=f27e1380]
+                              - generic [ref=f27e1382]:
+                                - generic [ref=f27e1383]:
+                                  - generic [ref=f27e1384]: "Message non lu :"
+                                  - generic [ref=f27e1385]: Zakline a envoyé une pièce jointe.
+                                - generic [ref=f27e1387]: ·
+                                - generic "il y a 5 jours" [ref=f27e1395]: 5 j
+                            - button [ref=f27e1400]
+                      - gridcell [ref=f27e1402]:
+                        - button "Autres options pour ʜɪᴅᴇ Tʜᴇ F̶u̶c̶k̶i̶n̶g̶ Fʟᴀɢ🇺🇸🇲🇦" [ref=f27e1405] [cursor=pointer]
+                    - row [ref=f27e1412]:
+                      - gridcell [ref=f27e1413]:
+                        - link "Satchickanah Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 6 jours" [ref=f27e1417] [cursor=pointer]:
+                          - /url: /messages/e2ee/t/30674666128847874/
+                          - generic [ref=f27e1431]:
+                            - generic [ref=f27e1432]: Satchickanah
+                            - generic [ref=f27e1435]:
+                              - generic [ref=f27e1436]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f27e1439]: ·
+                              - generic "il y a 6 jours" [ref=f27e1447]: 6 j
+                      - gridcell [ref=f27e1449]:
+                        - button "Autres options pour Satchickanah" [ref=f27e1452] [cursor=pointer]
+                    - generic [ref=f27e205]:
+                      - generic [ref=f27e206]:
+                        - status "Chargement…" [ref=f27e207]
+                        - generic [ref=f27e208]:
+                          - status "Chargement…" [ref=f27e209]
+                          - status "Chargement…" [ref=f27e210]
+                      - generic [ref=f27e211]:
+                        - status "Chargement…" [ref=f27e212]
+                        - generic [ref=f27e213]:
+                          - status "Chargement…" [ref=f27e214]
+                          - status "Chargement…" [ref=f27e215]
+        - main "Nouveau message" [ref=f27e216]:
+          - generic [ref=f27e265]:
+            - generic [ref=f27e268]:
+              - generic [ref=f27e269]: "À :"
+              - generic [ref=f27e273]:
+                - alert [ref=f27e1463]: Judianne Mariano ajouté
+                - generic [ref=f27e274]:
+                  - generic [ref=f27e275]:
+                    - list "Valeurs sélectionnées" [ref=f27e1465]:
+                      - listitem [ref=f27e1466]:
+                        - generic [ref=f27e1469]:
+                          - generic [ref=f27e1470]: Judianne Mariano
+                          - button "Supprimer Judianne Mariano" [ref=f27e1472] [cursor=pointer]
+                    - combobox "Envoyer un message à" [ref=f27e276]
+                  - generic [ref=f27e277]: Recherchez par nom ou par groupe
+            - generic [ref=f27e1476]:
+              - generic [ref=f27e1484]:
+                - heading "Messages" [level=3] [ref=f27e1485]
+                - status [ref=f27e1486]
+                - log "Messages dans la conversation avec Judianne Mariano" [ref=f27e1487]:
+                  - generic [ref=f27e1489]:
+                    - generic [ref=f27e1492]:
+                      - img "Judianne Mariano" [ref=f27e1501]
+                      - heading [level=3] [ref=f27e1504]
+                      - generic [ref=f27e1512]:
+                        - text: Les messages et les appels sont sécurisés avec le chiffrement de bout en bout. Seules les personnes participant à cette discussion peuvent les lire, les écouter ou les partager.
+                        - button "En savoir plus sur le chiffrement de bout en bout" [ref=f27e1517] [cursor=pointer]: En savoir plus
+                    - button "Saisir, Détails de la conversation" [ref=f27e1518] [cursor=pointer]
+              - region "Éditeur de fil de discussion" [ref=f27e1522]:
+                - heading "Rédiger" [level=3] [ref=f27e1523]
+                - button "Ouvrir plus d’actions" [ref=f27e1577] [cursor=pointer]
+                - generic [ref=f27e1553]:
+                  - generic [ref=f27e1554]: Écrire à Judianne Mariano
+                  - generic [ref=f27e1556]:
+                    - textbox "Écrire à Judianne Mariano" [active] [ref=f27e1558]:
+                      - paragraph [ref=f27e1559]:
+                        - text: Je me permets de vous écrire car, en reprenant les registres de la chambre 6, je ne retrouve pas trace du règlement du loyer de juillet 2026 (150 000 Ar).Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ?Merci beaucoup pour votre retour, et bonne journée à vous
+                        - generic [ref=f27e1598]: 🙏
+                        - text: Salut Judianne
+                        - generic [ref=f27e1580]: 👋
+                        - text: Je m'appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l'entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j'espère que vous allez bien !
+                    - button "Choisir un emoji" [ref=f27e1562] [cursor=pointer]
+                - button "Appuyer sur Entrée pour envoyer" [ref=f27e1582] [cursor=pointer]:
+                  - img "Appuyer sur Entrée pour envoyer" [ref=f27e1583]
+  - alert [ref=f27e1573]: Chargement des messages…

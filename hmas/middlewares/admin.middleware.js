@@ -1,10 +1,10 @@
 const AuthMidleware = require("./auth.middleware");
+const { ADMIN } = require("./roles");
 
-const monRole = process.env.xADMIN;
-
+// Routes reservees a l'administrateur.
 module.exports.checkUtilisateur = (req, res, next) => {
   AuthMidleware.checkUtilisateur(req, res, next, {
-    admin: monRole,
-    user: monRole,
+    admin: ADMIN,
+    user: ADMIN,
   });
 };

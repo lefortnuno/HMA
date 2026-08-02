@@ -1,0 +1,224 @@
+- generic [ref=f21e3]:
+  - generic [ref=f21e5]:
+    - banner:
+      - generic [ref=f21e6]:
+        - generic:
+          - generic:
+            - button [disabled]
+        - link "Facebook" [ref=f21e7] [cursor=pointer]:
+          - /url: /
+      - generic [ref=f21e16]:
+        - generic [ref=f21e17]:
+          - generic:
+            - generic:
+              - generic:
+                - button
+        - combobox "Rechercher sur Facebook" [ref=f21e20] [cursor=pointer]
+      - navigation "Facebook" [ref=f21e24]:
+        - list [ref=f21e25]:
+          - listitem [ref=f21e26]:
+            - link "Accueil" [ref=f21e29] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f21e33]:
+            - link "Reels" [ref=f21e36] [cursor=pointer]:
+              - /url: /reel/?s=tab
+          - listitem [ref=f21e41]:
+            - link "Marketplace" [ref=f21e44] [cursor=pointer]:
+              - /url: /marketplace/?ref=app_tab
+          - listitem [ref=f21e48]:
+            - link "Groupes" [ref=f21e51] [cursor=pointer]:
+              - /url: /groups/
+          - listitem [ref=f21e55]:
+            - link "Gaming" [ref=f21e58] [cursor=pointer]:
+              - /url: /gaming/play/?store_visit_source=gaming_tab
+      - navigation "Contrôles et paramètres du compte" [ref=f21e64]:
+        - button "Menu Facebook" [ref=f21e68] [cursor=pointer]
+        - button "Notifications" [ref=f21e75] [cursor=pointer]
+        - button "Votre profil" [ref=f21e80] [cursor=pointer]:
+          - img "Votre profil" [ref=f21e82]
+    - generic [ref=f21e94]:
+      - generic [ref=f21e142]:
+        - heading "Messenger" [level=1] [ref=f21e143]
+        - button "Passer au contenu principal" [ref=f21e144] [cursor=pointer]
+        - button "Passer aux messages" [ref=f21e145] [cursor=pointer]
+        - button "Ignorer et rédiger" [ref=f21e146] [cursor=pointer]
+        - generic [ref=f21e147]:
+          - navigation "Liste des discussions" [ref=f21e148]:
+            - generic [ref=f21e150]:
+              - generic [ref=f21e155]:
+                - heading "Discussions" [level=1] [ref=f21e160]
+                - generic [ref=f21e162]:
+                  - button "Paramètres, aide et autres" [ref=f21e165] [cursor=pointer]
+                  - link "Nouveau message" [ref=f21e170] [cursor=pointer]:
+                    - /url: /messages/new/
+              - combobox "Rechercher dans Messenger" [ref=f21e181]
+              - tablist [ref=f21e187]:
+                - tab "Tout" [selected] [ref=f21e188] [cursor=pointer]
+                - tab "Non lu" [ref=f21e191] [cursor=pointer]
+                - tab "Groupes" [ref=f21e194] [cursor=pointer]
+                - tab [ref=f21e198] [cursor=pointer]:
+                  - generic [ref=f21e199]: Communautés
+                - button "Plus" [ref=f21e204] [cursor=pointer]
+              - tabpanel "Toutes les discussions" [ref=f21e208]:
+                - grid "Discussions" [ref=f21e211]:
+                  - generic [ref=f21e214]:
+                    - row [ref=f21e216]:
+                      - gridcell [ref=f21e217]:
+                        - button [pressed] [ref=f21e221] [cursor=pointer]:
+                          - heading "Nouveau message" [level=3] [ref=f21e232]
+                      - gridcell [ref=f21e235]:
+                        - button "Supprimer le brouillon de message" [ref=f21e236] [cursor=pointer]
+                    - generic [ref=f21e240]:
+                      - row [ref=f21e245]:
+                        - gridcell [ref=f21e246]:
+                          - 'link "Trecy Safidiniaina Vous: Salut Trecy 👋 Je m''appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l''entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j''espère que vous allez bien ! Je me permets de vous écrire car, en reprenant les registres de la chambre 1, je ne retrouve pas trace du règlement du loyer de juillet 2026 (150 000 Ar). Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ? Merci beaucoup pour votre retour, et bonne journée à vous 🙏 — Trofel il y a environ une minute" [ref=f21e250] [cursor=pointer]':
+                            - /url: /messages/t/100057917358121/
+                            - generic [ref=f21e264]:
+                              - generic [ref=f21e265]: Trecy Safidiniaina
+                              - generic [ref=f21e268]:
+                                - generic [ref=f21e271]:
+                                  - text: "Vous: Salut Trecy"
+                                  - img "👋" [ref=f21e273]
+                                  - text: Je m'appelle Trofel, fils aîné du bailleur. Je prends la main pour aider ma mère à suivre l'entreprise familiale, donc on sera sûrement amenés à échanger de temps en temps. Enchanté de faire votre connaissance, j'espère que vous allez bien ! Je me permets de vous écrire car, en reprenant les registres de la chambre 1, je ne retrouve pas trace du règlement du loyer de juillet 2026 (150 000 Ar). Pourriez-vous me confirmer si le paiement a déjà été effectué de votre côté ? Merci beaucoup pour votre retour, et bonne journée à vous
+                                  - img "🙏" [ref=f21e275]
+                                  - text: — Trofel
+                                - generic [ref=f21e276]: ·
+                                - generic "il y a environ une minute" [ref=f21e284]: 1 min
+                        - gridcell [ref=f21e286]:
+                          - button "Autres options pour Trecy Safidiniaina" [ref=f21e289] [cursor=pointer]
+                      - row [ref=f21e296]:
+                        - gridcell [ref=f21e297]:
+                          - 'link ".𝕼𝖚𝖊𝖊𝖓 ♥️ . ೃ࿐ Message non lu : Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a environ une heure" [ref=f21e301] [cursor=pointer]':
+                            - /url: /messages/e2ee/t/7290053064451075/
+                            - generic [ref=f21e303]:
+                              - generic [ref=f21e315]:
+                                - generic [ref=f21e317]:
+                                  - text: .𝕼𝖚𝖊𝖊𝖓
+                                  - img "♥️" [ref=f21e319]
+                                  - text: . ೃ࿐
+                                - generic [ref=f21e321]:
+                                  - generic [ref=f21e322]:
+                                    - generic [ref=f21e323]: "Message non lu :"
+                                    - generic [ref=f21e324]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                  - generic [ref=f21e326]: ·
+                                  - generic "il y a environ une heure" [ref=f21e334]: 1 h
+                              - button [ref=f21e337]
+                        - gridcell [ref=f21e339]:
+                          - button "Autres options pour .𝕼𝖚𝖊𝖊𝖓♥️. ೃ࿐" [ref=f21e342] [cursor=pointer]
+                      - row [ref=f21e349]:
+                        - gridcell [ref=f21e350]:
+                          - 'link "Zonirina Rakotoson Vous: Mon ami ☀️ il y a 2 heures" [ref=f21e354] [cursor=pointer]':
+                            - /url: /messages/e2ee/t/1512699663420718/
+                            - generic [ref=f21e368]:
+                              - generic [ref=f21e369]: Zonirina Rakotoson
+                              - generic [ref=f21e372]:
+                                - generic [ref=f21e375]:
+                                  - text: "Vous: Mon ami"
+                                  - img "☀️" [ref=f21e377]
+                                - generic [ref=f21e378]: ·
+                                - generic "il y a 2 heures" [ref=f21e386]: 2 h
+                        - gridcell [ref=f21e388]:
+                          - button "Autres options pour Zonirina Rakotoson" [ref=f21e391] [cursor=pointer]
+                      - row [ref=f21e398]:
+                        - gridcell [ref=f21e399]:
+                          - link "Nadia Randrianasolo Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 5 heures" [ref=f21e403] [cursor=pointer]:
+                            - /url: /messages/e2ee/t/9726842920680288/
+                            - generic [ref=f21e417]:
+                              - generic [ref=f21e418]: Nadia Randrianasolo
+                              - generic [ref=f21e421]:
+                                - generic [ref=f21e422]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f21e425]: ·
+                                - generic "il y a 5 heures" [ref=f21e433]: 5 h
+                        - gridcell [ref=f21e435]:
+                          - button "Autres options pour Nadia Randrianasolo" [ref=f21e438] [cursor=pointer]
+                      - row [ref=f21e445]:
+                        - gridcell [ref=f21e446]:
+                          - link "Samueline Fanirisoa Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 6 heures" [ref=f21e450] [cursor=pointer]:
+                            - /url: /messages/e2ee/t/7835183913201876/
+                            - generic [ref=f21e464]:
+                              - generic [ref=f21e465]: Samueline Fanirisoa
+                              - generic [ref=f21e468]:
+                                - generic [ref=f21e469]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f21e472]: ·
+                                - generic "il y a 6 heures" [ref=f21e480]: 6 h
+                        - gridcell [ref=f21e482]:
+                          - button "Autres options pour Samueline Fanirisoa" [ref=f21e485] [cursor=pointer]
+                      - row [ref=f21e492]:
+                        - gridcell [ref=f21e493]:
+                          - link ".𝕭𝖔𝖓𝖍𝖊𝖚𝖗 ♥️ .༻꧂ Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 8 heures" [ref=f21e497] [cursor=pointer]:
+                            - /url: /messages/e2ee/t/3140065072839664/
+                            - generic [ref=f21e511]:
+                              - generic [ref=f21e513]:
+                                - text: .𝕭𝖔𝖓𝖍𝖊𝖚𝖗
+                                - img "♥️" [ref=f21e515]
+                                - text: .༻꧂
+                              - generic [ref=f21e517]:
+                                - generic [ref=f21e518]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f21e521]: ·
+                                - generic "il y a 8 heures" [ref=f21e529]: 8 h
+                        - gridcell [ref=f21e531]:
+                          - button "Autres options pour .𝕭𝖔𝖓𝖍𝖊𝖚𝖗 ♥️.༻꧂" [ref=f21e534] [cursor=pointer]
+                      - row [ref=f21e541]:
+                        - gridcell [ref=f21e542]:
+                          - link "Tony Braven Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 10 heures" [ref=f21e546] [cursor=pointer]:
+                            - /url: /messages/e2ee/t/27845830585061704/
+                            - generic [ref=f21e560]:
+                              - generic [ref=f21e561]: Tony Braven
+                              - generic [ref=f21e564]:
+                                - generic [ref=f21e565]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f21e568]: ·
+                                - generic "il y a 10 heures" [ref=f21e576]: 10 h
+                        - gridcell [ref=f21e578]:
+                          - button "Autres options pour Tony Braven" [ref=f21e581] [cursor=pointer]
+                      - row [ref=f21e588]:
+                        - gridcell [ref=f21e589]:
+                          - link "Fanou Renantsoa Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 17 heures" [ref=f21e593] [cursor=pointer]:
+                            - /url: /messages/e2ee/t/7535340139920032/
+                            - generic [ref=f21e607]:
+                              - generic [ref=f21e608]: Fanou Renantsoa
+                              - generic [ref=f21e611]:
+                                - generic [ref=f21e612]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                                - generic [ref=f21e615]: ·
+                                - generic "il y a 17 heures" [ref=f21e623]: 17 h
+                        - gridcell [ref=f21e625]:
+                          - button "Autres options pour Fanou Renantsoa" [ref=f21e628] [cursor=pointer]
+                      - generic [ref=f21e631]:
+                        - generic [ref=f21e632]:
+                          - status "Chargement…" [ref=f21e633]
+                          - generic [ref=f21e634]:
+                            - status "Chargement…" [ref=f21e635]
+                            - status "Chargement…" [ref=f21e636]
+                        - generic [ref=f21e637]:
+                          - status "Chargement…" [ref=f21e638]
+                          - generic [ref=f21e639]:
+                            - status "Chargement…" [ref=f21e640]
+                            - status "Chargement…" [ref=f21e641]
+          - main "Nouveau message" [ref=f21e642]:
+            - generic [ref=f21e647]:
+              - generic [ref=f21e648]: "À :"
+              - generic [ref=f21e653]:
+                - combobox "Envoyer un message à" [expanded] [active] [ref=f21e655]: Chirley Canddis
+                - generic [ref=f21e656]: Recherchez par nom ou par groupe
+      - listbox "3 suggestions de recherche" [ref=f21e659]:
+        - group [ref=f21e660]:
+          - option "VILLA KINYA" [ref=f21e661]:
+            - link "VILLA KINYA Nomenjanajary Clarita Yollande, Tantely Andrianarisoa et 23 autres personnes" [ref=f21e662] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=f21e670]:
+                - generic [ref=f21e671]: VILLA KINYA
+                - generic [ref=f21e675]: Nomenjanajary Clarita Yollande, Tantely Andrianarisoa et 23 autres personnes
+        - heading "More people" [level=3] [ref=f21e680]
+        - group "More people" [ref=f21e682]:
+          - option "Razafindratsiamoro Hangivory Chirley Canddis" [ref=f21e683]:
+            - link "Razafindratsiamoro Hangivory Chirley Canddis 3 ami(e)s commun(e)s, dont Rosko Freddi et Iaro Fithie" [ref=f21e684] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=f21e692]:
+                - generic [ref=f21e693]: Razafindratsiamoro Hangivory Chirley Canddis
+                - generic [ref=f21e697]: 3 ami(e)s commun(e)s, dont Rosko Freddi et Iaro Fithie
+          - option "Canddis Chirley" [ref=f21e701]:
+            - link "Canddis Chirley 7 ami(e)s commun(e)s, dont Yvan Emiliau Ramahery et Iaro Fithie" [ref=f21e702] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=f21e710]:
+                - generic [ref=f21e711]: Canddis Chirley
+                - generic [ref=f21e715]: 7 ami(e)s commun(e)s, dont Yvan Emiliau Ramahery et Iaro Fithie
+  - alert [ref=f21e719]: "3 résultats de recherche trouvés. Premier résultat : VILLA KINYA"

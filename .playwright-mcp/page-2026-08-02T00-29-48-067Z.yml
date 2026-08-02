@@ -1,0 +1,228 @@
+- generic [ref=f15e759]:
+  - generic [ref=f15e761]:
+    - banner:
+      - generic [ref=f15e2]:
+        - generic:
+          - generic:
+            - button [disabled]
+        - link "Facebook" [ref=f15e3] [cursor=pointer]:
+          - /url: /
+      - generic [ref=f15e12]:
+        - generic [ref=f15e13]:
+          - generic:
+            - generic:
+              - generic:
+                - button
+        - combobox "Rechercher sur Facebook" [ref=f15e16] [cursor=pointer]
+      - navigation "Facebook" [ref=f15e20]:
+        - list [ref=f15e21]:
+          - listitem [ref=f15e22]:
+            - link "Accueil" [ref=f15e25] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f15e29]:
+            - link "Reels" [ref=f15e32] [cursor=pointer]:
+              - /url: /reel/?s=tab
+          - listitem [ref=f15e37]:
+            - link "Marketplace" [ref=f15e40] [cursor=pointer]:
+              - /url: /marketplace/?ref=app_tab
+          - listitem [ref=f15e44]:
+            - link "Groupes" [ref=f15e47] [cursor=pointer]:
+              - /url: /groups/
+          - listitem [ref=f15e51]:
+            - link "Gaming" [ref=f15e54] [cursor=pointer]:
+              - /url: /gaming/play/?store_visit_source=gaming_tab
+      - navigation "Contrôles et paramètres du compte" [ref=f15e60]:
+        - button "Menu Facebook" [ref=f15e64] [cursor=pointer]
+        - button "Notifications" [ref=f15e71] [cursor=pointer]
+        - button "Votre profil" [ref=f15e76] [cursor=pointer]:
+          - img "Votre profil" [ref=f15e78]
+    - generic [ref=f15e92]:
+      - heading "Messenger" [level=1] [ref=f15e762]
+      - button "Passer au contenu principal" [ref=f15e763] [cursor=pointer]
+      - button "Passer aux messages" [ref=f15e764] [cursor=pointer]
+      - button "Ignorer et rédiger" [ref=f15e765] [cursor=pointer]
+      - generic [ref=f15e97]:
+        - navigation "Liste des discussions" [ref=f15e766]:
+          - generic [ref=f15e100]:
+            - generic [ref=f15e105]:
+              - heading "Discussions" [level=1] [ref=f15e767]
+              - generic [ref=f15e112]:
+                - button "Paramètres, aide et autres" [ref=f15e768] [cursor=pointer]
+                - link "Nouveau message" [ref=f15e769] [cursor=pointer]:
+                  - /url: /messages/new/
+            - combobox "Rechercher dans Messenger" [ref=f15e770]
+            - tablist [ref=f15e137]:
+              - tab "Tout" [selected] [ref=f15e771] [cursor=pointer]
+              - tab "Non lu" [ref=f15e772] [cursor=pointer]
+              - tab "Groupes" [ref=f15e773] [cursor=pointer]
+              - tab [ref=f15e155] [cursor=pointer]:
+                - generic [ref=f15e156]: Communautés
+              - button "Plus" [ref=f15e774] [cursor=pointer]
+            - tabpanel "Toutes les discussions" [ref=f15e775]:
+              - grid "Discussions" [ref=f15e776]:
+                - generic [ref=f15e166]:
+                  - row [ref=f15e777]:
+                    - gridcell [ref=f15e778]:
+                      - 'link ".𝕼𝖚𝖊𝖊𝖓 ♥️ . ೃ࿐ Message non lu : Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a environ une heure" [ref=f15e779] [cursor=pointer]':
+                        - /url: /messages/e2ee/t/7290053064451075/
+                        - generic [ref=f15e178]:
+                          - generic [ref=f15e190]:
+                            - generic [ref=f15e192]:
+                              - text: .𝕼𝖚𝖊𝖊𝖓
+                              - img "♥️" [ref=f15e780]
+                              - text: . ೃ࿐
+                            - generic [ref=f15e577]:
+                              - generic [ref=f15e578]:
+                                - generic [ref=f15e579]: "Message non lu :"
+                                - generic [ref=f15e580]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                              - generic [ref=f15e582]: ·
+                              - generic "il y a environ une heure" [ref=f15e781]: 1 h
+                          - button [ref=f15e199]
+                    - gridcell [ref=f15e782]:
+                      - button "Autres options pour .𝕼𝖚𝖊𝖊𝖓♥️. ೃ࿐" [ref=f15e783] [cursor=pointer]
+                  - row [ref=f15e784]:
+                    - gridcell [ref=f15e785]:
+                      - 'link "Zonirina Rakotoson Vous: Mon ami ☀️ il y a 2 heures" [ref=f15e786] [cursor=pointer]':
+                        - /url: /messages/e2ee/t/1512699663420718/
+                        - generic [ref=f15e230]:
+                          - generic [ref=f15e231]: Zonirina Rakotoson
+                          - generic [ref=f15e591]:
+                            - generic [ref=f15e594]:
+                              - text: "Vous: Mon ami"
+                              - img "☀️" [ref=f15e787]
+                            - generic [ref=f15e597]: ·
+                            - generic "il y a 2 heures" [ref=f15e788]: 2 h
+                    - gridcell [ref=f15e789]:
+                      - button "Autres options pour Zonirina Rakotoson" [ref=f15e790] [cursor=pointer]
+                  - row [ref=f15e791]:
+                    - gridcell [ref=f15e792]:
+                      - link "Nadia Randrianasolo Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 5 heures" [ref=f15e793] [cursor=pointer]:
+                        - /url: /messages/e2ee/t/9726842920680288/
+                        - generic [ref=f15e265]:
+                          - generic [ref=f15e266]: Nadia Randrianasolo
+                          - generic [ref=f15e606]:
+                            - generic [ref=f15e607]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                            - generic [ref=f15e610]: ·
+                            - generic "il y a 5 heures" [ref=f15e794]: 5 h
+                    - gridcell [ref=f15e795]:
+                      - button "Autres options pour Nadia Randrianasolo" [ref=f15e796] [cursor=pointer]
+                  - row [ref=f15e797]:
+                    - gridcell [ref=f15e798]:
+                      - link "Samueline Fanirisoa Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 6 heures" [ref=f15e799] [cursor=pointer]:
+                        - /url: /messages/e2ee/t/7835183913201876/
+                        - generic [ref=f15e300]:
+                          - generic [ref=f15e301]: Samueline Fanirisoa
+                          - generic [ref=f15e619]:
+                            - generic [ref=f15e620]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                            - generic [ref=f15e623]: ·
+                            - generic "il y a 6 heures" [ref=f15e800]: 6 h
+                    - gridcell [ref=f15e801]:
+                      - button "Autres options pour Samueline Fanirisoa" [ref=f15e802] [cursor=pointer]
+                  - row [ref=f15e803]:
+                    - gridcell [ref=f15e804]:
+                      - link ".𝕭𝖔𝖓𝖍𝖊𝖚𝖗 ♥️ .༻꧂ Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 8 heures" [ref=f15e805] [cursor=pointer]:
+                        - /url: /messages/e2ee/t/3140065072839664/
+                        - generic [ref=f15e335]:
+                          - generic [ref=f15e337]:
+                            - text: .𝕭𝖔𝖓𝖍𝖊𝖚𝖗
+                            - img "♥️" [ref=f15e806]
+                            - text: .༻꧂
+                          - generic [ref=f15e632]:
+                            - generic [ref=f15e633]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                            - generic [ref=f15e636]: ·
+                            - generic "il y a 8 heures" [ref=f15e807]: 8 h
+                    - gridcell [ref=f15e808]:
+                      - button "Autres options pour .𝕭𝖔𝖓𝖍𝖊𝖚𝖗 ♥️.༻꧂" [ref=f15e809] [cursor=pointer]
+                  - row [ref=f15e810]:
+                    - gridcell [ref=f15e811]:
+                      - link "Tony Braven Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 10 heures" [ref=f15e812] [cursor=pointer]:
+                        - /url: /messages/e2ee/t/27845830585061704/
+                        - generic [ref=f15e372]:
+                          - generic [ref=f15e373]: Tony Braven
+                          - generic [ref=f15e645]:
+                            - generic [ref=f15e646]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                            - generic [ref=f15e649]: ·
+                            - generic "il y a 10 heures" [ref=f15e813]: 10 h
+                    - gridcell [ref=f15e814]:
+                      - button "Autres options pour Tony Braven" [ref=f15e815] [cursor=pointer]
+                  - row [ref=f15e816]:
+                    - gridcell [ref=f15e817]:
+                      - link "Fanou Renantsoa Les messages et les appels sont protégés par un chiffrement de bout en bout. il y a 17 heures" [ref=f15e818] [cursor=pointer]:
+                        - /url: /messages/e2ee/t/7535340139920032/
+                        - generic [ref=f15e407]:
+                          - generic [ref=f15e408]: Fanou Renantsoa
+                          - generic [ref=f15e658]:
+                            - generic [ref=f15e659]: Les messages et les appels sont protégés par un chiffrement de bout en bout.
+                            - generic [ref=f15e662]: ·
+                            - generic "il y a 17 heures" [ref=f15e819]: 17 h
+                    - gridcell [ref=f15e820]:
+                      - button "Autres options pour Fanou Renantsoa" [ref=f15e821] [cursor=pointer]
+                  - generic [ref=f15e419]:
+                    - generic [ref=f15e420]:
+                      - status "Chargement…" [ref=f15e822]
+                      - generic [ref=f15e422]:
+                        - status "Chargement…" [ref=f15e823]
+                        - status "Chargement…" [ref=f15e824]
+                    - generic [ref=f15e425]:
+                      - status "Chargement…" [ref=f15e825]
+                      - generic [ref=f15e427]:
+                        - status "Chargement…" [ref=f15e826]
+                        - status "Chargement…" [ref=f15e827]
+        - main [ref=f15e430]:
+          - generic [ref=f15e433]:
+            - heading "Conversation avec Zonirina Rakotoson" [level=3] [ref=f15e828]
+            - region "Conversation avec Zonirina Rakotoson" [ref=f15e829]:
+              - generic [ref=f15e440]:
+                - generic [ref=f15e444]:
+                  - link [ref=f15e830] [cursor=pointer]:
+                    - /url: /61591748973708/
+                    - heading "Zonirina Rakotoson" [level=3] [ref=f15e831]
+                  - generic [ref=f15e467]:
+                    - button "Passer un appel vocal" [ref=f15e832] [cursor=pointer]
+                    - button "Lancer un appel vidéo" [ref=f15e833] [cursor=pointer]
+                    - button "Informations sur la conversation" [ref=f15e834] [cursor=pointer]
+                - generic [ref=f15e492]:
+                  - generic [ref=f15e498]:
+                    - heading "Messages" [level=3] [ref=f15e835]
+                    - status [ref=f15e500]
+                    - log "Messages dans la conversation avec Zonirina Rakotoson" [ref=f15e836]:
+                      - generic [ref=f15e503]:
+                        - generic [ref=f15e691]:
+                          - img "Zonirina Rakotoson" [ref=f15e837]
+                          - heading [level=3] [ref=f15e838]
+                          - generic [ref=f15e706]: Zonirina Rakotoson a créé ce groupe
+                          - generic [ref=f15e713]:
+                            - text: Les messages et les appels sont sécurisés avec le chiffrement de bout en bout. Seules les personnes participant à cette discussion peuvent les lire, les écouter ou les partager.
+                            - button "En savoir plus sur le chiffrement de bout en bout" [ref=f15e839] [cursor=pointer]: En savoir plus
+                        - button "Saisir, Détails de la conversation" [ref=f15e840] [cursor=pointer]
+                        - generic [ref=f15e723]:
+                          - generic [ref=f15e724]: 15 juil 2026, 15:38
+                          - article [ref=f15e727]:
+                            - 'generic "À 15 juillet 2026, 15:38, Vous : Ein ?" [ref=f15e841]': Ein ?
+                            - 'button "Saisir, Message envoyé à 15 juillet 2026, 15:38 par Vous : Ein ?" [ref=f15e842] [cursor=pointer]'
+                        - generic [ref=f15e740]:
+                          - generic [ref=f15e741]: Sam 23:22
+                          - article [ref=f15e744]:
+                            - 'generic "À Samedi 23:22, Vous : Mon ami ☀️" [ref=f15e843]':
+                              - generic [ref=f15e752]:
+                                - text: Mon ami
+                                - img "☀️" [ref=f15e844]
+                              - generic [ref=f15e755]: Envoyé il y a 2 h
+                            - 'button "Saisir, Message envoyé à Samedi 23:22 par Vous : Mon ami ☀️" [ref=f15e845] [cursor=pointer]'
+                  - region "Éditeur de fil de discussion" [ref=f15e846]:
+                    - heading "Rédiger" [level=3] [ref=f15e847]
+                    - generic [ref=f15e512]:
+                      - button "Envoyer un clip vocal" [ref=f15e848] [cursor=pointer]
+                      - button "Joignez un fichier de 100 Mo au maximum" [ref=f15e849] [cursor=pointer]
+                      - button "Choisir un sticker" [ref=f15e850] [cursor=pointer]
+                      - button "Choisir un GIF" [ref=f15e851] [cursor=pointer]
+                    - generic [ref=f15e541]:
+                      - generic [ref=f15e542]: Écrire à Zonirina Rakotoson
+                      - generic [ref=f15e544]:
+                        - generic [ref=f15e545]:
+                          - textbox "Écrire à Zonirina Rakotoson" [ref=f15e852]:
+                            - paragraph [ref=f15e547]
+                          - generic: Aa
+                        - button "Choisir un emoji" [ref=f15e853] [cursor=pointer]
+                    - button "Envoyer un J’aime" [ref=f15e854] [cursor=pointer]
+  - alert [ref=f15e561]: Chargement des messages…

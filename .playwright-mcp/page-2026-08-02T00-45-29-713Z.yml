@@ -1,0 +1,88 @@
+- generic [ref=f33e3]:
+  - generic [ref=f33e5]:
+    - banner:
+      - generic [ref=f33e6]:
+        - generic:
+          - generic:
+            - button [disabled]
+        - link "Facebook" [ref=f33e7] [cursor=pointer]:
+          - /url: /
+      - generic [ref=f33e16]:
+        - generic [ref=f33e17]:
+          - generic:
+            - generic:
+              - generic:
+                - button
+        - combobox "Rechercher sur Facebook" [ref=f33e20] [cursor=pointer]
+      - navigation "Facebook" [ref=f33e24]:
+        - list [ref=f33e25]:
+          - listitem [ref=f33e26]:
+            - link "Accueil" [ref=f33e29] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f33e33]:
+            - link "Reels" [ref=f33e36] [cursor=pointer]:
+              - /url: /reel/?s=tab
+          - listitem [ref=f33e41]:
+            - link "Marketplace" [ref=f33e44] [cursor=pointer]:
+              - /url: /marketplace/?ref=app_tab
+          - listitem [ref=f33e48]:
+            - link "Groupes" [ref=f33e51] [cursor=pointer]:
+              - /url: /groups/
+          - listitem [ref=f33e55]:
+            - link "Gaming" [ref=f33e58] [cursor=pointer]:
+              - /url: /gaming/play/?store_visit_source=gaming_tab
+      - navigation "Contrôles et paramètres du compte" [ref=f33e64]:
+        - button "Menu Facebook" [ref=f33e68] [cursor=pointer]
+        - generic [ref=f33e74]:
+          - button "Notifications, 2 non lues" [ref=f33e75] [cursor=pointer]
+          - button [ref=f33e78] [cursor=pointer]:
+            - generic [ref=f33e79]:
+              - generic [ref=f33e80]: Nombre de notifications non lues
+              - generic [ref=f33e81]: "2"
+        - button "Votre profil" [ref=f33e84] [cursor=pointer]:
+          - img "Votre profil" [ref=f33e86]
+    - generic [ref=f33e100]:
+      - heading "Messenger" [level=1] [ref=f33e101]
+      - button "Passer au contenu principal" [ref=f33e102] [cursor=pointer]
+      - button "Passer aux messages" [ref=f33e103] [cursor=pointer]
+      - button "Ignorer et rédiger" [ref=f33e104] [cursor=pointer]
+      - generic [ref=f33e105]:
+        - navigation "Liste des discussions" [ref=f33e106]:
+          - generic [ref=f33e107]:
+            - status "Chargement…" [ref=f33e108]
+            - generic [ref=f33e109]:
+              - status "Chargement…" [ref=f33e110]
+              - status "Chargement…" [ref=f33e111]
+          - status "Chargement…" [ref=f33e113]
+          - generic [ref=f33e114]:
+            - status "Chargement…" [ref=f33e115]
+            - generic [ref=f33e116]:
+              - status "Chargement…" [ref=f33e117]
+              - status "Chargement…" [ref=f33e118]
+          - generic [ref=f33e119]:
+            - status "Chargement…" [ref=f33e120]
+            - generic [ref=f33e121]:
+              - status "Chargement…" [ref=f33e122]
+              - status "Chargement…" [ref=f33e123]
+          - generic [ref=f33e124]:
+            - status "Chargement…" [ref=f33e125]
+            - generic [ref=f33e126]:
+              - status "Chargement…" [ref=f33e127]
+              - status "Chargement…" [ref=f33e128]
+          - generic [ref=f33e129]:
+            - status "Chargement…" [ref=f33e130]
+            - generic [ref=f33e131]:
+              - status "Chargement…" [ref=f33e132]
+              - status "Chargement…" [ref=f33e133]
+          - generic [ref=f33e134]:
+            - status "Chargement…" [ref=f33e135]
+            - generic [ref=f33e136]:
+              - status "Chargement…" [ref=f33e137]
+              - status "Chargement…" [ref=f33e138]
+          - generic [ref=f33e139]:
+            - status "Chargement…" [ref=f33e140]
+            - generic [ref=f33e141]:
+              - status "Chargement…" [ref=f33e142]
+              - status "Chargement…" [ref=f33e143]
+        - main [ref=f33e144]
+  - alert [ref=f33e145]: Messenger. Appuyez sur Maj et le point d’interrogation pour les raccourcis clavier.

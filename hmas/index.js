@@ -61,6 +61,13 @@ app.use("/api/loyer", loyerRoute);
 app.use("/api/vitrine", vitrineRoute);
 app.use("/api/finance", financeRoute);
 
-app.listen(process.env.PORT || process.env.IP_HOST, () => {
-  console.log(`Lancé sur ${process.env.IP_HOST}:${process.env.PORT} .... `);
+const PORT = process.env.PORT || 5103;
+app.listen(PORT, () => {
+  const { ADMIN, USER } = require("./middlewares/roles");
+  console.log(`Lancé sur le port ${PORT} ....`);
+  // Trace utile : un role mal configure bloque silencieusement l'admin.
+  console.log(`Roles -> ADMIN=${ADMIN} | USER=${USER}`);
+  console.log(
+    `CORS -> ${allowedOrigins.length ? allowedOrigins.join(", ") : "toutes origines (CORS_ORIGINS non definie)"}`
+  );
 });

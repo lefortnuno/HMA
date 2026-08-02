@@ -1,5 +1,6 @@
 const UtilisateurModel = require("../models/utilisateur.model");
 const jwt = require("jsonwebtoken");
+const { estRole } = require("./roles");
 
 module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
   const token = req.headers.authorization;  
@@ -15,9 +16,16 @@ module.exports.checkUtilisateur = (req, res, next, myUserRole) => {
         const dtok = decodedToken.account[0];
 
         UtilisateurModel.getIdUtilisateur(dtok.id, (err, resultat) => {
+          if (!resultat || !resultat[0]) {
+            return res.status(401).send({
+              message: "Compte introuvable, merci de vous reconnecter.",
+              success: false,
+            });
+          }
+          const karazana = resultat[0].karazana;
           if (
-            resultat[0].karazana == myUserRole.admin ||
-            resultat[0].karazana == myUserRole.user
+            estRole(karazana, myUserRole.admin) ||
+            estRole(karazana, myUserRole.user)
           ) {
             // Utilisateur courant (role verifie en DB) mis a disposition
             // des controleurs pour le workflow de validation.

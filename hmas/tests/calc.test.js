@@ -91,3 +91,27 @@ test("statut paiement valide", () => {
   assert.ok(V.isStatutValide("IMPAYE"));
   assert.ok(!V.isStatutValide("EN_COURS"));
 });
+
+// ── Roles (regression : un xADMIN manquant bloquait l'admin) ────────────────
+const { estRole } = require("../middlewares/roles");
+
+test("estRole compare chaines et nombres indifferemment", () => {
+  assert.ok(estRole(1, 1));
+  assert.ok(estRole("1", 1));
+  assert.ok(estRole(1, "1"));
+  assert.ok(estRole(0, "0"));
+  assert.ok(!estRole(1, 0));
+});
+
+test("estRole refuse un role non defini (ne laisse pas passer)", () => {
+  assert.ok(!estRole(1, undefined));
+  assert.ok(!estRole(0, undefined));
+  assert.ok(!estRole(undefined, 1));
+});
+
+test("valeurs par defaut des roles quand les variables d'env sont absentes", () => {
+  const { ADMIN, USER } = require("../middlewares/roles");
+  assert.strictEqual(Number.isNaN(ADMIN), false);
+  assert.strictEqual(Number.isNaN(USER), false);
+  assert.notStrictEqual(ADMIN, USER);
+});
