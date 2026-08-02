@@ -130,12 +130,12 @@ export default function Sidebar() {
 
         {isAdmin && (
           <>
-            <div className="separator" />
+            {/* <div className="separator" />
 
             <div className="sidebar-section-label">Finance Personnelle</div>
             {nav("/finance/revenus/", BsGraphUp, "Revenus & Charges", true)}
             {nav("/finance/casuel/", BsStarFill, "Casuel & Dépenses", true)}
-            {nav("/finance/bilan/", BsClipboardData, "Bilan Mensuel", true)}
+            {nav("/finance/bilan/", BsClipboardData, "Bilan Mensuel", true)} */}
 
             <div className="separator" />
 

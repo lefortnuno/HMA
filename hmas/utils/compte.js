@@ -69,4 +69,15 @@ Compte.creerPourLocataire = (loc, cb) => {
   );
 };
 
+/**
+ * Supprime le compte de connexion rattache a une fiche locataire.
+ * Best-effort : un echec ici ne doit pas empecher la suppression du locataire.
+ */
+Compte.supprimerPourLocataire = (locataireId, cb) => {
+  db.query("DELETE FROM mpampiasa WHERE locataireId = ?", [locataireId], (err, res) => {
+    if (err) return cb ? cb(err) : console.error("[compte locataire]", err.message);
+    if (cb) cb(null, { supprimes: res.affectedRows });
+  });
+};
+
 module.exports = Compte;

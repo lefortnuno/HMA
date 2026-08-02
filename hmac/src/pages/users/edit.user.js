@@ -8,6 +8,7 @@ import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
 import {
   BsArrowLeft, BsPeopleFill, BsShieldFill, BsPersonFill, BsEyeFill, BsEyeSlashFill,
+  BsHouseHeart,
 } from "react-icons/bs";
 
 const url_req = "utilisateur/";
@@ -165,18 +166,19 @@ export default function EditUser() {
 
                       <div className="col-12">
                         <label className="form-label">Rôle</label>
-                        <div className="d-flex gap-3 mt-1">
+                        <div className="d-flex gap-2 mt-1 flex-wrap">
                           {[
                             { val: "0", label: "Utilisateur", Icon: BsPersonFill, bg: "#f8fafc", clr: "#475569" },
                             { val: "1", label: "Administrateur", Icon: BsShieldFill, bg: "#eff6ff", clr: "#2563eb" },
+                            { val: "2", label: "Locataire", Icon: BsHouseHeart, bg: "#f0fdf4", clr: "#16a34a" },
                           ].map(({ val, label, Icon, bg, clr }) => (
                             <label key={val} style={{
-                              flex: 1, cursor: "pointer",
+                              flex: "1 1 30%", minWidth: 130, cursor: "pointer",
                               border: `2px solid ${form.karazana === val ? clr : "#e2e8f0"}`,
-                              borderRadius: 10, padding: "12px 16px",
+                              borderRadius: 10, padding: "12px 14px",
                               background: form.karazana === val ? bg : "#fff",
                               transition: "all 0.15s",
-                              display: "flex", alignItems: "center", gap: 10,
+                              display: "flex", alignItems: "center", gap: 8,
                             }}>
                               <input type="radio" className="d-none"
                                 value={val} checked={form.karazana === val}

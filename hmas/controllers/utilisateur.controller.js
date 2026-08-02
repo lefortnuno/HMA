@@ -106,12 +106,22 @@ module.exports.updateUtilisateur = (req, res) => {
 };
 
 module.exports.deleteUtilisateur = (req, res) => {
-  Utilisateur.deleteUtilisateur(req.params.id, (err, resp) => {
-    if (!err) {
-      res.send(resp);
-    } else {
-      sendErr(res, err);
-    }
+  // Un compte de locataire et sa fiche vont de pair : supprimer l'un
+  // supprime l'autre (la fiche entraine aussi ses paiements, cle etrangere
+  // ON DELETE CASCADE). L'interface previent avant de confirmer.
+  Utilisateur.getIdUtilisateur(req.params.id, (errU, resU) => {
+    const locataireId = !errU && resU && resU[0] ? resU[0].locataireId : null;
+
+    Utilisateur.deleteUtilisateur(req.params.id, (err, resp) => {
+      if (err) return sendErr(res, err);
+      if (!locataireId) return res.send(resp);
+
+      const Locataire = require("../models/locataire.model");
+      Locataire.delete(locataireId, (err2) => {
+        if (err2) console.error("[suppression fiche locataire]", err2.message);
+        res.send({ ...resp, locataireSupprime: !err2 });
+      });
+    });
   });
 };
 

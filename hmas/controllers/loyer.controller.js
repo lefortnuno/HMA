@@ -142,6 +142,8 @@ function execUpdateLocataire(id, data, avant, cb) {
 
 // Execution reelle d'une suppression (+ log occupation).
 function execDeleteLocataire(id, avant, cb) {
+  // Le compte de connexion du locataire disparait avec sa fiche.
+  Compte.supprimerPourLocataire(id, () => {});
   Locataire.delete(id, (err, result) => {
     if (err) return cb(err);
     if (avant) {

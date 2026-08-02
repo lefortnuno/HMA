@@ -481,7 +481,9 @@ export default function Locataires() {
               <p className="mb-4">
                 Supprimer <strong>{toDelete.nom} {toDelete.prenom}</strong> (chambre {toDelete.chambre}) ?
                 <br />
-                <small className="text-danger">Cette action supprimera aussi tous ses paiements.</small>
+                <small className="text-danger">
+                  Cette action supprimera aussi tous ses paiements et son compte de connexion.
+                </small>
               </p>
               <div className="d-flex justify-content-end gap-2">
                 <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowDeleteModal(false)}>
