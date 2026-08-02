@@ -6,7 +6,20 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const tmp = 3 * 24 * 60 * 60 * 1000;
 
-const createToken = (account) => {
+/**
+ * Jeton volontairement MINIMAL : uniquement l'identifiant et le role.
+ *
+ * Signer la ligne complete de l'utilisateur embarquait le hash du mot de passe
+ * (le payload d'un JWT est lisible par quiconque) et surtout la photo de profil
+ * en base64. Le jeton depassait alors plusieurs dizaines de Ko et, comme il est
+ * envoye dans l'en-tete Authorization de CHAQUE requete, le serveur repondait
+ * "431 Request Header Fields Too Large" : l'application paraissait vide.
+ *
+ * La forme tableau est conservee : les middlewares lisent decodedToken.account[0].
+ */
+const createToken = (rows) => {
+  const u = Array.isArray(rows) ? rows[0] : rows;
+  const account = [{ id: u.id, karazana: u.karazana }];
   return jwt.sign({ account }, process.env.TOKEN_SECRET, { expiresIn: tmp });
 };
 
@@ -35,7 +48,9 @@ module.exports.loginUtilisateur = (req, res) => {
 
         if (validePwd) {
           const token = createToken(resp);
-          res.send({ success: true, token, user: resp, message: "Connecté à HMA!" });
+          // Le hash du mot de passe ne quitte jamais le serveur.
+          const user = resp.map(({ pwd: _pwd, ...reste }) => reste);
+          res.send({ success: true, token, user, message: "Connecté à HMA!" });
         } else {
           res.send({ success: false, message : "Mot de passe incorrect!" });
         }

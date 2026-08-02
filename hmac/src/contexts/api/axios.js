@@ -27,13 +27,20 @@ instance.interceptors.response.use(
     const url = erreur?.config?.url || "";
     const estConnexion = url.includes("seConnecter");
 
-    if (statut === 401 && !estConnexion && !redirectionEnCours) {
+    // 401 : jeton invalide/expire.
+    // 431 : en-tete trop volumineux — cas d'un ancien jeton surdimensionne
+    //       (il embarquait la photo de profil) ; seule une reconnexion le purge.
+    const sessionInvalide = statut === 401 || statut === 431;
+
+    if (sessionInvalide && !estConnexion && !redirectionEnCours) {
       redirectionEnCours = true;
       localStorage.clear();
       // Message recupere par la page de connexion.
       sessionStorage.setItem(
         "sessionExpiree",
-        "Votre session a expiré, merci de vous reconnecter."
+        statut === 431
+          ? "Session obsolète, merci de vous reconnecter."
+          : "Votre session a expiré, merci de vous reconnecter."
       );
       window.location.replace("/");
     }
