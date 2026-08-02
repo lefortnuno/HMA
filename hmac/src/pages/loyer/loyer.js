@@ -1083,15 +1083,17 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
       }
     } catch {}
 
-    const montantTotalDu = loyerDu + jirama + arrieres;
-    const paiementLocataire = form.statut !== "IMPAYE" ? loyerPaye + jirama : 0;
-    const solde = montantTotalDu - paiementLocataire;
-    const statutLabel =
-      form.statut === "PAYE"
-        ? "PAYÉ"
-        : form.statut === "PARTIEL"
-          ? "PARTIEL"
-          : "IMPAYÉ";
+    // Loyer et JIRAMA se soldent séparément : chacun son total et son statut.
+    const libelleStatut = (s) =>
+      s === "PAYE" ? "PAYÉ" : s === "PARTIEL" ? "PARTIEL" : s === "DOUTE" ? "À CONFIRMER" : "IMPAYÉ";
+    const statutLabel = libelleStatut(form.statut);
+    const statutJirama = cell.existing?.statutJIRAMA || "IMPAYE";
+    const statutJiramaLabel = libelleStatut(statutJirama);
+
+    const loyerRegle = form.statut === "IMPAYE" ? 0 : loyerPaye;
+    const jiramaRegle =
+      statutJirama === "PAYE" || statutJirama === "PARTIEL" ? jirama : 0;
+    const soldeLoyer = Math.max(0, loyerDu + arrieres - loyerRegle);
     const nomComplet = `${cell.loc.nom} ${cell.loc.prenom || ""}`.trim();
     const etageLabel =
       cell.loc.etage === "RDC" ? "Rez-de-chaussée" : "1er Étage";
@@ -1215,55 +1217,52 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     doubleLine(y);
     y += 8;
 
-    // ── DETAILS ──
+    // ── DÉTAILS — loyer et JIRAMA séparés ──
+    // Le loyer et l électricité se règlent indépendamment : les mêler sur
+    // une seule ligne rendait la quittance illisible en cas de règlement partiel.
     B();
     K();
     doc.setFontSize(8);
-    const d36 = "-".repeat(86);
     const d86 = "-".repeat(151);
-    doc.text(`|| ${d36} DETAILS : ${d36}-`, mg, y);
+
+    // ── A. Quittance de loyer ──
+    doc.setFontSize(9);
+    doc.text(`|| ${"-".repeat(70)} A. QUITTANCE DE LOYER ${"-".repeat(70)}`, mg, y);
     y += 8;
 
     doc.setFontSize(10);
-    doc.text(`|| - Loyer nu : ${loyerDu.toFixed(2)} Ar`, mg, y);
-    doc.text(
-      `- Montant Total dû : ${montantTotalDu.toFixed(2)} Ar`,
-      W / 2 + 5,
-      y,
-    );
+    doc.text(`|| - Loyer nu du mois : ${loyerDu.toFixed(2)} Ar`, mg, y);
+    doc.text(`- Réglé ce mois : ${loyerRegle.toFixed(2)} Ar`, W / 2 + 5, y);
     y += 7;
 
-    doc.text(`|| - JIRAMA du locataire : ${jirama.toFixed(2)} Ar`, mg, y);
-    doc.text(
-      `- Paiement du locataire : ${paiementLocataire.toFixed(2)} Ar`,
-      W / 2 + 5,
-      y,
-    );
+    doc.text(`|| - Arriéré des mois précédents : ${arrieres.toFixed(2)} Ar`, mg, y);
+    doc.text(`- Statut du loyer : ${statutLabel}`, W / 2 + 5, y);
     y += 7;
 
-    doc.text(`|| - Charges/Provisions de Charges : 0.00 Ar`, mg, y);
-    doc.text(`- Date Facture JIRAMA : ${dateFactureJIRAMA}`, W / 2 + 5, y);
+    doc.text(`|| - Charges / provisions de charges : 0.00 Ar`, mg, y);
+    doc.text(`- Solde loyer : ${soldeLoyer.toFixed(2)} Ar`, W / 2 + 5, y);
+    y += 9;
+
+    // ── B. Facture JIRAMA ──
+    doc.setFontSize(9);
+    doc.text(`|| ${"-".repeat(64)} B. EAU & ÉLECTRICITÉ (JIRAMA) ${"-".repeat(64)}`, mg, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.text(`|| - Facture JIRAMA du : ${dateFactureJIRAMA}`, mg, y);
+    doc.text(`- Réglé ce mois : ${jiramaRegle.toFixed(2)} Ar`, W / 2 + 5, y);
     y += 7;
 
-    if (arrieres > 0) {
-      doc.text(
-        `|| - Arriéré (mois précédents) : ${arrieres.toFixed(2)} Ar`,
-        mg,
-        y,
-      );
-      doc.text(`- Statut : ${statutLabel}`, W / 2 + 5, y);
-      y += 7;
-    } else {
-      doc.text(`|| - Statut du paiement : ${statutLabel}`, mg, y);
-      y += 7;
-    }
+    doc.text(`|| - Montant relevé au compteur : ${jirama.toFixed(2)} Ar`, mg, y);
+    doc.text(`- Statut JIRAMA : ${statutJiramaLabel}`, W / 2 + 5, y);
+    y += 9;
 
+    // ── Récapitulatif ──
     B();
     K();
     doc.setFontSize(10);
-
-    doc.text("||", mg, y);
-    doc.text(`- Solde à payer : ${solde.toFixed(2)} Ar`, W / 2 + 5, y);
+    doc.text(`|| - Total réglé (loyer + JIRAMA) : ${(loyerRegle + jiramaRegle).toFixed(2)} Ar`, mg, y);
+    doc.text(`- Reste à payer : ${soldeLoyer.toFixed(2)} Ar`, W / 2 + 5, y);
     y += 7;
 
     doc.text(`|| ${d86}`, mg, y);

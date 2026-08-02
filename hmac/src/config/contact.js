@@ -5,7 +5,7 @@ export const TEL_AFFICHE = "034 86 588 68";
 export const NOM_CONTACT = "LEFORT N. Nuno (Trofel)";
 
 // Numero du bailleur imprime sur les quittances de loyer.
-export const TEL_BAILLEUR = "+212 42 359 184";
+export const TEL_BAILLEUR = "+212 642 359 184";
 
 // Adresse de l application, transmise aux locataires avec leurs acces.
 export const URL_APP = "https://e-hma.vercel.app/";

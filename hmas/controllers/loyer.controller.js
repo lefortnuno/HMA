@@ -72,6 +72,11 @@ function normaliseLocataire(body) {
     // ECHU : il consomme puis il paie (le mois M se regle au mois M+1).
     // AVANCE : il paie puis il consomme (le mois M se regle dans le mois M).
     modePaiement: String(modePaiement).toUpperCase() === "AVANCE" ? "AVANCE" : "ECHU",
+    // Forfait mensuel JIRAMA (null = facturation au releve du compteur).
+    jiramaForfait:
+      body.jiramaForfait === "" || body.jiramaForfait === undefined || body.jiramaForfait === null
+        ? null
+        : Math.max(0, Number(body.jiramaForfait) || 0),
   };
 }
 

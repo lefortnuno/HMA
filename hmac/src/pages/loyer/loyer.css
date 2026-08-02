@@ -304,3 +304,21 @@
   font-weight: 700;
   font-size: 0.85rem;
 }
+
+/* Locataire au forfait JIRAMA : le montant est déjà connu, il n'est pas
+   relevé au compteur chaque mois. */
+.pastille-forfait {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.12);
+  color: inherit;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.75;
+}

@@ -128,6 +128,7 @@ function initForm() {
     jourPaiement: "",
     // Les nouveaux locataires reglent d avance (ils paient puis consomment).
     modePaiement: "AVANCE",
+    jiramaForfait: "",
   };
 }
 
@@ -293,6 +294,7 @@ export default function Locataires() {
         messengerId: loc.messengerId || "",
         jourPaiement: loc.jourPaiement || "",
         modePaiement: loc.modePaiement || "ECHU",
+        jiramaForfait: loc.jiramaForfait ?? "",
       });
       setShowEditModal(true);
     } else {
@@ -681,6 +683,19 @@ export default function Locataires() {
                   <ModePaiementPicker value={editForm.modePaiement} onChange={handleEditChange} />
                 </div>
                 <div className="col-12">
+                  <label className="form-label">
+                    Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
+                  </label>
+                  <input type="number" name="jiramaForfait" min="0" step="500"
+                    className="form-control form-control-sm"
+                    placeholder="Ex. : 10000"
+                    value={editForm.jiramaForfait ?? ""} onChange={handleEditChange} />
+                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                    Montant dû chaque mois sans relevé. Si le compteur dépasse ce forfait,
+                    c est le relevé qui fait foi.
+                  </small>
+                </div>
+                <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
                   <input type="text" name="messengerId" className="form-control form-control-sm"
                     autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
@@ -799,6 +814,19 @@ export default function Locataires() {
                 <div className="col-12">
                   <label className="form-label">Sens du règlement</label>
                   <ModePaiementPicker value={addForm.modePaiement} onChange={handleAddChange} />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">
+                    Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
+                  </label>
+                  <input type="number" name="jiramaForfait" min="0" step="500"
+                    className="form-control form-control-sm"
+                    placeholder="Ex. : 10000"
+                    value={addForm.jiramaForfait ?? ""} onChange={handleAddChange} />
+                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                    Montant dû chaque mois sans relevé. Si le compteur dépasse ce forfait,
+                    c est le relevé qui fait foi.
+                  </small>
                 </div>
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>

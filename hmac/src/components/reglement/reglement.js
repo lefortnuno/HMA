@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import {
   BsJournalBookmarkFill, BsPlusLg, BsPencilFill, BsTrashFill,
   BsCashCoin, BsShieldLock, BsLightningCharge, BsCalendarCheck,
-  BsReceipt, BsMoonStars, BsBrush, BsPeople, BsTools, BsPatchCheckFill,
+  BsReceipt, BsMoonStars, BsBrush, BsPeople, BsTools, BsPatchCheckFill, BsBoxSeam,
   BsChevronDown, BsChevronUp,
 } from "react-icons/bs";
 import "./reglement.css";
@@ -29,6 +29,7 @@ const ICONES = {
   proprete: BsBrush,
   visiteurs: BsPeople,
   degradation: BsTools,
+  fourniture: BsBoxSeam,
 };
 
 const CHOIX_ICONES = [
@@ -41,6 +42,7 @@ const CHOIX_ICONES = [
   ["proprete", "Propreté"],
   ["visiteurs", "Visiteurs"],
   ["degradation", "Entretien"],
+  ["fourniture", "Équipements"],
 ];
 
 const formVide = { titre: "", texte: "", icone: "loyer", actif: true };
@@ -140,7 +142,7 @@ export default function Reglement() {
             {trop && (
               <button
                 type="button"
-                className="reglement-btn"
+                className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
                 onClick={() => setDeplie((d) => !d)}
               >
                 {deplie ? <BsChevronUp /> : <BsChevronDown />}
@@ -149,7 +151,7 @@ export default function Reglement() {
             )}
             <button
               type="button"
-              className="reglement-btn principal"
+              className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1"
               onClick={() => setEdition({ ...formVide })}
             >
               <BsPlusLg />

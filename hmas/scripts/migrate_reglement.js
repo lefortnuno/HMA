@@ -94,6 +94,15 @@ const REGLES = [
     ordre: 8,
   },
   {
+    titre: "Les équipements de la chambre y restent",
+    texte:
+      "Tringles, rideaux, ampoules, prises, portes et autres fournitures de base " +
+      "appartiennent au logement : ils ne se démontent pas et ne quittent pas la chambre, " +
+      "ni pendant le bail ni au départ. Toute pièce manquante est retenue sur la caution.",
+    icone: "fourniture",
+    ordre: 10,
+  },
+  {
     titre: "Dégradations à la charge de l'occupant",
     texte:
       "Toute dégradation constatée dans la chambre ou les parties communes est " +

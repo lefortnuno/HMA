@@ -27,6 +27,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger } from "../../config/contact";
+import { estAvantEntree } from "../../config/echeance";
 import "./loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -114,7 +115,7 @@ function AlerteJirama({ locataires, getCell, factureDe, annee }) {
               JIRAMA à recouvrer
             </h6>
             <small className="text-muted" style={{ fontSize: "0.75rem" }}>
-              Uniquement les mois dont la consommation a été relevée
+              Relevés de compteur et forfaits mensuels échus
             </small>
           </div>
         </div>
@@ -317,7 +318,29 @@ export default function TableauJirama() {
   }
 
   const getCell = (locId, mois) => paiements[locId]?.[mois] || null;
-  const factureDe = (locId, mois) => factures[locId]?.[mois] || 0;
+
+  /**
+   * Montant JIRAMA du par un locataire sur un mois.
+   *
+   * Certains locataires reglent au forfait (10 000 Ar). Le compteur reste la
+   * reference quand il depasse : le surplus releve leur est facture en plus.
+   */
+  const factureDe = (locId, mois) => {
+    const releve = factures[locId]?.[mois] || 0;
+    const forfait = forfaitDe(locId);
+    if (!forfait) return releve;
+    const loc = locataires.find((l) => l.id === locId);
+    if (estAvantEntree(loc, mois, annee)) return releve;
+    const maintenant = new Date();
+    const aVenir =
+      annee > maintenant.getFullYear() ||
+      (annee === maintenant.getFullYear() && mois > maintenant.getMonth() + 1);
+    if (aVenir) return releve;
+    return Math.max(forfait, releve);
+  };
+
+  const forfaitDe = (locId) =>
+    Number(locataires.find((l) => l.id === locId)?.jiramaForfait) || 0;
 
   // Encaissé sur un mois, tous locataires confondus (rapprochement facture).
   function encaisseDuMois(mois) {
@@ -363,13 +386,15 @@ export default function TableauJirama() {
     const paye = p?.montantJIRAMA || 0;
     const statut = p?.statutJIRAMA || "IMPAYE";
 
+    const forfait = forfaitDe(loc.id);
+
     // Ni relevé ni règlement : rien à afficher pour ce mois.
     if (attendu === 0 && paye === 0) {
       return (
         <span
           className="cell-vide"
           title="Aucune consommation relevée — cliquer pour saisir un règlement"
-          onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu })}
+          onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu, forfait })}
         >
           —
         </span>
@@ -390,13 +415,15 @@ export default function TableauJirama() {
       <span
         className={cls}
         title={
-          `Relevé : ${attendu.toLocaleString()} Ar\n` +
+          (forfait ? `Forfait mensuel : ${forfait.toLocaleString()} Ar\n` : "") +
+          `Dû ce mois : ${attendu.toLocaleString()} Ar\n` +
           `Réglé : ${paye.toLocaleString()} Ar` +
           (statut === "IMPAYE" ? "\nNon réglé" : "")
         }
-        onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu })}
+        onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu, forfait })}
       >
         {statut === "DOUTE" && <span className="pastille-doute">!</span>}
+        {forfait > 0 && <span className="pastille-forfait" title="Forfait mensuel">F</span>}
         {(affiche / 1000).toFixed(affiche >= 10000 ? 0 : 1)}k
       </span>
     );
@@ -559,6 +586,12 @@ export default function TableauJirama() {
                     <span className="legende-item">
                       <span className="cell-doute"><span className="pastille-doute">!</span>12k</span> Doute
                     </span>
+                    <span
+                      className="legende-item"
+                      title="Locataire au forfait mensuel : le relevé ne prime que s il dépasse le forfait"
+                    >
+                      <span className="cell-paye"><span className="pastille-forfait">F</span>10k</span> Forfait
+                    </span>
                     <span className="legende-item">
                       <span className="badge-rdc">1</span> RDC
                     </span>
@@ -628,7 +661,9 @@ export default function TableauJirama() {
                               {loc.nom} {loc.prenom}
                             </div>
                             <small className="text-muted">
-                              {(totalReleve(loc.id) / 1000).toFixed(0)}k relevés
+                              {loc.jiramaForfait
+                                ? `forfait ${(loc.jiramaForfait / 1000).toFixed(0)}k`
+                                : `${(totalReleve(loc.id) / 1000).toFixed(0)}k relevés`}
                             </small>
                           </td>
                           {MOIS.map((_, mi) => (
@@ -768,12 +803,21 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
             style={{ background: "#fffbeb", border: "1px solid #fde68a" }}
           >
             <small style={{ fontSize: "0.76rem", color: "#92400e" }}>
-              Consommation relevée
+              {cell.forfait > 0 ? "Forfait mensuel" : "Consommation relevée"}
             </small>
             <span className="fw-bold" style={{ color: "#b45309" }}>
               {(cell.attendu || 0).toLocaleString()} Ar
             </span>
           </div>
+
+          {cell.forfait > 0 && (
+            <p className="text-muted" style={{ fontSize: "0.76rem" }}>
+              {cell.loc.nom} règle au forfait de {cell.forfait.toLocaleString()} Ar.
+              {cell.attendu > cell.forfait
+                ? " Son compteur dépasse ce mois-ci : le surplus est ajouté."
+                : " Rien à saisir, le montant est déjà rempli."}
+            </p>
+          )}
 
           {cell.attendu === 0 && (
             <p className="text-muted" style={{ fontSize: "0.76rem" }}>

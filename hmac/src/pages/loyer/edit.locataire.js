@@ -38,6 +38,7 @@ export default function EditLocataire() {
     photo: existing.photo || "",
     jourPaiement: existing.jourPaiement || "",
     modePaiement: existing.modePaiement || "ECHU",
+    jiramaForfait: existing.jiramaForfait ?? "",
     messengerId: existing.messengerId || "",
   });
   const [saving, setSaving] = useState(false);
@@ -184,6 +185,19 @@ export default function EditLocataire() {
                     <div className="col-12">
                       <label className="form-label">Sens du règlement</label>
                       <ModePaiementPicker value={form.modePaiement} onChange={handleChange} />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label">
+                        Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
+                      </label>
+                      <input type="number" name="jiramaForfait" min="0" step="500"
+                        className="form-control form-control-sm"
+                        placeholder="Ex. : 10000"
+                        value={form.jiramaForfait ?? ""} onChange={handleChange} />
+                      <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                        Montant dû chaque mois sans relevé. Si le compteur dépasse ce forfait,
+                        c est le relevé qui fait foi.
+                      </small>
                     </div>
                   <div className="col-12">
                     <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
