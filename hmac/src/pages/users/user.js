@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import {
   BsFillTrashFill, BsPencilSquare, BsEye,
   BsPeopleFill, BsShieldFill, BsPersonFill, BsSearch, BsPlus,
-  BsWhatsapp, BsSend, BsClipboard, BsKey, BsMessenger,
+  BsWhatsapp, BsSend, BsClipboard, BsKey, BsMessenger, BsHouseHeart,
 } from "react-icons/bs";
 
 const url_req = "utilisateur/";
@@ -96,8 +96,10 @@ export default function User() {
   );
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const page = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
-  const totalAdmins = users.filter(u => u.karazana == 1).length;
-  const totalUsers  = users.filter(u => u.karazana != 1).length;
+  // Les locataires (karazana 2) etaient comptes comme de simples utilisateurs.
+  const totalAdmins     = users.filter(u => u.karazana == 1).length;
+  const totalLocataires = users.filter(u => u.karazana == 2).length;
+  const totalUsers      = users.filter(u => u.karazana != 1 && u.karazana != 2).length;
 
   return (
     <Template>
@@ -133,7 +135,7 @@ export default function User() {
 
             {/* Stat cards */}
             <div className="row g-3 mb-4">
-              <div className="col-sm-4">
+              <div className="col-6 col-lg-3">
                 <div className="stat-card">
                   <div className="stat-icon blue"><BsPeopleFill /></div>
                   <div className="stat-content">
@@ -142,21 +144,30 @@ export default function User() {
                   </div>
                 </div>
               </div>
-              <div className="col-sm-4">
+              <div className="col-6 col-lg-3">
                 <div className="stat-card">
                   <div className="stat-icon purple"><BsShieldFill /></div>
                   <div className="stat-content">
                     <h3>{totalAdmins}</h3>
-                    <p>Administrateurs</p>
+                    <p>Administrateur{totalAdmins > 1 ? "s" : ""}</p>
                   </div>
                 </div>
               </div>
-              <div className="col-sm-4">
+              <div className="col-6 col-lg-3">
                 <div className="stat-card">
                   <div className="stat-icon slate"><BsPersonFill /></div>
                   <div className="stat-content">
                     <h3>{totalUsers}</h3>
-                    <p>Utilisateurs</p>
+                    <p>Utilisateur{totalUsers > 1 ? "s" : ""}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6 col-lg-3">
+                <div className="stat-card">
+                  <div className="stat-icon green"><BsHouseHeart /></div>
+                  <div className="stat-content">
+                    <h3>{totalLocataires}</h3>
+                    <p>Locataire{totalLocataires > 1 ? "s" : ""}</p>
                   </div>
                 </div>
               </div>

@@ -636,12 +636,9 @@ export default function Locataires() {
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
                   <input type="text" name="messengerId" className="form-control form-control-sm"
+                    autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
                     value={editForm.messengerId || ""} onChange={handleEditChange}
-                    placeholder="Collez l'URL de la conversation Messenger" />
-                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
-                    Ouvre directement sa discussion lors des relances. Exemple :
-                    facebook.com/messages/t/9918260078190044
-                  </small>
+                    placeholder="Collez l'URL de la conversation Messenger" /> 
                 </div>
                 <div className="col-sm-6 d-flex align-items-end pb-1">
                   <div className="form-check">
@@ -749,12 +746,9 @@ export default function Locataires() {
                 <div className="col-12">
                   <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
                   <input type="text" name="messengerId" className="form-control form-control-sm"
+                    autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
                     value={addForm.messengerId || ""} onChange={handleAddChange}
-                    placeholder="Collez l'URL de la conversation Messenger" />
-                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
-                    Ouvre directement sa discussion lors des relances. Exemple :
-                    facebook.com/messages/t/9918260078190044
-                  </small>
+                    placeholder="Collez l'URL de la conversation Messenger" /> 
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
