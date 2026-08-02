@@ -1,10 +1,12 @@
 # 🤖 KeepAliveBot — Bot Windows local
 
 Petit bot qui tourne sur **ton PC Windows** et ping le backend Render toutes les
-**10 min** pour l'empêcher de s'endormir (plan gratuit Render = veille après 15 min).
+**58 s** pour l'empêcher de s'endormir (plan gratuit Render = veille après 15 min).
 
-Il s'appuie sur le **Planificateur de tâches Windows** (Task Scheduler) — plus
-robuste qu'une boucle infinie : il survit aux reboots et se relance après un plantage.
+La cadence est tenue par le script lui-même, qui tourne en continu : le
+**Planificateur de tâches Windows** n'accepte pas d'intervalle de répétition
+sous la minute. Il sert donc à lancer le bot à l'ouverture de session et à le
+relancer s'il s'arrête — d'où la survie aux redémarrages et aux plantages.
 
 ---
 
@@ -24,8 +26,8 @@ remplaçant.
 
 | Fichier | Rôle |
 |---|---|
-| `ping-render.ps1` | Ping l'URL une fois et écrit dans `ping.log` |
-| `install-task.ps1` | Installe la tâche planifiée (ping toutes les 10 min) |
+| `ping-render.ps1` | Boucle de ping (toutes les 58 s) et écriture dans `ping.log` |
+| `install-task.ps1` | Installe la tâche planifiée qui lance le bot |
 | `uninstall-task.ps1` | Supprime la tâche planifiée |
 | `ping.log` | Historique des pings (créé automatiquement) |
 
@@ -41,8 +43,8 @@ remplaçant.
      ```
 3. Message vert `Tache 'HMA-KeepAlive' installee` → c'est bon. ✅
 
-La tâche démarre **immédiatement**, puis se répète toutes les 10 min, et se
-relance automatiquement à chaque ouverture de session Windows.
+Le bot démarre **immédiatement**, ping toutes les 58 s, et se relance
+automatiquement à chaque ouverture de session Windows.
 
 ## ✅ Vérifier que ça marche
 
@@ -58,8 +60,12 @@ relance automatiquement à chaque ouverture de session Windows.
 ## 🔧 Changer l'URL ou l'intervalle
 
 - **URL** : modifie la variable `$Url` en haut de `ping-render.ps1`.
-- **Intervalle** : modifie `-Minutes 10` dans `install-task.ps1`, puis relance
-  `install-task.ps1` (il remplace l'ancienne tâche).
+- **Intervalle** : modifie `$IntervalleSec` en haut de `ping-render.ps1`, puis
+  relance `install-task.ps1` pour redémarrer le bot avec la nouvelle cadence.
+
+> À 58 s, le bot envoie environ **1 490 requêtes par jour**. Render ne se met
+> en veille qu'après **15 min** sans trafic : un intervalle de plusieurs
+> minutes suffirait, et allègerait d'autant ton PC et ta connexion.
 
 ---
 
