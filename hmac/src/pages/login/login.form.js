@@ -468,27 +468,29 @@ export default function LoginForm() {
 
       {/* ── Demande de nouveau code ── */}
       {oubliOuvert && (
-        <div className="modal-overlay" onClick={() => setOubliOuvert(false)}>
-          <div
-            className="modal-content-pro"
-            style={{ maxWidth: 400 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header-pro">
-              <h6>Code oublié</h6>
-              <button className="btn-close" onClick={() => setOubliOuvert(false)} />
+        <div className="auth-modal-fond" onClick={() => setOubliOuvert(false)}>
+          <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="auth-modal-entete">
+              <h4>Code oublié</h4>
+              <button
+                type="button"
+                className="auth-modal-fermer"
+                onClick={() => setOubliOuvert(false)}
+                aria-label="Fermer"
+              >
+                ×
+              </button>
             </div>
-            <form onSubmit={demanderNouveauCode} className="p-4">
-              <p className="text-muted" style={{ fontSize: "0.82rem" }}>
+            <form onSubmit={demanderNouveauCode} className="auth-modal-corps">
+              <p>
                 Votre demande est transmise au propriétaire. Une fois qu'il
                 l'aura acceptée, il vous communiquera un nouveau code à
                 4 chiffres, que vous changerez à la connexion.
               </p>
-              <div className="mb-3">
-                <label className="form-label">Votre identifiant</label>
+              <label>Votre identifiant</label>
+              <div className="inputRow">
                 <input
                   type="text"
-                  className="form-control form-control-sm"
                   autoComplete="off"
                   placeholder="Ex. : BENALY"
                   value={oubliIdPS}
@@ -496,16 +498,16 @@ export default function LoginForm() {
                   autoFocus
                 />
               </div>
-              <div className="d-flex justify-content-end gap-2">
+              <div className="auth-modal-actions">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary btn-sm"
+                  className="secondaire"
                   onClick={() => setOubliOuvert(false)}
                 >
-                  Annuler
+                  <span>Annuler</span>
                 </button>
-                <button type="submit" className="btn btn-primary btn-sm" disabled={oubliEnvoi}>
-                  {oubliEnvoi ? "Envoi..." : "Envoyer la demande"}
+                <button type="submit" disabled={oubliEnvoi}>
+                  <span>{oubliEnvoi ? "Envoi..." : "Envoyer"}</span>
                 </button>
               </div>
             </form>
