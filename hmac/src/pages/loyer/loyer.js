@@ -30,7 +30,14 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger, TEL_BAILLEUR } from "../../config/contact";
-import { moisExigibles, montantDu, jourEntree, libelleEcheance, libelleJour } from "../../config/echeance";
+import {
+  moisExigibles,
+  montantDu,
+  partExigible,
+  jourEntree,
+  libelleEcheance,
+  libelleJour,
+} from "../../config/echeance";
 import "./loyer.css";
 
 const MOIS = [
@@ -488,21 +495,35 @@ export default function Loyer() {
   }
 
   function renderCell(loc, moisIndex) {
-    const p = getCellData(loc.id, moisIndex + 1);
+    const mois = moisIndex + 1;
+    const p = getCellData(loc.id, mois);
+
+    // Locataire entré en cours de mois : ce mois-ci, seule la moitié du loyer
+    // est échue, l'autre moitié tombera avec le versement du mois prochain.
+    const demiPeriode = partExigible(loc, mois, annee) === 0.5;
+    const duCeMois = montantDu(loc, mois, annee);
+    const infoDemi = demiPeriode
+      ? `\nEntré le ${jourEntree(loc)} : seuls ${duCeMois.toLocaleString()} Ar (une demi-période) sont dus pour l'instant. Le solde tombera avec le versement de ${MOIS_FULL[mois] || "l'an prochain"}.`
+      : "";
+
     if (!p) {
       return (
         <span
-          className="cell-vide"
-          title="Cliquer pour enregistrer"
-          onClick={() => setModalCell({ loc, mois: moisIndex + 1, annee })}
+          className={`cell-vide ${demiPeriode ? "cell-vide-demi" : ""}`}
+          title={"Cliquer pour enregistrer" + infoDemi}
+          onClick={() => setModalCell({ loc, mois, annee })}
         >
-          —
+          {demiPeriode ? "½" : "—"}
         </span>
       );
     }
     const total = ((p.montantLoyer || 0) + (p.montantJIRAMA || 0)) / 1000;
-    const cls =
-      p.statut === "PAYE"
+    // Une demi-période réglée n'est pas un impayé partiel : c'est à jour.
+    const demiSoldee =
+      demiPeriode && p.statut === "PARTIEL" && (p.montantLoyer || 0) >= duCeMois && duCeMois > 0;
+    const cls = demiSoldee
+      ? "cell-demi"
+      : p.statut === "PAYE"
         ? "cell-paye"
         : p.statut === "PARTIEL"
           ? "cell-partiel"
@@ -529,11 +550,13 @@ export default function Loyer() {
     return (
       <span
         className={cls}
-        title={`Loyer: ${p.montantLoyer?.toLocaleString()} | JIRAMA: ${p.montantJIRAMA?.toLocaleString()}`}
-        onClick={() =>
-          setModalCell({ loc, mois: moisIndex + 1, annee, existing: p })
+        title={
+          `Loyer: ${p.montantLoyer?.toLocaleString()} | JIRAMA: ${p.montantJIRAMA?.toLocaleString()}` +
+          infoDemi
         }
+        onClick={() => setModalCell({ loc, mois, annee, existing: p })}
       >
+        {demiPeriode && <span className="pastille-demi">½</span>}
         {total.toFixed(0)}k
       </span>
     );
@@ -783,6 +806,12 @@ export default function Loyer() {
                     </span>
                     <span className="legende-item">
                       <span className="cell-doute"><span className="pastille-doute">!</span>150k</span> Doute
+                    </span>
+                    <span
+                      className="legende-item"
+                      title="Locataire entré en cours de mois : seule la moitié du mois est due pour l'instant"
+                    >
+                      <span className="cell-demi"><span className="pastille-demi">½</span>75k</span> Demi-période
                     </span>
                     <span className="legende-item">
                       <span className="badge-rdc">1</span> RDC

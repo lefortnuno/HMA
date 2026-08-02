@@ -265,14 +265,49 @@ body::-webkit-scrollbar {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   max-height: calc(100vh - 32px);
+  /* dvh : sur mobile, la barre d'adresse ne rogne plus la modale. */
+  max-height: calc(100dvh - 32px);
   display: flex;
   flex-direction: column;
 }
 
-/* Le corps de la modale : tout ce qui suit l'en-tête. */
+/* Le corps de la modale : tout ce qui suit l'en-tête.
+   La barre de défilement native (large, grise, collée au bord arrondi) jurait
+   avec le reste : on la redessine fine, discrète, détachée du bord. */
 .modal-content-pro > *:not(.modal-header-pro) {
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-gutter: stable;
+}
+
+.modal-content-pro > *:not(.modal-header-pro)::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-content-pro > *:not(.modal-header-pro)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content-pro > *:not(.modal-header-pro)::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 99px;
+  /* Bordure transparente : le curseur paraît fin et décollé du bord. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.modal-content-pro > *:not(.modal-header-pro)::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  background-clip: content-box;
+}
+
+/* L'en-tête se détache dès que le contenu défile sous lui. */
+.modal-header-pro {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 }
 
 .modal-header-pro {

@@ -14,12 +14,17 @@ const Compte = {};
 // Tirage uniforme et non predictible (pas Math.random).
 Compte.codeAleatoire = () => String(crypto.randomInt(0, 10000)).padStart(4, "0");
 
-// Identifiant lisible : lettres et chiffres uniquement, sans accent.
+/**
+ * Identifiant de connexion : MAJUSCULES, sans accent ni caractere special.
+ * "Gaëlle" -> "GAELLE". Le code se saisit au pave numerique sur telephone,
+ * l'identifiant doit donc etre le plus simple possible a taper.
+ */
 Compte.identifiantDe = (nom) =>
   String(nom || "")
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^A-Za-z0-9]/g, "") || "Locataire";
+    .replace(/[̀-ͯ]/g, "") // accents combinants
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toUpperCase() || "LOCATAIRE";
 
 // Trouve un identifiant libre : "Nom", puis "NomChambre", puis "NomChambre2"...
 function identifiantLibre(base, chambre, essai, cb) {
