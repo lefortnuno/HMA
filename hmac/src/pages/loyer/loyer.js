@@ -30,7 +30,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger, TEL_BAILLEUR } from "../../config/contact";
-import { moisExigibles, montantDu, libelleEcheance, libelleJour } from "../../config/echeance";
+import { moisExigibles, montantDu, jourEntree, libelleEcheance, libelleJour } from "../../config/echeance";
 import "./loyer.css";
 
 const MOIS = [
@@ -954,6 +954,26 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
   });
   const [saving, setSaving] = useState(false);
 
+  // ── Report de la demi-avance sur le mois suivant ──
+  // Un locataire entré en cours de mois règle à cheval : son versement solde
+  // le mois qu'on est en train de saisir ET avance la moitié du suivant.
+  // Solder juillet, c'est donc aussi créditer 75 000 Ar sur août.
+  const aCheval = jourEntree(cell.loc) > 1;
+  const demiLoyer = Math.round((cell.loc.loyer || 0) / 2);
+  const moisSuivant = cell.mois < 12 ? cell.mois + 1 : null;
+  const suivantExistant = moisSuivant
+    ? ((paiements || {})[cell.loc.id] || {})[moisSuivant]
+    : null;
+  const dejaAvance = suivantExistant?.montantLoyer || 0;
+  const reportPossible =
+    aCheval &&
+    form.statut === "PAYE" &&
+    !!moisSuivant &&
+    demiLoyer > 0 &&
+    suivantExistant?.statut !== "PAYE" &&
+    dejaAvance < demiLoyer;
+  const [reporter, setReporter] = useState(true);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
@@ -966,6 +986,24 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
     const req = cell.existing?.id
       ? axios.put(`loyer/paiements/${cell.existing.id}`, data, u_info.opts)
       : axios.post("loyer/paiements", data, u_info.opts);
+
+    // Avance d'une demi-période sur le mois suivant, une fois le mois soldé.
+    const enregistrerAvance = () => {
+      if (!reportPossible || !reporter) return Promise.resolve();
+      const avance = {
+        locataireId: cell.loc.id,
+        mois: moisSuivant,
+        annee: cell.annee,
+        statut: "PARTIEL",
+        montantLoyer: demiLoyer,
+        montantJIRAMA: suivantExistant?.montantJIRAMA || 0,
+        datePaiement: form.datePaiement,
+      };
+      return suivantExistant?.id
+        ? axios.put(`loyer/paiements/${suivantExistant.id}`, avance, u_info.opts)
+        : axios.post("loyer/paiements", avance, u_info.opts);
+    };
+
     req
       .then((res) => {
         if (res.status === 202) {
@@ -973,8 +1011,14 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
           onClose();
           return;
         }
-        toast.success("Paiement enregistré !");
-        onSave();
+        return enregistrerAvance().then(() => {
+          toast.success(
+            reportPossible && reporter
+              ? `Paiement enregistré — ${demiLoyer.toLocaleString()} Ar avancés sur ${MOIS_FULL[moisSuivant - 1]}.`
+              : "Paiement enregistré !"
+          );
+          onSave();
+        });
       })
       .catch((err) =>
         toast.error(err.response?.data?.message || "Erreur d'enregistrement")
@@ -1293,6 +1337,30 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
               <option value="IMPAYE">Impayé</option>
             </select>
           </div>
+
+          {/* Entré en cours de mois : le versement solde ce mois et avance
+              la moitié du suivant. */}
+          {reportPossible && (
+            <label
+              className="d-flex align-items-start gap-2 rounded-3 p-2 mb-3"
+              style={{ background: "#eff6ff", border: "1px solid #bfdbfe", cursor: "pointer" }}
+            >
+              <input
+                type="checkbox"
+                className="form-check-input mt-1"
+                checked={reporter}
+                onChange={(e) => setReporter(e.target.checked)}
+              />
+              <span style={{ fontSize: "0.78rem", color: "#1e40af" }}>
+                Avancer <strong>{demiLoyer.toLocaleString()} Ar</strong> sur{" "}
+                <strong>{MOIS_FULL[moisSuivant - 1]}</strong>
+                <span className="d-block" style={{ fontSize: "0.72rem", color: "#3b82f6" }}>
+                  {cell.loc.nom} est entré le {jourEntree(cell.loc)} : son versement
+                  solde {moisNomFull} et couvre la première moitié du mois suivant.
+                </span>
+              </span>
+            </label>
+          )}
           <div className="row g-2 mb-3">
             <div className="col">
               <label className="form-label small mb-1">

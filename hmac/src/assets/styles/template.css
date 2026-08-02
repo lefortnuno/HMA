@@ -255,6 +255,8 @@ body::-webkit-scrollbar {
   padding: 16px;
 }
 
+/* Un formulaire long (photo, coordonnées, échéances…) dépassait le bas de
+   l'écran sans pouvoir être atteint : l'en-tête reste fixe et le corps défile. */
 .modal-content-pro {
   background: var(--white);
   border-radius: 14px;
@@ -262,6 +264,15 @@ body::-webkit-scrollbar {
   max-width: 440px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Le corps de la modale : tout ce qui suit l'en-tête. */
+.modal-content-pro > *:not(.modal-header-pro) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal-header-pro {
@@ -271,6 +282,7 @@ body::-webkit-scrollbar {
   justify-content: space-between;
   align-items: center;
   background: #f8fafc;
+  flex-shrink: 0;
 }
 
 .modal-header-pro h6 {

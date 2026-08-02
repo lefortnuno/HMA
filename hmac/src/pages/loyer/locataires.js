@@ -369,6 +369,7 @@ export default function Locataires() {
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Loyer</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Date entrée</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Paiement habituel</th>
+                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Règlement</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Statut</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Actions</th>
               </tr>
@@ -424,10 +425,19 @@ export default function Locataires() {
                         non défini
                       </span>
                     )}
-                    {/* Le sens du reglement change le mois reellement du. */}
-                    <div style={{ fontSize: "0.68rem", color: "#94a3b8", whiteSpace: "nowrap" }}>
-                      {estAvance(loc) ? "d'avance" : "après conso. (M+1)"}
-                    </div>
+                  </td>
+                  {/* Le sens du règlement change le mois réellement dû. */}
+                  <td title={libelleEcheance(loc)}>
+                    <span
+                      className="rounded-pill px-2 fw-semibold"
+                      style={
+                        estAvance(loc)
+                          ? { background: "#f0fdf4", color: "#16a34a", fontSize: "0.72rem", whiteSpace: "nowrap" }
+                          : { background: "#fff7ed", color: "#c2410c", fontSize: "0.72rem", whiteSpace: "nowrap" }
+                      }
+                    >
+                      {estAvance(loc) ? "Avant conso." : "Après conso."}
+                    </span>
                   </td>
                   <td>
                     <span className={loc.actif ? "badge-paye" : "badge-impaye"}>
