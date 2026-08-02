@@ -53,12 +53,12 @@ export default function AdminVitrine() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  function fetchBiens() {
-    setLoading(true);
+  function fetchBiens(silent = false) {
+    if (!silent) setLoading(true);
     axios.get("vitrine/biens", u_info.opts)
       .then(r => setBiens(r.data || []))
       .catch(() => setBiens([]))
-      .finally(() => setLoading(false));
+      .finally(() => { if (!silent) setLoading(false); });
   }
 
   function openModal() {
@@ -122,7 +122,7 @@ export default function AdminVitrine() {
       .then(() => {
         toast.success("Bien publié !");
         closeModal();
-        fetchBiens();
+        fetchBiens(true);
       })
       .catch(() => toast.error("Erreur lors de la publication"))
       .finally(() => setSaving(false));
@@ -133,7 +133,8 @@ export default function AdminVitrine() {
       .put(`vitrine/biens/${bien.id}`, { ...bien, disponible: !bien.disponible }, u_info.opts)
       .then(() => {
         toast.success(`Bien ${!bien.disponible ? "marqué disponible" : "marqué indisponible"}`);
-        fetchBiens();
+        setBiens((prev) => prev.map((b) => (b.id === bien.id ? { ...b, disponible: !b.disponible } : b)));
+        fetchBiens(true);
       })
       .catch(() => toast.error("Erreur"));
   }
@@ -141,7 +142,10 @@ export default function AdminVitrine() {
   function handleDelete(id) {
     axios
       .delete(`vitrine/biens/${id}`, u_info.opts)
-      .then(() => { toast.success("Bien supprimé"); fetchBiens(); setToDelete(null); })
+      .then(() => { toast.success("Bien supprimé");
+        setBiens((prev) => prev.filter((b) => b.id !== id));
+        setToDelete(null);
+        fetchBiens(true); })
       .catch(() => toast.error("Erreur de suppression"));
   }
 

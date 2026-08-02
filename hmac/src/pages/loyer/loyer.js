@@ -100,7 +100,8 @@ export default function Loyer() {
   const [modalCell, setModalCell] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
+    // Skeleton seulement si le tableau est encore vide (1er chargement).
+    if (locataires.length === 0) setLoading(true);
     Promise.all([
       fetchLocataires(),
       fetchPaiements(),

@@ -90,7 +90,7 @@ export default function FinanceBilan() {
   }, [annee]);
 
   function fetchBilan() {
-    setLoading(true);
+    if (!data) setLoading(true);
     axios
       .get(
         `finance/bilan?mois=${mois}&annee=${annee}&userId=${u_info.u_id}`,

@@ -51,12 +51,13 @@ export default function User() {
 
   useEffect(() => { fetchUsers(); }, []);
 
-  function fetchUsers() {
-    setLoading(true);
+  // silent = true : rafraichit en arriere-plan, sans skeleton plein ecran
+  function fetchUsers(silent = false) {
+    if (!silent) setLoading(true);
     axios.get(url_req, u_info.opts)
       .then(r => { if (r.status === 200) setUsers(r.data); else toast.warning("Accès refusé"); })
       .catch(() => setUsers([]))
-      .finally(() => setLoading(false));
+      .finally(() => { if (!silent) setLoading(false); });
   }
 
   const filtered = users.filter(u =>
@@ -230,7 +231,11 @@ export default function User() {
         <DeleteModal
           show={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
-          onConfirm={() => { setShowDeleteModal(false); fetchUsers(); }}
+          onConfirm={() => {
+            setShowDeleteModal(false);
+            setUsers((prev) => prev.filter((x) => x.id !== selectedEntity.id));
+            fetchUsers(true);
+          }}
           entity={selectedEntity}
           entityName="utilisateur"
           auth={u_info.opts}

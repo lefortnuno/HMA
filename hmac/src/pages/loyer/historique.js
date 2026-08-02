@@ -36,7 +36,7 @@ export default function Historique() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    if (!histo.length) setLoading(true);
     axios
       .get(`loyer/historique?bienId=${bienId}`, u_info.opts)
       .then((r) => setHisto(r.data || []))

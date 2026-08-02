@@ -27,12 +27,12 @@ export default function FinanceCharges() {
 
   useEffect(() => { fetch(); }, [mois, annee]);
 
-  function fetch() {
-    setLoading(true);
+  function fetch(silent = false) {
+    if (!silent) setLoading(true);
     axios.get(`finance/charges?mois=${mois}&annee=${annee}&userId=${u_info.u_id}`, u_info.opts)
       .then(r  => setCharges(r.data || []))
       .catch(() => setCharges([]))
-      .finally(() => setLoading(false));
+      .finally(() => { if (!silent) setLoading(false); });
   }
 
   function openAdd() { setEditTarget(null); setForm({ nom: "", montant: "" }); setShowModal(true); }
@@ -47,14 +47,14 @@ export default function FinanceCharges() {
     const req = editTarget
       ? axios.put(`finance/charges/${editTarget.id}`, payload, u_info.opts)
       : axios.post("finance/charges", payload, u_info.opts);
-    req.then(() => { toast.success(editTarget ? "Modifié" : "Ajouté"); setShowModal(false); fetch(); })
+    req.then(() => { toast.success(editTarget ? "Modifié" : "Ajouté"); setShowModal(false); fetch(true); })
       .catch(() => toast.error("Erreur"))
       .finally(() => setSaving(false));
   }
 
   function handleDelete(id) {
     axios.delete(`finance/charges/${id}?userId=${u_info.u_id}`, u_info.opts)
-      .then(() => { toast.success("Supprimé"); fetch(); })
+      .then(() => { toast.success("Supprimé"); setCharges((prev) => prev.filter((x) => x.id !== id)); fetch(true); })
       .catch(() => toast.error("Erreur"));
   }
 

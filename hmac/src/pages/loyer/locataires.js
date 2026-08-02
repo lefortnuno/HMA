@@ -162,7 +162,7 @@ export default function Locataires() {
   // silent = true : rafraichit sans afficher le skeleton
   // (utilise apres ajout/modif/suppression pour rester fluide).
   function fetchLocataires(silent = false) {
-    if (!silent) setLoading(true);
+    if (!silent && locataires.length === 0) setLoading(true);
     axios
       .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
       .then((r) => setLocataires(r.data || []))

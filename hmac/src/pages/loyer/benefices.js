@@ -51,7 +51,9 @@ export default function Benefices() {
   }
 
   function fetchBenefices() {
-    setLoading(true);
+    // Skeleton uniquement au tout premier chargement : les changements de
+    // mois/annee/appartement rafraichissent en arriere-plan.
+    if (!data) setLoading(true);
     Promise.all([
       axios
         .get(`loyer/benefices?mois=${mois}&annee=${annee}&bienId=${bienId}`, u_info.opts)

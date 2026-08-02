@@ -42,12 +42,12 @@ export default function FinanceDepenses() {
 
   const { start, end } = getWeekBounds(refDate);
 
-  const fetch = useCallback(() => {
-    setLoading(true);
+  const fetch = useCallback((silent = false) => {
+    if (!silent) setLoading(true);
     axios.get(`finance/depenses?start=${toISO(start)}&end=${toISO(end)}&userId=${u_info.u_id}`, u_info.opts)
       .then(r  => setDepenses(r.data || []))
       .catch(() => setDepenses([]))
-      .finally(() => setLoading(false));
+      .finally(() => { if (!silent) setLoading(false); });
   }, [toISO(start), toISO(end)]);
 
   useEffect(() => { fetch(); }, [toISO(start)]);
@@ -75,14 +75,14 @@ export default function FinanceDepenses() {
     const annee   = now.getFullYear();
     const semaine = semaineDuMois(now.getDate());
     axios.post("finance/depenses", { userId: u_info.u_id, nom: form.nom, montant: +form.montant, date_depense, heure_depense, semaine, mois, annee }, u_info.opts)
-      .then(() => { toast.success("Dépense ajoutée"); setShowModal(false); fetch(); })
+      .then(() => { toast.success("Dépense ajoutée"); setShowModal(false); fetch(true); })
       .catch(() => toast.error("Erreur"))
       .finally(() => setSaving(false));
   }
 
   function handleDelete(id) {
     axios.delete(`finance/depenses/${id}?userId=${u_info.u_id}`, u_info.opts)
-      .then(() => { toast.success("Supprimée"); fetch(); })
+      .then(() => { toast.success("Supprimée"); fetch(true); })
       .catch(() => toast.error("Erreur"));
   }
 

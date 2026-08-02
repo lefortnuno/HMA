@@ -80,6 +80,7 @@ export default function Depenses() {
       .delete(`loyer/depenses/${id}`, u_info.opts)
       .then(() => {
         toast.success("Dépense supprimée");
+        setDepenses((prev) => prev.filter((x) => x.id !== id));
         fetchDepenses();
       })
       .catch(() => toast.error("Erreur de suppression"));
