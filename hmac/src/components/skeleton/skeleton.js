@@ -197,3 +197,76 @@ export function SkBenefices() {
     </div>
   );
 }
+
+/* ── Sk rows generiques pour n'importe quel <tbody> ────────
+   Remplace les "Chargement…" en texte brut par un squelette
+   coherent avec le reste de l'application. */
+export function SkTableRows({ cols = 5, rows = 6, avatar = true }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, r) => (
+        <tr key={r}>
+          {Array.from({ length: cols }).map((_, c) => (
+            <td key={c} style={{ padding: "12px 10px" }}>
+              {c === 0 && avatar ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Sk w={34} h={34} style={{ borderRadius: "50%", flexShrink: 0 }} />
+                  <Sk w={110} h={12} className="sk-h3" />
+                </div>
+              ) : c === cols - 1 ? (
+                <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                  <Sk w={32} h={32} className="sk-btn" />
+                  <Sk w={32} h={32} className="sk-btn" />
+                </div>
+              ) : (
+                <Sk w={`${55 + ((r * 7 + c * 13) % 35)}%`} h={12} className="sk-h4" />
+              )}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
+}
+
+/* ── Sk : liste de lignes simples (hors tableau) ──────────── */
+export function SkListeLignes({ lignes = 5 }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {Array.from({ length: lignes }).map((_, i) => (
+        <div
+          key={i}
+          className="d-flex align-items-center justify-content-between gap-3"
+          style={{ padding: "10px 4px", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+            <Sk w={`${45 + ((i * 11) % 30)}%`} h={12} className="sk-h3" />
+            <Sk w={90} h={10} className="sk-h4" />
+          </div>
+          <Sk w={80} h={14} className="sk-h3" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Sk : zone de graphique ───────────────────────────────── */
+export function SkGraphique({ hauteur = 220 }) {
+  const barres = [45, 70, 35, 85, 55, 75, 40, 65];
+  return (
+    <div
+      style={{
+        height: hauteur,
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "space-around",
+        gap: 8,
+        padding: "12px 8px",
+      }}
+    >
+      {barres.map((h, i) => (
+        <Sk key={i} w="9%" h={`${h}%`} style={{ borderRadius: "6px 6px 0 0" }} />
+      ))}
+    </div>
+  );
+}

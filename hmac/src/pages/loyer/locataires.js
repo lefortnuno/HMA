@@ -121,6 +121,7 @@ function initForm() {
     actif: true,
     caution: 0,
     photo: "",
+    messengerId: "",
   };
 }
 
@@ -283,6 +284,7 @@ export default function Locataires() {
         actif: loc.actif !== undefined ? loc.actif : true,
         caution: loc.caution || 0,
         photo: loc.photo || "",
+        messengerId: loc.messengerId || "",
       });
       setShowEditModal(true);
     } else {
@@ -631,6 +633,16 @@ export default function Locataires() {
                   <input type="number" name="caution" min="0" className="form-control form-control-sm"
                     value={editForm.caution} onChange={handleEditChange} placeholder="0" />
                 </div>
+                <div className="col-12">
+                  <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
+                  <input type="text" name="messengerId" className="form-control form-control-sm"
+                    value={editForm.messengerId || ""} onChange={handleEditChange}
+                    placeholder="Collez l'URL de la conversation Messenger" />
+                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                    Ouvre directement sa discussion lors des relances. Exemple :
+                    facebook.com/messages/t/9918260078190044
+                  </small>
+                </div>
                 <div className="col-sm-6 d-flex align-items-end pb-1">
                   <div className="form-check">
                     <input type="checkbox" name="actif" className="form-check-input" id="editActifCheck"
@@ -733,6 +745,16 @@ export default function Locataires() {
                   <label className="form-label">Caution / dépôt de garantie (Ar)</label>
                   <input type="number" name="caution" min="0" className="form-control form-control-sm"
                     value={addForm.caution} onChange={handleAddChange} placeholder="0" />
+                </div>
+                <div className="col-12">
+                  <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
+                  <input type="text" name="messengerId" className="form-control form-control-sm"
+                    value={addForm.messengerId || ""} onChange={handleAddChange}
+                    placeholder="Collez l'URL de la conversation Messenger" />
+                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                    Ouvre directement sa discussion lors des relances. Exemple :
+                    facebook.com/messages/t/9918260078190044
+                  </small>
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">

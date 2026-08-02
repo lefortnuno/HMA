@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { BsCashStack, BsPlus, BsFillTrashFill, BsChevronLeft, BsChevronRight, BsCalendar3 } from "react-icons/bs";
 import "../loyer/loyer.css";
 import "./finance.css";
+import { SkListeLignes } from "../../components/skeleton/skeleton";
 
 const MOIS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const MOIS_COURT = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -127,7 +128,7 @@ export default function FinanceDepenses() {
               </div>
 
               {loading ? (
-                <div className="text-center py-5 text-muted" style={{ fontSize: "0.85rem" }}>Chargement…</div>
+                <div className="p-3"><SkListeLignes lignes={5} /></div>
               ) : depenses.length === 0 ? (
                 <div className="text-center py-5 text-muted">
                   <p className="mb-2">Aucune dépense cette semaine</p>

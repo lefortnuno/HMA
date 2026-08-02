@@ -12,6 +12,7 @@ import {
   BsHouseDoor, BsBuilding, BsCheckCircle, BsXCircle,
   BsSearch, BsGeoAlt,
 } from "react-icons/bs";
+import { SkTableRows } from "../../components/skeleton/skeleton";
 import "./vitrine.css";
 
 const FEATURES = ["Eau","Électricité","Parking","Jardin","Sécurité","Meublé","Wifi","Climatisation","Cuisine équipée"];
@@ -310,7 +311,7 @@ export default function AdminVitrine() {
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan={7} className="text-center py-4 text-muted">Chargement…</td></tr>
+                      <SkTableRows cols={7} rows={5} />
                     ) : biensFiltres.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="text-center py-5 text-muted">

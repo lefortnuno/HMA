@@ -75,7 +75,7 @@ Utilisateur.getAllUtilisateurs = (result) => {
   dbConn.query(
     `SELECT m.id, m.nom, m.prenom, m.idPS, m.karazana, m.photo,
             m.locataireId, m.mdpTemporaire, m.createdAt,
-            l.tel, l.chambre, l.etage
+            l.tel, l.chambre, l.etage, l.messengerId
      FROM mpampiasa m
      LEFT JOIN locataire l ON l.id = m.locataireId
      ORDER BY m.id DESC`,

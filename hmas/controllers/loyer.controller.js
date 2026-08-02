@@ -57,7 +57,7 @@ function execCreateLocataire(data, cb) {
 }
 
 function normaliseLocataire(body) {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo } = body;
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId } = body;
   return {
     nom, prenom, chambre, etage, loyer, tel, email,
     dateEntree: dateEntree || null,
@@ -65,6 +65,7 @@ function normaliseLocataire(body) {
     bienId: Number(bienId) || 0,
     caution: Number(caution) || 0,
     photo: photo || null, // data URL base64 ou avatar predefini
+    messengerId: messengerId || null, // identifiant de conversation Messenger
   };
 }
 

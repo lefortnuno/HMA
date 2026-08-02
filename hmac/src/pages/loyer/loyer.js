@@ -321,7 +321,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                       style={{ background: "#0866FF", color: "#fff", fontSize: "0.72rem", whiteSpace: "nowrap" }}
                       title={`Copier le rappel et ouvrir Messenger pour ${loc.nom}`}
                       onClick={() => {
-                        copierEtOuvrirMessenger(texteRelance(loc, reste), loc.nom);
+                        copierEtOuvrirMessenger(texteRelance(loc, reste), loc.nom, loc.messengerId);
                         toast.info("Rappel copié — collez-le dans la conversation");
                       }}
                     >

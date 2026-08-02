@@ -4,6 +4,7 @@ import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
+import { SkGraphique } from "../../components/skeleton/skeleton";
 import {
   LineChart,
   Line,
@@ -375,12 +376,7 @@ export default function FinanceBilan() {
                         justifyContent: "center",
                       }}
                     >
-                      <span
-                        className="text-muted"
-                        style={{ fontSize: "0.85rem" }}
-                      >
-                        Chargement…
-                      </span>
+                      <SkGraphique />
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height={220}>

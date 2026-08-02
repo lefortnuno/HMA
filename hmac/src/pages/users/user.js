@@ -4,6 +4,7 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
 import DeleteModal from "../../components/modals/delete";
+import { SkTableRows } from "../../components/skeleton/skeleton";
 import { copierEtOuvrirMessenger } from "../../config/contact";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -60,7 +61,7 @@ export default function User() {
     axios
       .post(`utilisateur/${u.id}/acces`, {}, u_info.opts)
       .then((r) => {
-        setAcces({ ...r.data, tel: u.tel || "" });
+        setAcces({ ...r.data, tel: u.tel || "", messengerId: u.messengerId || "" });
         fetchUsers(true);
       })
       .catch((e) => toast.error(e.response?.data?.message || "Erreur lors de la génération"))
@@ -163,11 +164,7 @@ export default function User() {
 
             {/* Table */}
             <div className="table-pro">
-              {loading ? (
-                <div className="text-center py-5 text-muted" style={{ fontSize: "0.85rem" }}>
-                  Chargement…
-                </div>
-              ) : (
+              {(
                 <div className="tbl-scroll-wrap">
                 <table className="table table-hover mb-0">
                   <thead>
@@ -180,7 +177,9 @@ export default function User() {
                     </tr>
                   </thead>
                   <tbody>
-                    {page.length === 0 ? (
+                    {loading ? (
+                      <SkTableRows cols={5} rows={6} />
+                    ) : page.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center py-4 text-muted" style={{ fontSize: "0.85rem" }}>
                           {search ? "Aucun résultat pour cette recherche" : "Aucun utilisateur"}
@@ -314,7 +313,7 @@ export default function User() {
                   style={{ background: "#0866FF", color: "#fff" }}
                   title="Copie le message et ouvre Messenger"
                   onClick={() => {
-                    copierEtOuvrirMessenger(messageAcces(acces), acces.nom);
+                    copierEtOuvrirMessenger(messageAcces(acces), acces.nom, acces.messengerId);
                     toast.info("Message copié — collez-le dans la conversation");
                   }}>
                   <BsMessenger /> Messenger
