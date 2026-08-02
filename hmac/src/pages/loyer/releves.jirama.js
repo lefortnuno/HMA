@@ -83,7 +83,17 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
     const c = consommations[locId] || { indexPrev: 0, indexCurr: 0 };
     return Math.max(0, (c.indexCurr || 0) - (c.indexPrev || 0));
   };
-  const getMontant = (locId) => getConso(locId) * prixUnitaire;
+  const forfaitDe = (locId) =>
+    Number(locataires.find((l) => l.id === locId)?.jiramaForfait) || 0;
+
+  // Montant releve au compteur, avant application du forfait.
+  const getMontantReleve = (locId) => getConso(locId) * prixUnitaire;
+
+  // Ce que le locataire doit reellement : son forfait, ou sa consommation
+  // si elle le depasse. Sans cela, un locataire au forfait ressortait a 0
+  // et le total ne pouvait pas concorder avec la facture de la compagnie.
+  const getMontant = (locId) =>
+    Math.max(forfaitDe(locId), getMontantReleve(locId));
 
   const totalCalcule = locataires.reduce((s, l) => s + getMontant(l.id), 0);
   const ecart = totalCalcule - montantFacture;
@@ -290,6 +300,13 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                         <span className="fw-bold text-primary" style={{ fontSize: "0.875rem" }}>
                           {getMontant(loc.id).toLocaleString()} Ar
                         </span>
+                        {forfaitDe(loc.id) > 0 && (
+                          <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+                            {getMontantReleve(loc.id) > forfaitDe(loc.id)
+                              ? "compteur au-dessus du forfait"
+                              : "forfait"}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
