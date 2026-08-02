@@ -272,8 +272,12 @@ export default function MesFactures() {
                   <h6 className="fw-bold mb-3">Mes factures — {annee}</h6>
                   {moisConcernes.length === 0 ? (
                     <p className="text-muted mb-0" style={{ fontSize: "0.85rem" }}>
-                      Aucune facture d'eau ou d'électricité pour {annee} — rien à régler
-                      pour l'instant.
+                      Aucune facture d'eau ou d'électricité pour {annee}.
+                      <br />
+                      <small>
+                        Les montants apparaîtront dès que le propriétaire aura relevé
+                        votre compteur, ou dès le premier mois si vous êtes au forfait.
+                      </small>
                     </p>
                   ) : (
                     <>

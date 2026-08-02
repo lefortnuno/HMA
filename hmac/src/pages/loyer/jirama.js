@@ -17,6 +17,7 @@ import {
   BsPeople,
   BsGraphUp,
   BsGraphDown,
+  BsCashCoin,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import { SkLoyerRows } from "../../components/skeleton/skeleton";
@@ -27,6 +28,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger } from "../../config/contact";
+import SaisieReleves from "./releves.jirama";
 import { estAvantEntree } from "../../config/echeance";
 import "./loyer.css";
 
@@ -247,6 +249,9 @@ export default function TableauJirama() {
   const [totauxFacture, setTotauxFacture] = useState({}); // totauxFacture[mois] = facture JIRAMA globale
   const [loading, setLoading] = useState(true);
   const [modalCell, setModalCell] = useState(null);
+  // Deux faces d un meme sujet : ce que la compagnie facture, ce que les
+  // locataires reglent. Les separer en deux pages obligeait a faire l aller-retour.
+  const [vue, setVue] = useState("REGLEMENTS"); // REGLEMENTS | RELEVES
 
   useEffect(() => {
     if (locataires.length === 0) setLoading(true);
@@ -498,12 +503,6 @@ export default function TableauJirama() {
                   ))}
                 </select>
                 <Link
-                  to="/loyer/factures/"
-                  className="btn btn-sm btn-primary d-flex align-items-center gap-1"
-                >
-                  <BsFileEarmarkText /> Relevés
-                </Link>
-                <Link
                   to="/loyer/"
                   className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
                 >
@@ -512,6 +511,41 @@ export default function TableauJirama() {
               </div>
             </div>
 
+
+            {/* Sélecteur de vue */}
+            <div className="d-flex gap-1 mb-3 flex-wrap">
+              {[
+                { cle: "REGLEMENTS", label: "Règlements des locataires", Icon: BsCashCoin },
+                { cle: "RELEVES", label: "Relevés & facture reçue", Icon: BsFileEarmarkText },
+              ].map(({ cle, label, Icon }) => {
+                const actif = vue === cle;
+                return (
+                  <button
+                    key={cle}
+                    className="btn btn-sm d-flex align-items-center gap-2 fw-semibold"
+                    style={{
+                      background: actif ? "#2563eb" : "#f1f5f9",
+                      color: actif ? "#fff" : "#475569",
+                      borderRadius: 8,
+                      fontSize: "0.82rem",
+                    }}
+                    onClick={() => setVue(cle)}
+                  >
+                    <Icon size={14} /> {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {vue === "RELEVES" ? (
+              <SaisieReleves
+                bienId={bienId}
+                mono={bienId !== 0}
+                current={current}
+                onSaved={fetchFactures}
+              />
+            ) : (
+              <>
             {/* Stat cards */}
             <div className="row g-3 mb-4">
               <div className="col-6 col-lg-3">
@@ -728,6 +762,8 @@ export default function TableauJirama() {
                 </table>
               </div>
             </div>
+              </>
+            )}
           </main>
         </div>
       </div>
