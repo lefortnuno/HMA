@@ -82,7 +82,7 @@ Paiement.update = (id, data, result) => {
 Paiement.sumByMoisAnnee = (mois, annee, bienId, result) => {
   let sql = `SELECT
       COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantLoyer ELSE 0 END), 0) AS totalLoyers,
-      COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
+      COALESCE(SUM(CASE WHEN p.statutJIRAMA IN ('PAYE','PARTIEL') THEN p.montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
      FROM paiement_loyer p
      JOIN locataire l ON l.id = p.locataireId
      WHERE p.mois=? AND p.annee=?`;
@@ -101,7 +101,7 @@ Paiement.sumByMoisAnnee = (mois, annee, bienId, result) => {
 Paiement.sumByAnnee = (annee, bienId, result) => {
   let sql = `SELECT p.mois,
       COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantLoyer ELSE 0 END), 0) AS totalLoyers,
-      COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
+      COALESCE(SUM(CASE WHEN p.statutJIRAMA IN ('PAYE','PARTIEL') THEN p.montantJIRAMA ELSE 0 END), 0) AS totalJIRAMA
      FROM paiement_loyer p
      JOIN locataire l ON l.id = p.locataireId
      WHERE p.annee=?`;

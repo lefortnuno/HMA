@@ -18,6 +18,8 @@ router.put("/factures/:id", user.checkUtilisateur, ctrl.updateFacture);
 // ── Paiements ─────────────────────────────────────────────────
 router.get("/paiements",      user.checkUtilisateur, ctrl.getPaiements);
 router.post("/paiements",     user.checkUtilisateur, ctrl.createPaiement);
+// Reglement de l'electricite, saisi depuis le tableau JIRAMA.
+router.post("/paiements/jirama", user.checkUtilisateur, ctrl.upsertJirama);
 router.put("/paiements/:id",  user.checkUtilisateur, ctrl.updatePaiement);
 
 // ── Dépenses ──────────────────────────────────────────────────

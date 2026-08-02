@@ -298,6 +298,7 @@ module.exports.decideValidation = (req, res) => {
         montantLoyer: a.montantLoyer,
         montantJIRAMA: a.montantJIRAMA || 0,
         statut: a.statut,
+        statutJIRAMA: a.statutJIRAMA || (a.montantJIRAMA > 0 ? "PAYE" : "IMPAYE"),
         datePaiement: a.datePaiement ? String(a.datePaiement).split("T")[0] : null,
       };
       if (!data.locataireId) return badRequest(res, "Demande de paiement invalide.");
@@ -536,22 +537,41 @@ function metaLocataire(locataireId, cb) {
 }
 
 function validePaiement(body) {
-  const { mois, annee, montantLoyer, montantJIRAMA, statut } = body;
+  const { mois, annee, montantLoyer, montantJIRAMA, statut, statutJIRAMA } = body;
   if (!V.isMoisValide(mois)) return "Mois invalide (1-12).";
   if (!V.isAnneeValide(annee)) return "Année invalide.";
   if (!V.isMontantValide(montantLoyer)) return "Montant loyer invalide.";
   if (montantJIRAMA !== undefined && !V.isMontantValide(montantJIRAMA))
     return "Montant JIRAMA invalide.";
   if (!V.isStatutValide(statut)) return "Statut invalide (PAYE/PARTIEL/IMPAYE).";
+  // Le JIRAMA se regle independamment du loyer : il a son propre statut.
+  if (statutJIRAMA !== undefined && !V.isStatutValide(statutJIRAMA))
+    return "Statut JIRAMA invalide (PAYE/PARTIEL/IMPAYE).";
   return null;
 }
+
+// Statut JIRAMA retenu, avec repli sur l'existant puis sur IMPAYE.
+const statutJiramaDe = (body, existant) =>
+  V.isStatutValide(body.statutJIRAMA)
+    ? body.statutJIRAMA
+    : existant?.statutJIRAMA || "IMPAYE";
 
 module.exports.createPaiement = (req, res) => {
   const { locataireId, mois, annee, montantLoyer, montantJIRAMA, statut, datePaiement } = req.body;
   const erreur = validePaiement(req.body);
   if (erreur) return badRequest(res, erreur);
 
-  const data = { locataireId, mois, annee, montantLoyer, montantJIRAMA: montantJIRAMA || 0, statut, datePaiement: datePaiement || null };
+  // Le statut JIRAMA se determine a partir de la ligne existante : le tableau
+  // des loyers ne le touche pas, celui du JIRAMA ne touche pas au loyer.
+  Paiement.getExisting(locataireId, mois, annee, (errE, deja) => {
+    if (errE) return sendErr(res, errE);
+    const data = {
+      locataireId, mois, annee, montantLoyer,
+      montantJIRAMA: montantJIRAMA || 0,
+      statut,
+      statutJIRAMA: statutJiramaDe(req.body, deja),
+      datePaiement: datePaiement || null,
+    };
 
   if (isAdmin(req)) {
     return execUpsertPaiement(
@@ -587,6 +607,71 @@ module.exports.createPaiement = (req, res) => {
       );
     });
   });
+  });
+};
+
+/**
+ * Reglement JIRAMA d'un locataire pour un mois.
+ *
+ * Loyer et electricite vivent sur la meme ligne : on repart donc de la ligne
+ * existante et l'on ne remplace que la partie JIRAMA. Sans cela, saisir une
+ * facture d'electricite ecraserait la date ou le montant du loyer.
+ */
+module.exports.upsertJirama = (req, res) => {
+  const { locataireId, mois, annee, montantJIRAMA, statutJIRAMA } = req.body;
+  if (!locataireId) return badRequest(res, "Locataire manquant.");
+  if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  if (!V.isMontantValide(montantJIRAMA)) return badRequest(res, "Montant JIRAMA invalide.");
+  if (!V.isStatutValide(statutJIRAMA)) return badRequest(res, "Statut JIRAMA invalide.");
+
+  Paiement.getExisting(locataireId, mois, annee, (err, existant) => {
+    if (err) return sendErr(res, err);
+
+    const data = {
+      locataireId: Number(locataireId),
+      mois: Number(mois),
+      annee: Number(annee),
+      // Partie loyer conservee telle quelle.
+      montantLoyer: existant ? existant.montantLoyer : 0,
+      statut: existant ? existant.statut : "IMPAYE",
+      datePaiement: existant ? existant.datePaiement : null,
+      // Partie JIRAMA remplacee.
+      montantJIRAMA: Number(montantJIRAMA) || 0,
+      statutJIRAMA,
+    };
+
+    if (isAdmin(req)) {
+      return execUpsertPaiement(
+        data,
+        (err2, result) => {
+          if (err2) sendErr(res, err2);
+          else res.send(result);
+        },
+        { id: req.user.id, nom: auteurDe(req).auteurNom }
+      );
+    }
+
+    metaLocataire(locataireId, (meta) => {
+      Validation.create(
+        {
+          entite: "PAIEMENT",
+          action: existant ? "MODIFICATION" : "AJOUT",
+          entiteId: existant ? existant.id : null,
+          avant: existant ? { ...existant, ...meta } : null,
+          apres: { ...data, ...meta },
+          ...auteurDe(req),
+        },
+        (err2, result) => {
+          if (err2) return sendErr(res, err2);
+          res.status(202).send({
+            ...result,
+            message: "Demande envoyée à l'admin pour validation.",
+          });
+        }
+      );
+    });
+  });
 };
 
 module.exports.updatePaiement = (req, res) => {
@@ -595,8 +680,11 @@ module.exports.updatePaiement = (req, res) => {
   if (montantJIRAMA !== undefined && !V.isMontantValide(montantJIRAMA))
     return badRequest(res, "Montant JIRAMA invalide.");
   if (!V.isStatutValide(statut)) return badRequest(res, "Statut invalide.");
+  if (req.body.statutJIRAMA !== undefined && !V.isStatutValide(req.body.statutJIRAMA))
+    return badRequest(res, "Statut JIRAMA invalide.");
 
   const data = { montantLoyer, montantJIRAMA, statut, datePaiement: datePaiement || null };
+  if (V.isStatutValide(req.body.statutJIRAMA)) data.statutJIRAMA = req.body.statutJIRAMA;
 
   if (isAdmin(req)) {
     return Paiement.update(req.params.id, data, (err, result) => {
@@ -844,6 +932,7 @@ module.exports.declarerPaiement = (req, res) => {
         montantLoyer: Number(montantLoyer),
         montantJIRAMA: Number(montantJIRAMA) || 0,
         statut: Number(montantLoyer) >= du ? "PAYE" : "PARTIEL",
+        statutJIRAMA: Number(montantJIRAMA) > 0 ? "PAYE" : "IMPAYE",
         datePaiement: datePaiement ? String(datePaiement).split("T")[0] : null,
       };
 

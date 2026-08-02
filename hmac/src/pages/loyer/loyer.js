@@ -380,7 +380,6 @@ export default function Loyer() {
   const [annee, setAnnee] = useState(new Date().getFullYear());
   const [locataires, setLocataires] = useState([]);
   const [paiements, setPaiements] = useState({});
-  const [jiramaMap, setJiramaMap] = useState({}); // jiramaMap[locId][mois] = montantCalculé
   const [loading, setLoading] = useState(true);
   const [modalCell, setModalCell] = useState(null);
 
@@ -390,7 +389,6 @@ export default function Loyer() {
     Promise.all([
       fetchLocataires(),
       fetchPaiements(),
-      fetchJiramaMap(),
     ]).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annee, bienId]);
@@ -443,25 +441,6 @@ export default function Loyer() {
       .catch(() => setPaiements({}));
   }
 
-  // Récupère toutes les factures JIRAMA de l'année et construit
-  // une map [locataireId][mois] = montantJIRAMA calculé.
-  // Utilisée pour pré-remplir le champ JIRAMA dans la modal de paiement.
-  function fetchJiramaMap() {
-    return axios
-      .get(`loyer/factures?annee=${annee}&bienId=${bienId}`, u_info.opts)
-      .then((r) => {
-        const map = {};
-        (r.data || []).forEach((f) => {
-          (f.consommations || []).forEach((c) => {
-            if (!map[c.locataireId]) map[c.locataireId] = {};
-            map[c.locataireId][f.mois] = c.montantJIRAMA || 0;
-          });
-        });
-        setJiramaMap(map);
-      })
-      .catch(() => setJiramaMap({}));
-  }
-
   function getCellData(locataireId, mois) {
     return paiements[locataireId]?.[mois] || null;
   }
@@ -471,7 +450,7 @@ export default function Loyer() {
     for (let m = 1; m <= 12; m++) {
       const p = getCellData(locId, m);
       if (p && p.statut === "PAYE") {
-        total += (p.montantLoyer || 0) + (p.montantJIRAMA || 0);
+        total += p.montantLoyer || 0;
       }
     }
     return total;
@@ -486,7 +465,7 @@ export default function Loyer() {
         const p = getCellData(loc.id, m);
         if (p) {
           if (p.statut === "PAYE")
-            percu += (p.montantLoyer || 0) + (p.montantJIRAMA || 0);
+            percu += p.montantLoyer || 0;
           else impaye += loyer;
         }
       }
@@ -517,7 +496,7 @@ export default function Loyer() {
         </span>
       );
     }
-    const total = ((p.montantLoyer || 0) + (p.montantJIRAMA || 0)) / 1000;
+    const total = (p.montantLoyer || 0) / 1000;
     // Une demi-période réglée n'est pas un impayé partiel : c'est à jour.
     const demiSoldee =
       demiPeriode && p.statut === "PARTIEL" && (p.montantLoyer || 0) >= duCeMois && duCeMois > 0;
@@ -582,7 +561,7 @@ export default function Loyer() {
           row.push("");
           continue;
         }
-        const total = (p.montantLoyer || 0) + (p.montantJIRAMA || 0);
+        const total = p.montantLoyer || 0;
         row.push(
           p.statut === "PAYE"
             ? total
@@ -636,7 +615,7 @@ export default function Loyer() {
           row.push("—");
           continue;
         }
-        const total = (p.montantLoyer || 0) + (p.montantJIRAMA || 0);
+        const total = p.montantLoyer || 0;
         const k = (total / 1000).toFixed(0);
         row.push(
           p.statut === "PAYE"
@@ -962,21 +941,20 @@ export default function Loyer() {
           }}
           u_info={u_info}
           paiements={paiements}
-          jiramaCalcule={jiramaMap[modalCell.loc.id]?.[modalCell.mois] || 0}
         />
       )}
     </Template>
   );
 }
 
-function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule = 0 }) {
+function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
   const moisNom = MOIS[cell.mois - 1];
   const moisNomFull = MOIS_FULL[cell.mois - 1];
   const [form, setForm] = useState({
     statut: cell.existing?.statut || "PAYE",
     montantLoyer: cell.existing?.montantLoyer ?? cell.loc?.loyer ?? 0,
     // Pré-remplit avec le montant calculé dans Factures JIRAMA si pas de paiement existant
-    montantJIRAMA: cell.existing?.montantJIRAMA ?? jiramaCalcule ?? 0,
+    montantJIRAMA: cell.existing?.montantJIRAMA ?? 0,
     datePaiement: cell.existing?.datePaiement
       ? cell.existing.datePaiement.split("T")[0]
       : new Date().toISOString().split("T")[0],
@@ -994,11 +972,14 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
     ? ((paiements || {})[cell.loc.id] || {})[moisSuivant]
     : null;
   const dejaAvance = suivantExistant?.montantLoyer || 0;
+  // On se fie au montant saisi plutôt qu'au statut : marquer « Partiel » à
+  // 150 000 Ar solde tout autant le mois que le statut « Payé ».
   const reportPossible =
     aCheval &&
-    form.statut === "PAYE" &&
     !!moisSuivant &&
     demiLoyer > 0 &&
+    Number(form.montantLoyer) >= (cell.loc.loyer || 0) &&
+    form.statut !== "IMPAYE" &&
     suivantExistant?.statut !== "PAYE" &&
     dejaAvance < demiLoyer;
   const [reporter, setReporter] = useState(true);
@@ -1356,7 +1337,8 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
                   // En "doute", on note le montant annoncé par le locataire.
                   montantLoyer:
                     s === "PAYE" || s === "DOUTE" ? cell.loc.loyer || 0 : 0,
-                  montantJIRAMA: s === "IMPAYE" ? 0 : form.montantJIRAMA,
+                  // Le JIRAMA se gere dans son propre tableau : on ny touche pas.
+                  montantJIRAMA: form.montantJIRAMA,
                 });
               }}
             >
@@ -1390,86 +1372,30 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
               </span>
             </label>
           )}
-          <div className="row g-2 mb-3">
-            <div className="col">
-              <label className="form-label small mb-1">
-                {form.statut === "PARTIEL"
-                  ? "Montant payé — Loyer (Ar)"
-                  : `Loyer fixe — ${(cell.loc.loyer || 0).toLocaleString()} Ar`}
-              </label>
-              <input
-                type="number"
-                className="form-control form-control-sm"
-                value={form.montantLoyer}
-                min={0}
-                readOnly={form.statut !== "PARTIEL"}
-                style={
-                  form.statut !== "PARTIEL"
-                    ? {
-                        background: "#f8fafc",
-                        cursor: "default",
-                        color: "#64748b",
-                      }
-                    : {}
-                }
-                onChange={(e) =>
-                  setForm({ ...form, montantLoyer: +e.target.value })
-                }
-              />
-            </div>
-            <div className="col">
-              <label className="form-label small mb-1 d-flex align-items-center justify-content-between gap-1">
-                <span>JIRAMA (Ar)</span>
-                {jiramaCalcule > 0 && (
-                  <button
-                    type="button"
-                    title="Utiliser le montant calculé dans Factures JIRAMA"
-                    onClick={() =>
-                      setForm({ ...form, montantJIRAMA: jiramaCalcule })
-                    }
-                    style={{
-                      background: "none",
-                      border: "none",
-                      padding: 0,
-                      fontSize: "0.7rem",
-                      color: "#2563eb",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                    }}
-                  >
-                    ↻ {jiramaCalcule.toLocaleString()} Ar
-                  </button>
-                )}
-              </label>
-              <input
-                type="number"
-                className="form-control form-control-sm"
-                value={form.montantJIRAMA}
-                min={0}
-                readOnly={form.statut === "IMPAYE"}
-                style={
-                  form.statut === "IMPAYE"
-                    ? {
-                        background: "#f8fafc",
-                        cursor: "default",
-                        color: "#64748b",
-                      }
-                    : {}
-                }
-                onChange={(e) =>
-                  setForm({ ...form, montantJIRAMA: +e.target.value })
-                }
-              />
-              {jiramaCalcule === 0 && form.statut !== "IMPAYE" && (
-                <small className="text-muted" style={{ fontSize: "0.7rem" }}>
-                  Aucune facture JIRAMA saisie pour {moisNom} —{" "}
-                  <a href="/loyer/factures/" style={{ color: "#2563eb" }}>
-                    saisir
-                  </a>
-                </small>
-              )}
-            </div>
+          <div className="mb-3">
+            <label className="form-label small mb-1">
+              {form.statut === "PARTIEL"
+                ? "Montant payé — Loyer (Ar)"
+                : `Loyer fixe — ${(cell.loc.loyer || 0).toLocaleString()} Ar`}
+            </label>
+            <input
+              type="number"
+              className="form-control form-control-sm"
+              value={form.montantLoyer}
+              min={0}
+              readOnly={form.statut !== "PARTIEL"}
+              style={
+                form.statut !== "PARTIEL"
+                  ? { background: "#f8fafc", cursor: "default", color: "#64748b" }
+                  : {}
+              }
+              onChange={(e) => setForm({ ...form, montantLoyer: +e.target.value })}
+            />
+            {/* L électricité se règle à part : elle a son propre tableau. */}
+            <small className="text-muted d-block mt-1" style={{ fontSize: "0.72rem" }}>
+              JIRAMA : {(form.montantJIRAMA || 0).toLocaleString()} Ar —{" "}
+              <a href="/loyer/jirama/" style={{ color: "#2563eb" }}>Tableau JIRAMA</a>
+            </small>
           </div>
           <div className="mb-3">
             <label className="form-label">Date de paiement</label>
@@ -1484,8 +1410,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements, jiramaCalcule 
           </div>
           <div className="d-flex justify-content-between align-items-center">
             <span className="fw-bold text-primary">
-              Total :{" "}
-              {(form.montantLoyer + form.montantJIRAMA).toLocaleString()} Ar
+              Loyer : {(form.montantLoyer || 0).toLocaleString()} Ar
             </span>
             <div className="d-flex gap-2">
               <button

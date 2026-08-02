@@ -1,0 +1,790 @@
+import { useState, useEffect, useRef } from "react";
+import axios from "../../contexts/api/axios";
+import GetUserData from "../../contexts/api/udata";
+import Template from "../../components/template/template";
+import Header from "../../components/header/header";
+import Sidebar from "../../components/sidebar/sidebar";
+import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
+import {
+  BsLightningCharge,
+  BsFileEarmarkExcel,
+  BsExclamationTriangleFill,
+  BsWhatsapp,
+  BsMessenger,
+  BsCheckCircleFill,
+  BsCashCoin,
+} from "react-icons/bs";
+import * as XLSX from "xlsx";
+import { SkLoyerRows } from "../../components/skeleton/skeleton";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
+import { copierEtOuvrirMessenger } from "../../config/contact";
+import "./loyer.css";
+
+const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const ANNEES = [2023, 2024, 2025, 2026, 2027];
+const PAR_PAGE = 9;
+
+function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
+  if (!loc.tel) return null;
+  const num = loc.tel.replace(/\s+/g, "").replace(/^\+/, "");
+  return `https://wa.me/${num}?text=${encodeURIComponent(texteRelance(loc, moisNom, annee, montant))}`;
+}
+
+function texteRelance(loc, moisNom, annee, montant) {
+  return (
+    `Bonjour ${loc.nom},\n` +
+    `Petit rappel concernant votre facture d'électricité et d'eau (JIRAMA) ` +
+    `du mois de ${moisNom} ${annee} (chambre ${loc.chambre}), ` +
+    `d'un montant de ${(montant || 0).toLocaleString()} Ar.\n` +
+    `Merci de régulariser dès que possible.\n` +
+    `— Trofel`
+  );
+}
+
+/**
+ * JIRAMA restant à recouvrer.
+ *
+ * Ne comptent que les mois effectivement facturés : sans relevé de
+ * consommation, il n'y a rien à réclamer.
+ */
+function AlerteJirama({ locataires, getCell, factureDe, annee }) {
+  const [ongletActif, setOngletActif] = useState(0);
+  const [page, setPage] = useState(1);
+
+  const parMois = {};
+  locataires
+    .filter((loc) => loc.actif)
+    .forEach((loc) => {
+      for (let m = 1; m <= 12; m++) {
+        const facture = factureDe(loc.id, m);
+        if (facture <= 0) continue; // pas de relevé pour ce mois
+        const p = getCell(loc.id, m);
+        if (p && p.statutJIRAMA === "PAYE") continue;
+        const paye = p && p.statutJIRAMA === "PARTIEL" ? p.montantJIRAMA || 0 : 0;
+        const reste = facture - paye;
+        if (reste <= 0) continue;
+        (parMois[m] = parMois[m] || []).push({
+          loc,
+          reste,
+          partiel: !!(p && p.statutJIRAMA === "PARTIEL"),
+          doute: !!(p && p.statutJIRAMA === "DOUTE"),
+        });
+      }
+    });
+
+  const moisConcernes = Object.keys(parMois).map(Number).sort((a, b) => b - a);
+  if (moisConcernes.length === 0) return null;
+
+  const totalGlobal = moisConcernes.reduce(
+    (s, m) => s + parMois[m].reduce((t, x) => t + x.reste, 0),
+    0
+  );
+  const moisActif = moisConcernes[Math.min(ongletActif, moisConcernes.length - 1)];
+  const liste = parMois[moisActif] || [];
+  const totalOnglet = liste.reduce((s, x) => s + x.reste, 0);
+  const nbPages = Math.max(1, Math.ceil(liste.length / PAR_PAGE));
+  const pageSure = Math.min(page, nbPages);
+  const visibles = liste.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE);
+
+  return (
+    <div className="card-pro p-0 mb-4" style={{ overflow: "hidden", borderTop: "3px solid #f59e0b" }}>
+      <div
+        className="px-3 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2"
+        style={{ background: "linear-gradient(90deg,#fffbeb,#fff)" }}
+      >
+        <div className="d-flex align-items-center gap-2">
+          <span
+            className="d-inline-flex align-items-center justify-content-center rounded-3"
+            style={{ background: "#fef3c7", color: "#d97706", width: 38, height: 38 }}
+          >
+            <BsExclamationTriangleFill size={18} />
+          </span>
+          <div>
+            <h6 className="mb-0 fw-bold" style={{ color: "#92400e", fontSize: "0.95rem" }}>
+              JIRAMA à recouvrer
+            </h6>
+            <small className="text-muted" style={{ fontSize: "0.75rem" }}>
+              Uniquement les mois dont la consommation a été relevée
+            </small>
+          </div>
+        </div>
+        <div className="text-end">
+          <div className="fw-bold" style={{ color: "#b45309", fontSize: "1.15rem", lineHeight: 1.1 }}>
+            {totalGlobal.toLocaleString()} Ar
+          </div>
+          <small className="text-muted" style={{ fontSize: "0.72rem" }}>total en attente</small>
+        </div>
+      </div>
+
+      <div className="d-flex gap-1 px-3 flex-wrap" style={{ borderBottom: "1px solid #e2e8f0" }}>
+        {moisConcernes.map((m, i) => {
+          const actif = m === moisActif;
+          return (
+            <button
+              key={m}
+              onClick={() => { setOngletActif(i); setPage(1); }}
+              className="btn btn-sm d-flex align-items-center gap-2 fw-semibold"
+              style={{
+                borderRadius: 0,
+                border: "none",
+                borderBottom: actif ? "2px solid #d97706" : "2px solid transparent",
+                color: actif ? "#b45309" : "#64748b",
+                background: "transparent",
+                fontSize: "0.82rem",
+              }}
+            >
+              {MOIS_FULL[m - 1]}
+              <span
+                className="rounded-pill px-2"
+                style={{
+                  background: actif ? "#fef3c7" : "#f1f5f9",
+                  color: actif ? "#b45309" : "#64748b",
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                }}
+              >
+                {parMois[m].length}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="px-3 py-2 d-flex justify-content-between align-items-center flex-wrap gap-2"
+        style={{ background: "#fffdf7" }}>
+        <small className="text-muted" style={{ fontSize: "0.76rem" }}>
+          {liste.length} locataire{liste.length > 1 ? "s" : ""} · {MOIS_FULL[moisActif - 1]} {annee}
+        </small>
+        <small className="fw-bold" style={{ color: "#b45309" }}>
+          {totalOnglet.toLocaleString()} Ar
+        </small>
+      </div>
+
+      <div className="row g-2 p-3">
+        {visibles.map(({ loc, reste, partiel, doute }) => {
+          const lien = lienRelanceWhatsApp(loc, MOIS_FULL[moisActif - 1], annee, reste);
+          return (
+            <div className="col-12 col-md-6 col-xl-4" key={loc.id}>
+              <div className="rounded-3 p-2 h-100 d-flex align-items-center gap-2"
+                style={{ background: "#fff", border: "1px solid #fde68a" }}>
+                <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>{loc.chambre}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="fw-semibold text-truncate" style={{ fontSize: "0.83rem" }}>
+                    {loc.nom} {loc.prenom}
+                  </div>
+                  <div style={{ fontSize: "0.72rem", color: "#b45309", fontWeight: 700 }}>
+                    {reste.toLocaleString()} Ar
+                    {partiel && <span className="text-muted fw-normal"> · partiel</span>}
+                    {doute && <span className="text-muted fw-normal"> · à confirmer</span>}
+                  </div>
+                </div>
+                {lien && (
+                  <a href={lien} target="_blank" rel="noopener noreferrer"
+                    className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+                    style={{ background: "#25D366", color: "#fff", fontSize: "0.7rem" }}>
+                    <BsWhatsapp size={11} /> Relancer
+                  </a>
+                )}
+                {!lien && (
+                  <button
+                    className="btn btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+                    style={{ background: "#0866FF", color: "#fff", fontSize: "0.7rem" }}
+                    onClick={() => {
+                      copierEtOuvrirMessenger(
+                        texteRelance(loc, MOIS_FULL[moisActif - 1], annee, reste),
+                        loc.nom,
+                        loc.messengerId
+                      );
+                      toast.info("Message copié — collez-le dans la conversation");
+                    }}
+                  >
+                    <BsMessenger size={11} /> Relancer
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {nbPages > 1 && (
+        <div className="d-flex justify-content-end align-items-center gap-1 px-3 pb-3">
+          <button className="btn btn-outline-secondary btn-sm" disabled={pageSure === 1}
+            onClick={() => setPage(pageSure - 1)}>‹</button>
+          <small className="text-muted px-2" style={{ fontSize: "0.75rem" }}>
+            {pageSure} / {nbPages}
+          </small>
+          <button className="btn btn-outline-secondary btn-sm" disabled={pageSure === nbPages}
+            onClick={() => setPage(pageSure + 1)}>›</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function TableauJirama() {
+  const u_info = GetUserData();
+  const tableauRef = useRef(null);
+  const moisCourant = new Date().getMonth() + 1;
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
+  const [annee, setAnnee] = useState(new Date().getFullYear());
+  const [locataires, setLocataires] = useState([]);
+  const [paiements, setPaiements] = useState({});
+  const [factures, setFactures] = useState({}); // factures[locId][mois] = montant relevé
+  const [totauxFacture, setTotauxFacture] = useState({}); // totauxFacture[mois] = facture JIRAMA globale
+  const [loading, setLoading] = useState(true);
+  const [modalCell, setModalCell] = useState(null);
+
+  useEffect(() => {
+    if (locataires.length === 0) setLoading(true);
+    Promise.all([fetchLocataires(), fetchPaiements(), fetchFactures()]).finally(() =>
+      setLoading(false)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [annee, bienId]);
+
+  // Comme pour les loyers : on cadre la vue sur le mois précédent le mois courant.
+  useEffect(() => {
+    if (loading || locataires.length === 0) return;
+    const box = tableauRef.current;
+    if (!box || box.scrollWidth <= box.clientWidth) return;
+    const th = box.querySelector(`thead th[data-mois="${Math.max(1, moisCourant - 1)}"]`);
+    if (!th) return;
+    const ths = box.querySelectorAll("thead th");
+    const figees = (ths[0]?.offsetWidth || 0) + (ths[1]?.offsetWidth || 0);
+    box.scrollTo({ left: Math.max(0, th.offsetLeft - figees), behavior: "smooth" });
+  }, [loading, locataires.length, annee, moisCourant]);
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
+  }
+
+  function fetchLocataires() {
+    return axios
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
+      .then((r) => setLocataires(r.data || []))
+      .catch(() => setLocataires([]));
+  }
+
+  function fetchPaiements() {
+    return axios
+      .get(`loyer/paiements?annee=${annee}`, u_info.opts)
+      .then((r) => {
+        const map = {};
+        (r.data || []).forEach((p) => {
+          if (!map[p.locataireId]) map[p.locataireId] = {};
+          map[p.locataireId][p.mois] = p;
+        });
+        setPaiements(map);
+      })
+      .catch(() => setPaiements({}));
+  }
+
+  // Consommations relevées : ce que chaque locataire doit, mois par mois.
+  function fetchFactures() {
+    return axios
+      .get(`loyer/factures?annee=${annee}&bienId=${bienId}`, u_info.opts)
+      .then((r) => {
+        const map = {};
+        const totaux = {};
+        (r.data || []).forEach((f) => {
+          totaux[f.mois] = f.montantTotal || 0;
+          (f.consommations || []).forEach((c) => {
+            if (!map[c.locataireId]) map[c.locataireId] = {};
+            map[c.locataireId][f.mois] = c.montantJIRAMA || 0;
+          });
+        });
+        setFactures(map);
+        setTotauxFacture(totaux);
+      })
+      .catch(() => {
+        setFactures({});
+        setTotauxFacture({});
+      });
+  }
+
+  const getCell = (locId, mois) => paiements[locId]?.[mois] || null;
+  const factureDe = (locId, mois) => factures[locId]?.[mois] || 0;
+
+  // Encaissé sur un mois, tous locataires confondus (rapprochement facture).
+  function encaisseDuMois(mois) {
+    return locataires.reduce((s, loc) => {
+      const p = getCell(loc.id, mois);
+      if (!p || p.statutJIRAMA === "IMPAYE" || p.statutJIRAMA === "DOUTE") return s;
+      return s + (p.montantJIRAMA || 0);
+    }, 0);
+  }
+
+  function releveDuMois(mois) {
+    return locataires.reduce((s, loc) => s + factureDe(loc.id, mois), 0);
+  }
+
+  function totalAnnuel(locId) {
+    let t = 0;
+    for (let m = 1; m <= 12; m++) {
+      const p = getCell(locId, m);
+      if (p && (p.statutJIRAMA === "PAYE" || p.statutJIRAMA === "PARTIEL"))
+        t += p.montantJIRAMA || 0;
+    }
+    return t;
+  }
+
+  const stats = (() => {
+    let releve = 0, encaisse = 0;
+    for (let m = 1; m <= 12; m++) {
+      releve += releveDuMois(m);
+      encaisse += encaisseDuMois(m);
+    }
+    return { releve, encaisse, reste: Math.max(0, releve - encaisse) };
+  })();
+
+  function renderCell(loc, mois) {
+    const p = getCell(loc.id, mois);
+    const attendu = factureDe(loc.id, mois);
+    const paye = p?.montantJIRAMA || 0;
+    const statut = p?.statutJIRAMA || "IMPAYE";
+
+    // Ni relevé ni règlement : rien à afficher pour ce mois.
+    if (attendu === 0 && paye === 0) {
+      return (
+        <span
+          className="cell-vide"
+          title="Aucune consommation relevée — cliquer pour saisir un règlement"
+          onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu })}
+        >
+          —
+        </span>
+      );
+    }
+
+    const cls =
+      statut === "PAYE"
+        ? "cell-paye"
+        : statut === "PARTIEL"
+          ? "cell-partiel"
+          : statut === "DOUTE"
+            ? "cell-doute"
+            : "cell-impaye";
+    const affiche = statut === "IMPAYE" ? attendu : paye;
+
+    return (
+      <span
+        className={cls}
+        title={
+          `Relevé : ${attendu.toLocaleString()} Ar\n` +
+          `Réglé : ${paye.toLocaleString()} Ar` +
+          (statut === "IMPAYE" ? "\nNon réglé" : "")
+        }
+        onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu })}
+      >
+        {statut === "DOUTE" && <span className="pastille-doute">!</span>}
+        {(affiche / 1000).toFixed(affiche >= 10000 ? 0 : 1)}k
+      </span>
+    );
+  }
+
+  function exportExcel() {
+    if (locataires.length === 0) return toast.warning("Aucune donnée à exporter");
+    const header = ["N°", "Locataire", ...MOIS_FULL, "Total réglé (Ar)"];
+    const rows = locataires.map((loc) => {
+      const row = [loc.chambre, `${loc.nom} ${loc.prenom}`];
+      for (let m = 1; m <= 12; m++) {
+        const p = getCell(loc.id, m);
+        const attendu = factureDe(loc.id, m);
+        if (!p && attendu === 0) { row.push(""); continue; }
+        const statut = p?.statutJIRAMA || "IMPAYE";
+        row.push(
+          statut === "PAYE"
+            ? p.montantJIRAMA || 0
+            : statut === "IMPAYE"
+              ? `Impayé (${attendu})`
+              : `${statut === "DOUTE" ? "Doute" : "Partiel"} (${p?.montantJIRAMA || 0})`
+        );
+      }
+      row.push(totalAnnuel(loc.id));
+      return row;
+    });
+    const releve = ["", "TOTAL RELEVÉ"];
+    const encaisse = ["", "TOTAL ENCAISSÉ"];
+    for (let m = 1; m <= 12; m++) {
+      releve.push(releveDuMois(m));
+      encaisse.push(encaisseDuMois(m));
+    }
+    releve.push(stats.releve);
+    encaisse.push(stats.encaisse);
+
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows, [], releve, encaisse]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `JIRAMA ${annee}`);
+    XLSX.writeFile(wb, `jirama_${current.nom.replace(/\s+/g, "_")}_${annee}.xlsx`);
+    toast.success("Export Excel généré");
+  }
+
+  return (
+    <Template>
+      <Header />
+      <div className="container-fluid flex-grow-1">
+        <div className="row g-0">
+          <Sidebar />
+          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+            <div className="page-header">
+              <div>
+                <h1 className="page-title"><BsLightningCharge /> Tableau JIRAMA</h1>
+                <p className="text-muted small mb-0">
+                  Règlement de l'eau et de l'électricité, locataire par locataire
+                </p>
+              </div>
+              <div className="d-flex gap-2 align-items-center flex-wrap">
+                <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
+                <select
+                  className="form-select form-select-sm"
+                  style={{ width: "auto" }}
+                  value={annee}
+                  onChange={(e) => setAnnee(+e.target.value)}
+                >
+                  {ANNEES.map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Rapprochement : ce que JIRAMA facture / ce que les locataires règlent */}
+            <div className="row g-3 mb-4">
+              <div className="col-6 col-lg-4">
+                <div className="stat-card">
+                  <div className="stat-icon amber"><BsLightningCharge /></div>
+                  <div className="stat-content">
+                    <h3>{(stats.releve / 1000).toFixed(0)}k</h3>
+                    <p>Relevé sur {annee} (Ar)</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6 col-lg-4">
+                <div className="stat-card">
+                  <div className="stat-icon green"><BsCheckCircleFill /></div>
+                  <div className="stat-content">
+                    <h3>{(stats.encaisse / 1000).toFixed(0)}k</h3>
+                    <p>Encaissé (Ar)</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-12 col-lg-4">
+                <div className="stat-card">
+                  <div className={`stat-icon ${stats.reste > 0 ? "red" : "green"}`}>
+                    {stats.reste > 0 ? <BsExclamationTriangleFill /> : <BsCheckCircleFill />}
+                  </div>
+                  <div className="stat-content">
+                    <h3 className={stats.reste > 0 ? "text-danger" : "text-success"}>
+                      {(stats.reste / 1000).toFixed(0)}k
+                    </h3>
+                    <p>Reste à recouvrer (Ar)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {!loading && (
+              <AlerteJirama
+                locataires={locataires}
+                getCell={getCell}
+                factureDe={factureDe}
+                annee={annee}
+              />
+            )}
+
+            <div className="card-pro p-0">
+              <div className="px-3 py-3 d-flex justify-content-between align-items-start flex-wrap gap-2 border-bottom">
+                <div>
+                  <h6 className="fw-bold mb-1">
+                    {current.nom} — {annee}
+                  </h6>
+                  <div className="legende mt-1">
+                    <span className="legende-item"><span className="cell-paye">12k</span> Réglé</span>
+                    <span className="legende-item"><span className="cell-partiel">12k</span> Partiel</span>
+                    <span className="legende-item">
+                      <span className="cell-doute"><span className="pastille-doute">!</span>12k</span> Doute
+                    </span>
+                    <span className="legende-item"><span className="cell-impaye">12k</span> Dû, non réglé</span>
+                  </div>
+                </div>
+                <div className="d-flex gap-2">
+                  <Link to="/loyer/factures/" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                    <BsCashCoin /> Saisir les relevés
+                  </Link>
+                  <button className="btn btn-outline-success btn-sm d-flex align-items-center gap-1" onClick={exportExcel}>
+                    <BsFileEarmarkExcel /> Excel
+                  </button>
+                </div>
+              </div>
+
+              <div className="tableau-scroll" ref={tableauRef}>
+                <table className="table table-loyer mb-0">
+                  <thead>
+                    <tr>
+                      <th>N°</th>
+                      <th>Locataire</th>
+                      {MOIS.map((m, i) => (
+                        <th
+                          key={m}
+                          data-mois={i + 1}
+                          className={i + 1 === moisCourant ? "th-mois-courant" : ""}
+                        >
+                          {m}
+                        </th>
+                      ))}
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <SkLoyerRows rows={8} />
+                    ) : locataires.length === 0 ? (
+                      <tr>
+                        <td colSpan={15} className="text-center text-muted py-4" style={{ fontSize: "0.85rem" }}>
+                          Aucun locataire pour {current.nom}.
+                        </td>
+                      </tr>
+                    ) : (
+                      locataires.map((loc) => (
+                        <tr key={loc.id}>
+                          <td>
+                            <span className={loc.etage === "1ER" ? "badge-1er" : "badge-rdc"}>
+                              {loc.chambre}
+                            </span>
+                          </td>
+                          <td>
+                            <div
+                              className="fw-semibold"
+                              style={{
+                                fontSize: "0.82rem",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                width: "75px",
+                                maxWidth: "75px",
+                              }}
+                              title={`${loc.nom} ${loc.prenom || ""}`.trim()}
+                            >
+                              {loc.nom} {loc.prenom}
+                            </div>
+                            <small className="text-muted">consommation</small>
+                          </td>
+                          {MOIS.map((_, mi) => (
+                            <td key={mi} className={mi + 1 === moisCourant ? "td-mois-courant" : ""}>
+                              {renderCell(loc, mi + 1)}
+                            </td>
+                          ))}
+                          <td>
+                            <span className="fw-bold text-primary" style={{ fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                              {(totalAnnuel(loc.id) / 1000).toFixed(0)}k
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  {!loading && locataires.length > 0 && (
+                    <tfoot>
+                      {/* Contrôle demandé : la facture JIRAMA du mois doit
+                          correspondre à la somme réglée par les locataires. */}
+                      <tr style={{ background: "#f8fafc" }}>
+                        <td colSpan={2} className="fw-bold" style={{ fontSize: "0.74rem" }}>
+                          Facture JIRAMA
+                        </td>
+                        {MOIS.map((_, mi) => (
+                          <td key={mi} style={{ fontSize: "0.7rem", color: "#64748b", whiteSpace: "nowrap" }}>
+                            {totauxFacture[mi + 1] ? `${(totauxFacture[mi + 1] / 1000).toFixed(0)}k` : "—"}
+                          </td>
+                        ))}
+                        <td></td>
+                      </tr>
+                      <tr style={{ background: "#f8fafc" }}>
+                        <td colSpan={2} className="fw-bold" style={{ fontSize: "0.74rem" }}>
+                          Encaissé / relevé
+                        </td>
+                        {MOIS.map((_, mi) => {
+                          const m = mi + 1;
+                          const r = releveDuMois(m);
+                          const e = encaisseDuMois(m);
+                          if (r === 0 && e === 0)
+                            return <td key={mi} style={{ fontSize: "0.7rem", color: "#cbd5e1" }}>—</td>;
+                          const ok = e >= r && r > 0;
+                          return (
+                            <td
+                              key={mi}
+                              title={`Relevé ${r.toLocaleString()} Ar · encaissé ${e.toLocaleString()} Ar`}
+                              style={{
+                                fontSize: "0.7rem",
+                                fontWeight: 700,
+                                whiteSpace: "nowrap",
+                                color: ok ? "#16a34a" : "#dc2626",
+                              }}
+                            >
+                              {(e / 1000).toFixed(0)}/{(r / 1000).toFixed(0)}k
+                            </td>
+                          );
+                        })}
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {modalCell && (
+        <ModalJirama
+          cell={modalCell}
+          u_info={u_info}
+          onClose={() => setModalCell(null)}
+          onSave={() => {
+            fetchPaiements();
+            setModalCell(null);
+          }}
+        />
+      )}
+    </Template>
+  );
+}
+
+function ModalJirama({ cell, u_info, onClose, onSave }) {
+  const [form, setForm] = useState({
+    statutJIRAMA: cell.existing?.statutJIRAMA || (cell.attendu > 0 ? "PAYE" : "IMPAYE"),
+    montantJIRAMA:
+      cell.existing?.montantJIRAMA && cell.existing.montantJIRAMA > 0
+        ? cell.existing.montantJIRAMA
+        : cell.attendu || 0,
+  });
+  const [saving, setSaving] = useState(false);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setSaving(true);
+    axios
+      .post(
+        "loyer/paiements/jirama",
+        {
+          locataireId: cell.loc.id,
+          mois: cell.mois,
+          annee: cell.annee,
+          montantJIRAMA: form.statutJIRAMA === "IMPAYE" ? 0 : Number(form.montantJIRAMA) || 0,
+          statutJIRAMA: form.statutJIRAMA,
+        },
+        u_info.opts
+      )
+      .then((res) => {
+        if (res.status === 202) {
+          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
+          onClose();
+          return;
+        }
+        toast.success("Règlement JIRAMA enregistré !");
+        onSave();
+      })
+      .catch((err) => toast.error(err.response?.data?.message || "Erreur d'enregistrement"))
+      .finally(() => setSaving(false));
+  }
+
+  const reste = (cell.attendu || 0) - (Number(form.montantJIRAMA) || 0);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content-pro" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header-pro">
+          <h6>
+            <BsLightningCharge className="me-2" />
+            JIRAMA — {cell.loc.nom} / {MOIS_FULL[cell.mois - 1]} {cell.annee}
+          </h6>
+          <button className="btn-close" onClick={onClose} />
+        </div>
+        <form onSubmit={handleSubmit} className="p-3">
+          <div
+            className="rounded-3 p-2 mb-3 d-flex justify-content-between align-items-center"
+            style={{ background: "#fffbeb", border: "1px solid #fde68a" }}
+          >
+            <small style={{ fontSize: "0.76rem", color: "#92400e" }}>
+              Consommation relevée
+            </small>
+            <span className="fw-bold" style={{ color: "#b45309" }}>
+              {(cell.attendu || 0).toLocaleString()} Ar
+            </span>
+          </div>
+
+          {cell.attendu === 0 && (
+            <p className="text-muted" style={{ fontSize: "0.76rem" }}>
+              Aucun relevé pour ce mois —{" "}
+              <a href="/loyer/factures/" style={{ color: "#2563eb" }}>
+                saisir la facture JIRAMA
+              </a>
+              .
+            </p>
+          )}
+
+          <div className="mb-3">
+            <label className="form-label">Statut</label>
+            <select
+              className="form-select form-select-sm"
+              value={form.statutJIRAMA}
+              onChange={(e) => {
+                const s = e.target.value;
+                setForm({
+                  statutJIRAMA: s,
+                  montantJIRAMA:
+                    s === "IMPAYE" ? 0 : s === "PAYE" ? cell.attendu || form.montantJIRAMA : form.montantJIRAMA,
+                });
+              }}
+            >
+              <option value="PAYE">Payé</option>
+              <option value="PARTIEL">Partiel</option>
+              <option value="DOUTE">Doute — dit avoir payé, à confirmer</option>
+              <option value="IMPAYE">Impayé</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label small mb-1">Montant réglé (Ar)</label>
+            <input
+              type="number"
+              className="form-control form-control-sm"
+              min={0}
+              value={form.montantJIRAMA}
+              readOnly={form.statutJIRAMA === "IMPAYE"}
+              style={
+                form.statutJIRAMA === "IMPAYE"
+                  ? { background: "#f8fafc", cursor: "default", color: "#64748b" }
+                  : {}
+              }
+              onChange={(e) => setForm({ ...form, montantJIRAMA: +e.target.value })}
+            />
+            {cell.attendu > 0 && reste > 0 && form.statutJIRAMA !== "IMPAYE" && (
+              <small className="text-danger" style={{ fontSize: "0.72rem" }}>
+                Reste {reste.toLocaleString()} Ar sur la consommation relevée.
+              </small>
+            )}
+          </div>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onClose}>
+              Annuler
+            </button>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+              {saving ? "..." : "Enregistrer"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

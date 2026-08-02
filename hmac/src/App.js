@@ -52,6 +52,7 @@ import MonEspace from "./pages/locataire/mon.espace";
 import AddLocataire from "./pages/loyer/add.locataire";
 import EditLocataire from "./pages/loyer/edit.locataire";
 import Factures from "./pages/loyer/factures";
+import TableauJirama from "./pages/loyer/jirama";
 import Depenses from "./pages/loyer/depenses";
 import Benefices from "./pages/loyer/benefices";
 
@@ -122,6 +123,7 @@ function App() {
           <Route path="loyer/locataires/new" element={<LocataireProtection Cmp={AddLocataire} />} />
           <Route path="loyer/locataires/edit/:id" element={<LocataireProtection Cmp={EditLocataire} />} />
           <Route path="loyer/factures/" element={<LocataireProtection Cmp={Factures} />} />
+          <Route path="loyer/jirama/" element={<LocataireProtection Cmp={TableauJirama} />} />
           <Route path="loyer/depenses/" element={<AdminProtection Cmp={Depenses} />} />
           <Route path="loyer/benefices/" element={<AdminProtection Cmp={Benefices} />} />
           <Route path="loyer/historique/" element={<AdminProtection Cmp={Historique} />} />

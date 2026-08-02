@@ -15,6 +15,7 @@ import {
   BsClockHistory,
   BsInfoCircle,
   BsFileEarmarkText,
+  BsLightningCharge,
   BsImages,
   BsStarFill,
   BsBell,
@@ -124,6 +125,7 @@ export default function Sidebar() {
         {nav("/loyer/chambres/", BsDoorOpen, "Chambres", true)}
         {nav("/loyer/locataires/", BsPeople, "Locataires", true)}
         {nav("/loyer/factures/", BsFileEarmarkText, "Factures JIRAMA", true)}
+        {nav("/loyer/jirama/", BsLightningCharge, "Tableau JIRAMA", true)}
         {isAdmin && nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}
         {isAdmin && nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
         {isAdmin && nav("/loyer/historique/", BsClockHistory, "Historique", true)}
