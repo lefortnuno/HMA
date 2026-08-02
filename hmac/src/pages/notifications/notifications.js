@@ -72,7 +72,7 @@ const CHAMPS_COMPTE = [
   ["photo", "Photo de profil"],
 ];
 
-// Proposition de règle du règlement intérieur.
+// Proposition de règle de la politique interne.
 const CHAMPS_REGLEMENT = [
   ["titre", "Titre"],
   ["texte", "Explication"],
@@ -260,7 +260,7 @@ export default function Notifications() {
                     : estCompte
                       ? "compte"
                       : estRegle
-                        ? "règle"
+                        ? "politique interne"
                         : "locataire";
                   const cible = estPaiement
                     ? `${src.locataireNom || "?"}${src.chambre ? ` (ch. ${src.chambre})` : ""} · ${MOIS_FULL[Number(src.mois) - 1] || ""} ${src.annee || ""}`

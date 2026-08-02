@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
  *   "TOUS"      admin et utilisateurs, pas les locataires (defaut)
  *   "LOCATAIRE" espace personnel du locataire (et l'admin, pour depanner)
  *   "COMMUN"    tout compte connecte, locataires compris (ex. l'accueil,
- *               qui porte le reglement de la residence)
+ *               qui porte la politique interne)
  */
 export default function LocataireProtection({ Cmp, autorise = "TOUS" }) {
   const navigate = useNavigate();

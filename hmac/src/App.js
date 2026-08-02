@@ -49,6 +49,7 @@ import Notifications from "./pages/notifications/notifications";
 import Parametres from "./pages/parametres/parametres";
 import PremierAcces from "./pages/parametres/premier.acces";
 import MonEspace from "./pages/locataire/mon.espace";
+import MesFactures from "./pages/locataire/mes.factures";
 import AddLocataire from "./pages/loyer/add.locataire";
 import EditLocataire from "./pages/loyer/edit.locataire";
 import Factures from "./pages/loyer/factures";
@@ -79,11 +80,12 @@ function App() {
           {/* Auth */}
           <Route index element={<LogOutProtection Cmp={LogIn} />} />
           <Route path="/*" element={<SignInProtection Cmp={PageNotFound} />} />
-          {/* L'accueil porte le règlement de la résidence : ouvert aux locataires. */}
+          {/* L'accueil porte la politique interne : ouvert aux locataires. */}
           <Route path="home/" element={<LocataireProtection Cmp={Home} autorise="COMMUN" />} />
           <Route path="about/" element={<SignInProtection Cmp={About} />} />
           <Route path="premier-acces/" element={<SignInProtection Cmp={PremierAcces} />} />
           <Route path="mon-espace/" element={<LocataireProtection Cmp={MonEspace} autorise="LOCATAIRE" />} />
+          <Route path="mes-factures/" element={<LocataireProtection Cmp={MesFactures} autorise="LOCATAIRE" />} />
           <Route path="notifications/" element={<SignInProtection Cmp={Notifications} />} />
           <Route path="parametres/" element={<SignInProtection Cmp={Parametres} />} />
 

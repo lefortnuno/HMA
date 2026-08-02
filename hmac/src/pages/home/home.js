@@ -11,7 +11,7 @@ import {
 import Reglement from "../../components/reglement/reglement";
 import "./home.css";
 
-import FlashBanner from "./flash";
+import PaysageBanner from "./paysage";
 
 /* ─── Module shortcuts ─────────────────────────────────────── */
 const MODULES = [
@@ -56,11 +56,8 @@ export default function Home() {
 
             {/* Pixel animation banner */}
             <div className="pixel-banner-wrap">
-              <FlashBanner />
+              <PaysageBanner />
             </div>
-
-            {/* Règlement de la résidence — visible de tous, locataires compris */}
-            <Reglement />
 
             {/* Welcome */}
             <div className="home-welcome-row">
@@ -72,6 +69,10 @@ export default function Home() {
               </div>
               <div className="home-clock">{timeStr}</div>
             </div>
+            
+            {/* Politique interne — visible de tous, locataires compris */}
+            <Reglement />
+
 
             {/* Raccourcis vers les modules — sans objet pour un locataire,
                 qui n a acces qu a son espace personnel. */}

@@ -11,7 +11,7 @@ import {
 import "./reglement.css";
 
 /**
- * Règlement intérieur de la résidence.
+ * Politique interne de la résidence.
  *
  * Affiché en tête de l'accueil, pour tout le monde — locataires compris.
  * L'admin gère les règles sur place ; les autres en proposent, et
@@ -129,7 +129,7 @@ export default function Reglement() {
           <div className="reglement-titre">
             <span className="reglement-sceau"><BsJournalBookmarkFill /></span>
             <div style={{ minWidth: 0 }}>
-              <h2>Règlement de la résidence</h2>
+              <h2>Politique interne</h2>
               <p>
                 {regles.length} règle{regles.length > 1 ? "s" : ""} en vigueur ·
                 {estAdmin
