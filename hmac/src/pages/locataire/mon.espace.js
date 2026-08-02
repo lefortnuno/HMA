@@ -8,10 +8,15 @@ import { Avatar } from "../../components/avatar/avatar";
 import { toast } from "react-toastify";
 import {
   BsHouseHeart, BsCheckCircleFill, BsXCircleFill, BsDashCircle, BsExclamationTriangleFill,
-  BsCashCoin, BsHourglassSplit, BsSendCheck,
+  BsCashCoin, BsHourglassSplit, BsSendCheck, BsCalendarPlus,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
-import { moisExigibles as calcMoisExigibles, montantDu, libelleEcheance } from "../../config/echeance";
+import {
+  moisExigibles as calcMoisExigibles,
+  montantDu,
+  estAvantEntree,
+  libelleEcheance,
+} from "../../config/echeance";
 import "../loyer/loyer.css";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -60,14 +65,18 @@ export default function MonEspace() {
   // consommation ou d'avance) et de sa date de règlement habituelle.
   const moisExigibles = calcMoisExigibles(loc, annee);
 
+  const dejaRegle = (m) => {
+    const p = parMois[m];
+    if (!p) return 0;
+    if (p.statut === "PAYE") return loc?.loyer || 0;
+    return p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
+  };
+
   // Reste dû sur un mois : uniquement la part déjà échue (voir config/echeance.js),
   // diminuée de ce qui a déjà été réglé.
-  const resteDe = (m) => {
-    const p = parMois[m];
-    if (p && p.statut === "PAYE") return 0;
-    const paye = p && p.statut === "PARTIEL" ? p.montantLoyer || 0 : 0;
-    return Math.max(0, montantDu(loc, m, annee) - paye);
-  };
+  const resteDe = (m) => Math.max(0, montantDu(loc, m, annee) - dejaRegle(m));
+  // Reste du mois entier : ce qu'il faudrait verser pour le solder d'avance.
+  const resteTotalDe = (m) => Math.max(0, (loc?.loyer || 0) - dejaRegle(m));
 
   const impayes = moisExigibles.filter((m) => !declares[m] && resteDe(m) > 0);
   const totalDu = impayes.reduce((s, m) => s + resteDe(m), 0);
@@ -80,9 +89,11 @@ export default function MonEspace() {
     const p = parMois[m];
     setDeclaration({
       mois: m,
-      montantLoyer: resteDe(m),
+      // Mois échu : ce qui reste dû. Mois à venir : le mois entier.
+      montantLoyer: resteDe(m) > 0 ? resteDe(m) : resteTotalDe(m),
       montantJIRAMA: p?.montantJIRAMA || 0,
       datePaiement: new Date().toISOString().split("T")[0],
+      avance: resteDe(m) === 0,
     });
   }
 
@@ -117,6 +128,10 @@ export default function MonEspace() {
     const p = parMois[m];
     const exigible = moisExigibles.includes(m);
     const attente = declares[m];
+    // Avant l'arrivée du locataire, rien ne le concerne : ni dette, ni avance.
+    const horsPeriode = estAvantEntree(loc, m, annee);
+    // Mois à venir, pas encore échu : il peut le régler par anticipation.
+    const aVenir = !horsPeriode && !exigible && resteTotalDe(m) > 0;
     let bg = "#f8fafc", couleur = "#cbd5e1", Icone = BsDashCircle, libelle = "—";
 
     if (attente) {
@@ -131,13 +146,17 @@ export default function MonEspace() {
     } else if (p?.statut === "DOUTE") {
       bg = "#fef9c3"; couleur = "#854d0e"; Icone = BsExclamationTriangleFill;
       libelle = "à confirmer";
-    } else if (exigible) {
+    } else if (resteDe(m) > 0) {
       bg = "#fef2f2"; couleur = "#dc2626"; Icone = BsXCircleFill;
       libelle = "à payer";
+    } else if (aVenir) {
+      bg = "#f8fafc"; couleur = "#64748b"; Icone = BsCalendarPlus;
+      libelle = "à venir";
     }
 
-    // On ne déclare que ce qui reste dû, et une seule fois par mois.
-    const declarable = !attente && resteDe(m) > 0;
+    // On ne déclare que pour un mois qui concerne le locataire, une seule fois.
+    const declarable = !attente && !horsPeriode && (resteDe(m) > 0 || aVenir);
+    const avance = declarable && resteDe(m) === 0;
 
     return (
       <div className="col-6 col-sm-4 col-md-3 col-lg-2">
@@ -148,11 +167,21 @@ export default function MonEspace() {
           {declarable && (
             <button
               className="btn btn-sm mt-2 w-100 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
-              style={{ background: "#2563eb", color: "#fff", fontSize: "0.68rem", padding: "3px 4px" }}
+              style={{
+                background: avance ? "#fff" : "#2563eb",
+                color: avance ? "#2563eb" : "#fff",
+                border: avance ? "1px solid #bfdbfe" : "none",
+                fontSize: "0.68rem",
+                padding: "3px 4px",
+              }}
               onClick={() => ouvrirDeclaration(m)}
-              title={`Signaler le règlement de ${MOIS_FULL[m - 1]}`}
+              title={
+                avance
+                  ? `Régler ${MOIS_FULL[m - 1]} par anticipation`
+                  : `Signaler le règlement de ${MOIS_FULL[m - 1]}`
+              }
             >
-              <BsCashCoin size={10} /> J'ai payé
+              <BsCashCoin size={10} /> {avance ? "Payer en avance" : "J'ai payé"}
             </button>
           )}
         </div>
@@ -292,6 +321,7 @@ export default function MonEspace() {
                     <span className="legende-item"><BsExclamationTriangleFill color="#d97706" /> Partiel</span>
                     <span className="legende-item"><BsHourglassSplit color="#2563eb" /> En attente de validation</span>
                     <span className="legende-item"><BsXCircleFill color="#dc2626" /> À payer</span>
+                    <span className="legende-item"><BsCalendarPlus color="#64748b" /> À venir</span>
                     <span className="legende-item"><BsDashCircle color="#cbd5e1" /> Hors période</span>
                   </div>
                 </div>
@@ -306,7 +336,11 @@ export default function MonEspace() {
         <div className="modal-overlay" onClick={() => setDeclaration(null)}>
           <div className="modal-content-pro" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-pro">
-              <h6><BsCashCoin className="me-2" />J'ai payé — {MOIS_FULL[declaration.mois - 1]} {annee}</h6>
+              <h6>
+                <BsCashCoin className="me-2" />
+                {declaration.avance ? "Paiement en avance" : "J'ai payé"} —{" "}
+                {MOIS_FULL[declaration.mois - 1]} {annee}
+              </h6>
               <button className="btn-close" onClick={() => setDeclaration(null)} />
             </div>
             <form onSubmit={envoyerDeclaration} className="p-4">

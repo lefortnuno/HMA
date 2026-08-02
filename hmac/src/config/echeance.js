@@ -51,8 +51,19 @@ export function jourReglement(loc) {
  * Pour une entrée le 1er (la majorité des fiches), il n'y a pas de chevauchement
  * et l'on retombe sur le comportement d'origine : 0 puis tout.
  */
+// Mois antérieur à l'arrivée du locataire : il ne lui est rien dû.
+export function estAvantEntree(loc, mois, annee) {
+  if (!loc?.dateEntree) return false;
+  const d = new Date(loc.dateEntree);
+  if (isNaN(d)) return false;
+  const an = Number(annee);
+  if (d.getFullYear() > an) return true;
+  return d.getFullYear() === an && Number(mois) < d.getMonth() + 1;
+}
+
 export function partExigible(loc, mois, annee) {
   if (!loc) return 0;
+  if (estAvantEntree(loc, mois, annee)) return 0;
   const now = new Date();
   const anneeCourante = now.getFullYear();
   const m = Number(mois);

@@ -824,6 +824,17 @@ module.exports.declarerPaiement = (req, res) => {
       if (err) return sendErr(res, err);
       if (!loc) return res.status(404).send({ success: false, message: "Fiche introuvable." });
 
+      // Un mois anterieur a l'arrivee du locataire ne le concerne pas.
+      if (loc.dateEntree) {
+        const entree = new Date(loc.dateEntree);
+        if (!isNaN(entree)) {
+          const debut = entree.getFullYear() * 12 + entree.getMonth();
+          const vise = Number(annee) * 12 + (Number(mois) - 1);
+          if (vise < debut)
+            return badRequest(res, "Ce mois précède votre date d'entrée.");
+        }
+      }
+
       // Reglement partiel tant que le loyer du mois n'est pas couvert.
       const du = Number(loc.loyer) || 0;
       const data = {
