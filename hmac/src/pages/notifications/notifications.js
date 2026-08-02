@@ -111,17 +111,27 @@ function estDifferent(champ, a, b) {
   return fmtVal(champ, a) !== fmtVal(champ, b);
 }
 
-// Tableau avant/après : en MODIFICATION seuls les champs modifiés ressortent.
+/**
+ * Détail d'une demande.
+ *
+ * On ne compare un avant et un après que si la demande porte réellement les
+ * deux. Une demande de réinitialisation de code, par exemple, est bien une
+ * MODIFICATION mais n'a pas d'état antérieur à montrer : on liste alors
+ * simplement ce qu'elle contient, au lieu de n'afficher rien du tout.
+ */
 function DiffTable({ demande }) {
   const { action, avant, apres } = demande;
   const CHAMPS = champsDe(demande.entite);
-  const rows =
-    action === "MODIFICATION"
-      ? CHAMPS.filter(([c]) => avant && apres && estDifferent(c, avant[c], apres[c]))
-      : CHAMPS.filter(([c]) => {
-          const src = action === "AJOUT" ? apres : avant;
-          return src && src[c] !== null && src[c] !== undefined && src[c] !== "";
-        });
+  const estDiff = action === "MODIFICATION" && !!avant && !!apres;
+  const colonneAvant = estDiff || action === "SUPPRESSION";
+  const colonneValeur = action !== "SUPPRESSION";
+
+  const rows = estDiff
+    ? CHAMPS.filter(([c]) => estDifferent(c, avant[c], apres[c]))
+    : CHAMPS.filter(([c]) => {
+        const src = action === "SUPPRESSION" ? avant : apres || avant;
+        return src && src[c] !== null && src[c] !== undefined && src[c] !== "";
+      });
 
   if (rows.length === 0)
     return <p className="text-muted small mb-0">Aucun détail disponible.</p>;
@@ -132,12 +142,12 @@ function DiffTable({ demande }) {
         <thead>
           <tr>
             <th style={{ fontSize: "0.7rem", color: "#64748b", width: "30%" }}>Champ</th>
-            {action !== "AJOUT" && (
+            {colonneAvant && (
               <th style={{ fontSize: "0.7rem", color: "#64748b" }}>Avant</th>
             )}
-            {action !== "SUPPRESSION" && (
+            {colonneValeur && (
               <th style={{ fontSize: "0.7rem", color: "#64748b" }}>
-                {action === "AJOUT" ? "Valeur" : "Après"}
+                {estDiff ? "Après" : "Valeur"}
               </th>
             )}
           </tr>
@@ -146,14 +156,14 @@ function DiffTable({ demande }) {
           {rows.map(([champ, label]) => (
             <tr key={champ}>
               <td className="text-muted">{label}</td>
-              {action !== "AJOUT" && (
-                <td style={action === "MODIFICATION" ? { color: "#b91c1c", textDecoration: "line-through" } : {}}>
+              {colonneAvant && (
+                <td style={estDiff ? { color: "#b91c1c", textDecoration: "line-through" } : {}}>
                   {fmtVal(champ, avant?.[champ])}
                 </td>
               )}
-              {action !== "SUPPRESSION" && (
-                <td className="fw-semibold" style={action === "MODIFICATION" ? { color: "#15803d" } : {}}>
-                  {fmtVal(champ, apres?.[champ])}
+              {colonneValeur && (
+                <td className="fw-semibold" style={estDiff ? { color: "#15803d" } : {}}>
+                  {fmtVal(champ, (apres || avant)?.[champ])}
                 </td>
               )}
             </tr>
