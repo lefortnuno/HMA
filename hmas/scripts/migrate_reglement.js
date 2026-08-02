@@ -70,10 +70,10 @@ const REGLES = [
     ordre: 5,
   },
   {
-    titre: "Tappage Interdit",
+    titre: "Tapage Interdit",
     texte:
-      "Musique, travaux et réunions bruyantes à prevenir au moins 12h à l'avance. " +
-      "Chacun a droit au repos, les etudiant comme les travailleur.",
+      "Musique, travaux et réunions bruyantes: merci de prévenir au moins 12 heures à l'avance. " +
+      "Chacun a droit au calme/repos, qu'il soit étudiant ou travailleur.",
     icone: "calme",
     ordre: 6,
   },
@@ -115,7 +115,7 @@ const REGLES = [
 
 const q = (conn, sql, params) =>
   new Promise((resolve, reject) =>
-    conn.query(sql, params, (err, res) => (err ? reject(err) : resolve(res)))
+    conn.query(sql, params, (err, res) => (err ? reject(err) : resolve(res))),
   );
 
 (async () => {
@@ -136,7 +136,7 @@ const q = (conn, sql, params) =>
         actif TINYINT(1) NOT NULL DEFAULT 1,
         auteurNom VARCHAR(120) DEFAULT NULL,
         dateCreation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
     );
     console.log("   = table reglement prete");
 
