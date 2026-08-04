@@ -6,7 +6,7 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
-import { BsPeople, BsArrowLeft, BsXLg, BsSave } from "react-icons/bs";
+import { BsPeople, BsArrowLeft, BsXLg, BsSave, BsPersonBadge, BsDoorOpen, BsTelephone, BsCalendarCheck, BsLightningCharge } from "react-icons/bs";
 import AvatarPicker from "../../components/avatar/avatar";
 import JourPaiementPicker from "../../components/jour/jour.paiement";
 import ModePaiementPicker from "../../components/jour/mode.paiement";
@@ -131,6 +131,9 @@ export default function AddLocataire() {
             <div className="card-pro" style={{ maxWidth: 620 }}>
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
+                  <div className="col-12 form-section">
+                    <BsPersonBadge /> Identité
+                  </div>
                   <div className="col-12 pb-3 mb-1 border-bottom">
                     <label className="form-label">Photo du locataire</label>
                     <AvatarPicker value={form.photo} onChange={(p) => setForm((fm) => ({ ...fm, photo: p }))} nom={`${form.nom} ${form.prenom}`} size={72} />
@@ -158,6 +161,9 @@ export default function AddLocataire() {
                     />
                   </div>
 
+                  <div className="col-12 form-section">
+                    <BsDoorOpen /> Logement
+                  </div>
                   <div className="col-sm-6">
                     <label className="form-label">Étage</label>
                     <select
@@ -206,6 +212,9 @@ export default function AddLocataire() {
                     </div>
                   </div>
 
+                  <div className="col-12 form-section">
+                    <BsTelephone /> Contact
+                  </div>
                   <div className="col-sm-6">
                     <label className="form-label">Téléphone</label>
                     <input
@@ -229,6 +238,9 @@ export default function AddLocataire() {
                     />
                   </div>
 
+                  <div className="col-12 form-section">
+                    <BsCalendarCheck /> Bail &amp; règlement
+                  </div>
                   <div className="col-sm-6">
                     <label className="form-label">Date d'entrée</label>
                     <input
@@ -253,6 +265,9 @@ export default function AddLocataire() {
                     <div className="col-12">
                       <label className="form-label">Sens du règlement</label>
                       <ModePaiementPicker value={form.modePaiement} onChange={handleChange} />
+                    </div>
+                    <div className="col-12 form-section">
+                      <BsLightningCharge /> Eau &amp; électricité
                     </div>
                     <div className="col-12">
                       <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
@@ -298,9 +313,10 @@ export default function AddLocataire() {
           </Link>
                     <button
                       type="submit"
-                      className="btn btn-primary"
+                      className="btn btn-success d-inline-flex align-items-center gap-2"
                       disabled={saving || !form.chambre}
                     >
+                      <BsSave />
                       {saving ? "Enregistrement..." : "Ajouter le locataire"}
                     </button>
                   </div>

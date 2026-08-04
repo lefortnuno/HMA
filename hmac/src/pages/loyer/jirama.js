@@ -425,6 +425,20 @@ export default function TableauJirama() {
     const paye = p?.montantJIRAMA || 0;
     const statut = p?.statutJIRAMA || "IMPAYE";
 
+    // Bail sans eau ni électricité : aucune saisie possible, et une marque
+    // distincte du « — » qui signifie seulement « pas encore renseigné ».
+    if (loc.jiramaNonSoumis) {
+      return (
+        <span
+          className="cell-vide"
+          style={{ cursor: "default", color: "#cbd5e1" }}
+          title={`${loc.nom} ne paie pas le JIRAMA (bail sans eau ni électricité)`}
+        >
+          ∅
+        </span>
+      );
+    }
+
     // Absent ce mois-là : son forfait ne s'applique pas non plus, sinon la
     // saisie exigerait un minimum de 10 000 Ar pour quelqu'un qui ne doit rien.
     const exempt =
@@ -657,6 +671,12 @@ export default function TableauJirama() {
                     >
                       <span className="cell-paye"><span className="pastille-forfait">F</span>10k</span> Forfait
                     </span>
+                    <span
+                      className="legende-item"
+                      title="Bail sans eau ni électricité : rien ne lui est réclamé"
+                    >
+                      <span style={{ color: "#cbd5e1", fontWeight: 700 }}>∅</span> Hors JIRAMA
+                    </span>
                     <span className="legende-item">
                       <span className="badge-rdc">1</span> RDC
                     </span>
@@ -704,7 +724,10 @@ export default function TableauJirama() {
                       </tr>
                     ) : (
                       locataires.map((loc) => (
-                        <tr key={loc.id}>
+                        // Bail sans eau ni électricité : la ligne entière est
+                        // estompée, pour qu'on ne la confonde pas avec un mois
+                        // simplement pas encore saisi.
+                        <tr key={loc.id} style={loc.jiramaNonSoumis ? { opacity: 0.5 } : undefined}>
                           <td>
                             <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
                               {loc.chambre}
@@ -726,9 +749,11 @@ export default function TableauJirama() {
                               {loc.nom} {loc.prenom}
                             </div>
                             <small className="text-muted">
-                              {loc.jiramaForfait
-                                ? `forfait ${(loc.jiramaForfait / 1000).toFixed(0)}k`
-                                : `${(totalReleve(loc.id) / 1000).toFixed(0)}k relevés`}
+                              {loc.jiramaNonSoumis
+                                ? "hors JIRAMA"
+                                : loc.jiramaForfait
+                                  ? `forfait ${(loc.jiramaForfait / 1000).toFixed(0)}k`
+                                  : `${(totalReleve(loc.id) / 1000).toFixed(0)}k relevés`}
                             </small>
                           </td>
                           {MOIS.map((_, mi) => (

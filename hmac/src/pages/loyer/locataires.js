@@ -5,7 +5,7 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   BsPeople,
   BsPencilSquare,
@@ -14,15 +14,10 @@ import {
   BsTelephone,
   BsChatDots,
   BsWhatsapp,
-  BsPersonBadge,
-  BsCalendarCheck,
-  BsLightningCharge,
   BsXLg,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
-import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
-import JourPaiementPicker from "../../components/jour/jour.paiement";
-import ModePaiementPicker from "../../components/jour/mode.paiement";
+import { Avatar } from "../../components/avatar/avatar";
 import { libelleEcheance, estAvance } from "../../config/echeance";
 import ApartSelect, {
   useAppartements,
@@ -32,12 +27,9 @@ import ApartSelect, {
 } from "../../components/appart/apart.select";
 import "./loyer.css";
 
-const MONO_CHAMBRE = "Villa"; // slot unique d'un appart mono-locataire
 
 const LOYER_RDC = 150000;
 const LOYER_1ER = 200000;
-const CHAMBRES_RDC = ["1","2","3","4","5","6","7","8","9","10"];
-const CHAMBRES_1ER = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
 
 const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 function formatDate(str) {
@@ -116,27 +108,6 @@ function PhoneActions({ tel }) {
   );
 }
 
-function initForm() {
-  return {
-    nom: "",
-    prenom: "",
-    etage: "RDC",
-    chambre: "1",
-    tel: "",
-    email: "",
-    dateEntree: new Date().toISOString().split("T")[0],
-    actif: true,
-    caution: 0,
-    photo: "",
-    messengerId: "",
-    jourPaiement: "",
-    // Les nouveaux locataires reglent d avance (ils paient puis consomment).
-    modePaiement: "AVANCE",
-    jiramaForfait: "",
-    jiramaNonSoumis: false,
-  };
-}
-
 export default function Locataires() {
   const u_info = GetUserData();
   const navigate = useNavigate();
@@ -149,28 +120,11 @@ export default function Locataires() {
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toDelete, setToDelete] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState(initForm());
-  const [saving, setSaving] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editTarget, setEditTarget] = useState(null);
-  const [editForm, setEditForm] = useState(initForm());
-  const [editSaving, setEditSaving] = useState(false);
 
   useEffect(() => {
     fetchLocataires();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bienId]);
-
-  // Liste des "slots" LIBRES. En mono : une seule unité "Villa".
-  function freeChambresFor(etage) {
-    const actifs = locataires.filter((l) => l.actif);
-    if (mono) return actifs.length ? [] : [MONO_CHAMBRE];
-    const occ = new Set(actifs.map((l) => `${l.chambre}|${l.etage}`));
-    return (etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter(
-      (c) => !occ.has(`${c}|${etage}`)
-    );
-  }
 
   // silent = true : rafraichit sans afficher le skeleton
   // (utilise apres ajout/modif/suppression pour rester fluide).
@@ -231,132 +185,25 @@ export default function Locataires() {
       );
   }
 
-  function handleAddChange(e) {
-    const { name, value } = e.target;
-    if (name === "etage") {
-      const free = freeChambresFor(value);
-      setAddForm((f) => ({ ...f, etage: value, chambre: free[0] || "" }));
-    } else {
-      setAddForm((f) => ({ ...f, [name]: value }));
-    }
-  }
 
-  function handleAddSubmit(e) {
-    e.preventDefault();
-    if (!addForm.nom.trim()) return toast.warning("Le nom est requis");
-    setSaving(true);
-    const loyer = mono ? monoLoyer : addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
-    axios
-      .post("loyer/locataires", { ...addForm, loyer, bienId }, u_info.opts)
-      .then((res) => {
-        if (res.status === 202) {
-          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
-          setAddForm(initForm());
-          setShowAddModal(false);
-          return;
-        }
-        toast.success("Locataire ajouté !");
-        setAddForm(initForm());
-        setShowAddModal(false);
-        fetchLocataires(true);
-      })
-      .catch((err) =>
-        toast.error(
-          err.response?.status === 409
-            ? err.response.data.message || "Chambre déjà occupée"
-            : "Erreur lors de l'ajout"
-        )
-      )
-      .finally(() => setSaving(false));
-  }
-
+  /**
+   * Le formulaire vit dans une page dédiée, plus dans une fenêtre.
+   *
+   * Une quinzaine de champs à l'étroit dans une modale, c'était illisible ;
+   * et le même formulaire existait en quatre exemplaires — deux modales et
+   * deux pages — qui divergeaient à chaque nouveau champ. Une seule page pour
+   * l'ajout, une seule pour la modification.
+   */
   function handleAjouter() {
-    // Ouvre le formulaire pré-réglé sur un slot libre (mono = unité "Villa").
-    const etage = mono ? "RDC" : freeChambresFor("RDC").length ? "RDC" : "1ER";
-    const free = freeChambresFor(etage);
-    if (window.innerWidth >= 768) {
-      setAddForm({ ...initForm(), etage, chambre: free[0] || "" });
-      setShowAddModal(true);
-    } else {
-      navigate("/loyer/locataires/new");
-    }
+    navigate("/loyer/locataires/new");
   }
 
   function handleEditClick(loc) {
-    if (window.innerWidth >= 768) {
-      setEditTarget(loc);
-      setEditForm({
-        nom: loc.nom || "",
-        prenom: loc.prenom || "",
-        etage: loc.etage || "RDC",
-        chambre: loc.chambre || "1",
-        tel: loc.tel || "",
-        email: loc.email || "",
-        dateEntree: loc.dateEntree ? loc.dateEntree.split("T")[0] : new Date().toISOString().split("T")[0],
-        actif: loc.actif !== undefined ? loc.actif : true,
-        caution: loc.caution || 0,
-        photo: loc.photo || "",
-        messengerId: loc.messengerId || "",
-        jourPaiement: loc.jourPaiement || "",
-        modePaiement: loc.modePaiement || "ECHU",
-        jiramaForfait: loc.jiramaForfait ?? "",
-        jiramaNonSoumis: !!loc.jiramaNonSoumis,
-      });
-      setShowEditModal(true);
-    } else {
-      navigate(`/loyer/locataires/edit/${loc.id}`, { state: { loc } });
-    }
-  }
-
-  function handleEditChange(e) {
-    const { name, value, type, checked } = e.target;
-    if (name === "etage") {
-      const free = freeChambresFor(value);
-      setEditForm((f) => ({ ...f, etage: value, chambre: free[0] || "" }));
-    } else {
-      setEditForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
-    }
-  }
-
-  // Chambres proposables en édition : les libres + celle actuellement occupée par ce locataire.
-  function editChambreOptions() {
-    const free = freeChambresFor(editForm.etage);
-    const current = editTarget && editTarget.etage === editForm.etage ? editTarget.chambre : null;
-    const all = current && !free.includes(current) ? [current, ...free] : free;
-    return (editForm.etage === "RDC" ? CHAMBRES_RDC : CHAMBRES_1ER).filter((c) => all.includes(c));
-  }
-
-  function handleEditSubmit(e) {
-    e.preventDefault();
-    if (!editForm.nom.trim()) return toast.warning("Le nom est requis");
-    const loyer = mono ? monoLoyer : editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
-    setEditSaving(true);
-    axios
-      .put(`loyer/locataires/${editTarget.id}`, { ...editForm, loyer, bienId }, u_info.opts)
-      .then((res) => {
-        if (res.status === 202) {
-          toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
-          setShowEditModal(false);
-          return;
-        }
-        toast.success("Locataire modifié !");
-        setShowEditModal(false);
-        fetchLocataires(true);
-      })
-      .catch((err) =>
-        toast.error(
-          err.response?.status === 409
-            ? err.response.data.message || "Chambre déjà occupée"
-            : "Erreur lors de la modification"
-        )
-      )
-      .finally(() => setEditSaving(false));
+    navigate(`/loyer/locataires/edit/${loc.id}`, { state: { loc } });
   }
 
   const rdcList = locataires.filter((l) => l.etage === "RDC");
   const etageList = locataires.filter((l) => l.etage === "1ER");
-  const chambres = freeChambresFor(addForm.etage); // uniquement les chambres libres
-  const loyer = addForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER;
 
   function LocataireTable({ list, label }) {
     if (list.length === 0) return null;
@@ -628,317 +475,6 @@ export default function Locataires() {
         </div>
       )}
 
-      {/* ── Modal édition (PC uniquement) ── */}
-      {showEditModal && editTarget && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div
-            className="modal-content-pro"
-            style={{ maxWidth: 560 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header-pro">
-              <h6><BsPencilSquare className="me-2" />Modifier — {editTarget.nom} {editTarget.prenom}</h6>
-              <button className="btn-close" onClick={() => setShowEditModal(false)} />
-            </div>
-            <form onSubmit={handleEditSubmit} className="p-4">
-              <div className="row g-3">
-                <div className="col-12 form-section">
-                  <BsPersonBadge /> Identité
-                </div>
-                <div className="col-12 pb-2 mb-1 border-bottom">
-                  <label className="form-label">Photo du locataire</label>
-                  <AvatarPicker value={editForm.photo} onChange={(p) => setEditForm((f) => ({ ...f, photo: p }))} nom={`${editForm.nom} ${editForm.prenom}`} size={68} />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Nom *</label>
-                  <input type="text" name="nom" className="form-control form-control-sm"
-                    value={editForm.nom} onChange={handleEditChange} placeholder="Nom de famille" />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Prénom</label>
-                  <input type="text" name="prenom" className="form-control form-control-sm"
-                    value={editForm.prenom} onChange={handleEditChange} placeholder="Prénom" />
-                </div>
-                {!mono && (
-                  <>
-                    <div className="col-sm-6">
-                      <label className="form-label">Étage</label>
-                      <select name="etage" className="form-select form-select-sm"
-                        value={editForm.etage} onChange={handleEditChange}>
-                        <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
-                        <option value="1ER">1er Étage (200 000 Ar)</option>
-                      </select>
-                    </div>
-                    <div className="col-sm-6">
-                      <label className="form-label">Chambre</label>
-                      <select name="chambre" className="form-select form-select-sm"
-                        value={editForm.chambre} onChange={handleEditChange}>
-                        {editChambreOptions().map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </>
-                )}
-                <div className="col-12">
-                  <div className="p-2 rounded-3 d-flex align-items-center gap-2"
-                    style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
-                    <span className="fw-bold text-primary" style={{ fontSize: "0.85rem" }}>
-                      {mono
-                        ? `Loyer : ${monoLoyer.toLocaleString()} Ar — ${current.nom} (Villa entière)`
-                        : `Loyer : ${(editForm.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre ${editForm.chambre} (${editForm.etage})`}
-                    </span>
-                  </div>
-                </div>
-                <div className="col-12 form-section">
-                  <BsTelephone /> Contact
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Téléphone</label>
-                  <input type="tel" name="tel" className="form-control form-control-sm"
-                    value={editForm.tel} onChange={handleEditChange} placeholder="+261 ..." />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Email</label>
-                  <input type="email" name="email" className="form-control form-control-sm"
-                    value={editForm.email} onChange={handleEditChange} placeholder="email@exemple.com" />
-                </div>
-                <div className="col-12 form-section">
-                  <BsCalendarCheck /> Bail &amp; règlement
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Date d'entrée</label>
-                  <input type="date" name="dateEntree" className="form-control form-control-sm"
-                    value={editForm.dateEntree} onChange={handleEditChange} />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Caution / dépôt de garantie (Ar)</label>
-                  <input type="number" name="caution" min="0" className="form-control form-control-sm"
-                    value={editForm.caution} onChange={handleEditChange} placeholder="0" />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Jour de paiement habituel</label>
-                  <div>
-                    <JourPaiementPicker value={editForm.jourPaiement} onChange={handleEditChange} />
-                  </div>
-                </div>
-                <div className="col-12">
-                  <label className="form-label">Sens du règlement</label>
-                  <ModePaiementPicker value={editForm.modePaiement} onChange={handleEditChange} />
-                </div>
-                <div className="col-12 form-section">
-                  <BsLightningCharge /> Eau &amp; électricité
-                </div>
-                <div className="col-12">
-                  <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
-                    <input type="checkbox" name="jiramaNonSoumis" className="form-check-input mt-1"
-                      checked={!!editForm.jiramaNonSoumis}
-                      onChange={(e) => handleEditChange({ target: { name: "jiramaNonSoumis", value: e.target.checked } })} />
-                    <span>
-                      <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
-                        Ne paie pas le JIRAMA
-                      </span>
-                      <span className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
-                        Son bail ne comprend ni eau ni électricité : rien ne lui sera
-                        jamais réclamé à ce titre.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-                <div className="col-12">
-                  <label className="form-label">
-                    Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
-                  </label>
-                  <input type="number" name="jiramaForfait" min="0" step="500"
-                    className="form-control form-control-sm"
-                    placeholder="Ex. : 10000"
-                    value={editForm.jiramaForfait ?? ""} onChange={handleEditChange} />
-                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
-                    Montant dû chaque mois sans relevé. Si le compteur dépasse ce forfait,
-                    c est le relevé qui fait foi.
-                  </small>
-                </div>
-                <div className="col-12">
-                  <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
-                  <input type="text" name="messengerId" className="form-control form-control-sm"
-                    autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                    value={editForm.messengerId || ""} onChange={handleEditChange}
-                    placeholder="Collez l'URL de la conversation Messenger" /> 
-                </div>
-                <div className="col-sm-6 d-flex align-items-end pb-1">
-                  <div className="form-check">
-                    <input type="checkbox" name="actif" className="form-check-input" id="editActifCheck"
-                      checked={editForm.actif} onChange={handleEditChange} />
-                    <label className="form-check-label" htmlFor="editActifCheck">Locataire actif</label>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowEditModal(false)}>
-                  <BsXLg /> Annuler
-                </button>
-                <button type="submit" className="btn btn-primary btn-sm" disabled={editSaving}>
-                  {editSaving ? "Enregistrement..." : "Enregistrer"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── Modal ajout (PC uniquement) ── */}
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div
-            className="modal-content-pro"
-            style={{ maxWidth: 560 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header-pro">
-              <h6><BsPeople className="me-2" />Ajouter un locataire</h6>
-              <button className="btn-close" onClick={() => setShowAddModal(false)} />
-            </div>
-            <form onSubmit={handleAddSubmit} className="p-4">
-              <div className="row g-3">
-                <div className="col-12 form-section">
-                  <BsPersonBadge /> Identité
-                </div>
-                <div className="col-12 pb-2 mb-1 border-bottom">
-                  <label className="form-label">Photo du locataire</label>
-                  <AvatarPicker value={addForm.photo} onChange={(p) => setAddForm((f) => ({ ...f, photo: p }))} nom={`${addForm.nom} ${addForm.prenom}`} size={68} />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Nom *</label>
-                  <input type="text" name="nom" className="form-control form-control-sm"
-                    value={addForm.nom} onChange={handleAddChange} placeholder="Nom de famille" />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Prénom</label>
-                  <input type="text" name="prenom" className="form-control form-control-sm"
-                    value={addForm.prenom} onChange={handleAddChange} placeholder="Prénom" />
-                </div>
-                {!mono && (
-                  <>
-                    <div className="col-sm-6">
-                      <label className="form-label">Étage</label>
-                      <select name="etage" className="form-select form-select-sm"
-                        value={addForm.etage} onChange={handleAddChange}>
-                        <option value="RDC">Rez-de-chaussée (150 000 Ar)</option>
-                        <option value="1ER">1er Étage (200 000 Ar)</option>
-                      </select>
-                    </div>
-                    <div className="col-sm-6">
-                      <label className="form-label">Chambre</label>
-                      <select name="chambre" className="form-select form-select-sm"
-                        value={addForm.chambre} onChange={handleAddChange}
-                        disabled={chambres.length === 0}>
-                        {chambres.length === 0 ? (
-                          <option value="">Aucune chambre libre</option>
-                        ) : (
-                          chambres.map((c) => <option key={c} value={c}>{c}</option>)
-                        )}
-                      </select>
-                    </div>
-                  </>
-                )}
-                <div className="col-12">
-                  <div className="p-2 rounded-3 d-flex align-items-center gap-2"
-                    style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
-                    <span className="fw-bold text-primary" style={{ fontSize: "0.85rem" }}>
-                      {mono
-                        ? `Loyer : ${monoLoyer.toLocaleString()} Ar — ${current.nom} (Villa entière)`
-                        : `Loyer : ${loyer.toLocaleString()} Ar — Chambre ${addForm.chambre} (${addForm.etage})`}
-                    </span>
-                  </div>
-                </div>
-                <div className="col-12 form-section">
-                  <BsTelephone /> Contact
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Téléphone</label>
-                  <input type="tel" name="tel" className="form-control form-control-sm"
-                    value={addForm.tel} onChange={handleAddChange} placeholder="+261 ..." />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Email</label>
-                  <input type="email" name="email" className="form-control form-control-sm"
-                    value={addForm.email} onChange={handleAddChange} placeholder="email@exemple.com" />
-                </div>
-                <div className="col-12 form-section">
-                  <BsCalendarCheck /> Bail &amp; règlement
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Date d'entrée</label>
-                  <input type="date" name="dateEntree" className="form-control form-control-sm"
-                    value={addForm.dateEntree} onChange={handleAddChange} />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Caution / dépôt de garantie (Ar)</label>
-                  <input type="number" name="caution" min="0" className="form-control form-control-sm"
-                    value={addForm.caution} onChange={handleAddChange} placeholder="0" />
-                </div>
-                <div className="col-sm-6">
-                  <label className="form-label">Jour de paiement habituel</label>
-                  <div>
-                    <JourPaiementPicker value={addForm.jourPaiement} onChange={handleAddChange} />
-                  </div>
-                </div>
-                <div className="col-12">
-                  <label className="form-label">Sens du règlement</label>
-                  <ModePaiementPicker value={addForm.modePaiement} onChange={handleAddChange} />
-                </div>
-                <div className="col-12 form-section">
-                  <BsLightningCharge /> Eau &amp; électricité
-                </div>
-                <div className="col-12">
-                  <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
-                    <input type="checkbox" name="jiramaNonSoumis" className="form-check-input mt-1"
-                      checked={!!addForm.jiramaNonSoumis}
-                      onChange={(e) => handleAddChange({ target: { name: "jiramaNonSoumis", value: e.target.checked } })} />
-                    <span>
-                      <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
-                        Ne paie pas le JIRAMA
-                      </span>
-                      <span className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
-                        Son bail ne comprend ni eau ni électricité : rien ne lui sera
-                        jamais réclamé à ce titre.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-                <div className="col-12">
-                  <label className="form-label">
-                    Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
-                  </label>
-                  <input type="number" name="jiramaForfait" min="0" step="500"
-                    className="form-control form-control-sm"
-                    placeholder="Ex. : 10000"
-                    value={addForm.jiramaForfait ?? ""} onChange={handleAddChange} />
-                  <small className="text-muted" style={{ fontSize: "0.72rem" }}>
-                    Montant dû chaque mois sans relevé. Si le compteur dépasse ce forfait,
-                    c est le relevé qui fait foi.
-                  </small>
-                </div>
-                <div className="col-12">
-                  <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
-                  <input type="text" name="messengerId" className="form-control form-control-sm"
-                    autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                    value={addForm.messengerId || ""} onChange={handleAddChange}
-                    placeholder="Collez l'URL de la conversation Messenger" /> 
-                </div>
-              </div>
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowAddModal(false)}>
-                  <BsXLg /> Annuler
-                </button>
-                <button type="submit" className="btn btn-primary btn-sm" disabled={saving || !addForm.chambre}>
-                  {saving ? "Enregistrement..." : "Ajouter le locataire"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </Template>
   );
 }
