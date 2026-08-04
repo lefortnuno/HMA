@@ -77,7 +77,7 @@ export default function FinanceCharges() {
               <div className="d-flex gap-2 align-items-center flex-wrap">
                 <MoisPicker value={mois} onChange={setMois} />
                 <AnneePicker value={annee} onChange={setAnnee} />
-                <button className="btn btn-primary btn-sm d-flex align-items-center gap-1" onClick={openAdd}>
+                <button className="btn btn-success btn-sm d-flex align-items-center gap-1" onClick={openAdd}>
                   <BsPlus size={16} /> Ajouter
                 </button>
               </div>

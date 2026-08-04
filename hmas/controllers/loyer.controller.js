@@ -706,7 +706,7 @@ function validePaiement(body) {
     return "Montant JIRAMA invalide.";
   if (!V.isStatutValide(statut)) return "Statut invalide (PAYE/PARTIEL/IMPAYE).";
   // Le JIRAMA se regle independamment du loyer : il a son propre statut.
-  if (statutJIRAMA !== undefined && !V.isStatutValide(statutJIRAMA))
+  if (statutJIRAMA !== undefined && !V.isStatutJiramaValide(statutJIRAMA))
     return "Statut JIRAMA invalide (PAYE/PARTIEL/IMPAYE).";
   return null;
 }
@@ -784,7 +784,7 @@ module.exports.upsertJirama = (req, res) => {
   if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
   if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
   if (!V.isMontantValide(montantJIRAMA)) return badRequest(res, "Montant JIRAMA invalide.");
-  if (!V.isStatutValide(statutJIRAMA)) return badRequest(res, "Statut JIRAMA invalide.");
+  if (!V.isStatutJiramaValide(statutJIRAMA)) return badRequest(res, "Statut JIRAMA invalide.");
 
   Paiement.getExisting(locataireId, mois, annee, (err, existant) => {
     if (err) return sendErr(res, err);
@@ -841,11 +841,11 @@ module.exports.updatePaiement = (req, res) => {
   if (montantJIRAMA !== undefined && !V.isMontantValide(montantJIRAMA))
     return badRequest(res, "Montant JIRAMA invalide.");
   if (!V.isStatutValide(statut)) return badRequest(res, "Statut invalide.");
-  if (req.body.statutJIRAMA !== undefined && !V.isStatutValide(req.body.statutJIRAMA))
+  if (req.body.statutJIRAMA !== undefined && !V.isStatutJiramaValide(req.body.statutJIRAMA))
     return badRequest(res, "Statut JIRAMA invalide.");
 
   const data = { montantLoyer, montantJIRAMA, statut, datePaiement: datePaiement || null };
-  if (V.isStatutValide(req.body.statutJIRAMA)) data.statutJIRAMA = req.body.statutJIRAMA;
+  if (V.isStatutJiramaValide(req.body.statutJIRAMA)) data.statutJIRAMA = req.body.statutJIRAMA;
 
   if (isAdmin(req)) {
     return Paiement.update(req.params.id, data, (err, result) => {

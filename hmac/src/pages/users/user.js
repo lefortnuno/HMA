@@ -135,7 +135,7 @@ export default function User() {
                     onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
                     style={{ fontSize: "0.82rem" }} />
                 </div>
-                <Link to="/newUser/" className="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                <Link to="/newUser/" className="btn btn-success btn-sm d-flex align-items-center gap-1">
                   <BsPlus size={16} /> Ajouter
                 </Link>
               </div>

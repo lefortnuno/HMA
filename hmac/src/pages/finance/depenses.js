@@ -113,7 +113,7 @@ export default function FinanceDepenses() {
                   </button>
                   <button className="week-nav-btn" onClick={() => goWeek(1)}><BsChevronRight size={12} /></button>
                 </div>
-                <button className="btn btn-primary btn-sm d-flex align-items-center gap-1" onClick={openModal}>
+                <button className="btn btn-success btn-sm d-flex align-items-center gap-1" onClick={openModal}>
                   <BsPlus size={16} /> Ajouter
                 </button>
               </div>

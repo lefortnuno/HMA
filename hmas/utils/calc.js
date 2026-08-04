@@ -64,6 +64,17 @@ function isStatutValide(statut) {
   return ["PAYE", "PARTIEL", "IMPAYE", "DOUTE"].includes(statut);
 }
 
+/**
+ * Statuts admis pour l'eau et l'electricite.
+ *
+ * ABSENT s'ajoute aux quatre autres : le locataire n'a pas occupe sa chambre
+ * du mois, rien ne lui est du. Volontairement absent de isStatutValide : une
+ * absence ne dispense jamais du loyer.
+ */
+function isStatutJiramaValide(statut) {
+  return isStatutValide(statut) || statut === "ABSENT";
+}
+
 module.exports = {
   CHAMBRES_RDC,
   CHAMBRES_1ER,
@@ -77,4 +88,5 @@ module.exports = {
   isEtageValide,
   isChambreValide,
   isStatutValide,
+  isStatutJiramaValide,
 };

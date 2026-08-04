@@ -3,7 +3,13 @@ import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { BsCheckCircle, BsExclamationTriangle, BsLightningCharge } from "react-icons/bs";
+import {
+  BsCheckCircle,
+  BsExclamationTriangle,
+  BsLightningCharge,
+  BsSave,
+  BsArrowRepeat,
+} from "react-icons/bs";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -123,18 +129,26 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
   // Montant releve au compteur, avant application du forfait.
   const getMontantReleve = (locId) => getConso(locId) * prixUnitaire;
 
+  // L'absence peut venir de la case « Absent » du tableau, ou du statut choisi
+  // dans l'onglet Règlements : les deux vues doivent dire la même chose.
+  const estAbsent = (locId) =>
+    !!exemptions[locId] || regles[locId]?.statut === "ABSENT";
+
   /**
-   * Ce que le locataire doit reellement pour le mois.
-   *
-   * Trois cas, dans cet ordre : absent (rien du, forfait compris), montant
-   * saisi a la main faute de releve, sinon le plus eleve entre son forfait
-   * et sa consommation relevee.
+   * Ce que le locataire doit réellement pour le mois, par ordre de priorité :
+   * absent (rien dû, forfait compris), montant saisi à la main faute de
+   * relevé, le plus élevé entre son forfait et sa consommation, et à défaut
+   * de tout cela ce qu'il a déjà réglé.
    */
   const getMontant = (locId) => {
-    if (exemptions[locId]) return 0;
+    if (estAbsent(locId)) return 0;
     const manuel = montantsManuels[locId];
     if (manuel !== undefined && manuel !== "") return Number(manuel) || 0;
-    return Math.max(forfaitDe(locId), getMontantReleve(locId));
+    const base = Math.max(forfaitDe(locId), getMontantReleve(locId));
+    // Ni forfait ni relevé, mais un règlement déjà encaissé : c'est la
+    // meilleure information disponible sur ce qui était dû.
+    if (base === 0) return regles[locId]?.montant || 0;
+    return base;
   };
 
   // Bascule  absent ce mois  : on efface au passage un eventuel montant.
@@ -184,7 +198,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         indexCurr: consommations[l.id]?.indexCurr || 0,
         consommation: getConso(l.id),
         montantJIRAMA: getMontant(l.id),
-        exempt: exemptions[l.id] ? 1 : 0,
+        exempt: estAbsent(l.id) ? 1 : 0,
       })),
     };
     const req = factureId
@@ -318,7 +332,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                   locataires.map((loc) => (
                     <tr
                       key={loc.id}
-                      style={exemptions[loc.id] ? { opacity: 0.55 } : undefined}
+                      style={estAbsent(loc.id) ? { opacity: 0.55 } : undefined}
                     >
                       <td>
                         <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
@@ -371,11 +385,11 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                           style={{ width: 110, color: "#2563eb" }}
                           min={0}
                           step={500}
-                          value={exemptions[loc.id] ? 0 : getMontant(loc.id)}
-                          disabled={exemptions[loc.id]}
+                          value={getMontant(loc.id)}
+                          disabled={estAbsent(loc.id)}
                           onChange={(e) => handleMontantChange(loc.id, e.target.value)}
                         />
-                        {!exemptions[loc.id] && forfaitDe(loc.id) > 0 && (
+                        {!estAbsent(loc.id) && forfaitDe(loc.id) > 0 && (
                           <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
                             {getMontant(loc.id) > forfaitDe(loc.id)
                               ? "au-dessus du forfait"
@@ -408,7 +422,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                         <input
                           type="checkbox"
                           className="form-check-input"
-                          checked={!!exemptions[loc.id]}
+                          checked={estAbsent(loc.id)}
                           onChange={() => basculeExemption(loc.id)}
                           title={`${loc.nom} n'était pas là ce mois-ci : rien ne lui est dû`}
                         />
@@ -427,8 +441,8 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                       {totalCalcule.toLocaleString()} Ar
                     </td>
                     <td colSpan={2} className="text-muted" style={{ fontSize: "0.75rem" }}>
-                      {Object.keys(exemptions).length > 0 &&
-                        `${Object.keys(exemptions).length} absent(s)`}
+                      {locataires.filter((l) => estAbsent(l.id)).length > 0 &&
+                        `${locataires.filter((l) => estAbsent(l.id)).length} absent(s)`}
                     </td>
                   </tr>
                 </tfoot>
@@ -438,7 +452,12 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         </div>
 
         <div className="d-flex justify-content-end">
-          <button type="submit" className="btn btn-primary" disabled={saving || locataires.length === 0}>
+          <button
+            type="submit"
+            className="btn btn-primary d-inline-flex align-items-center gap-2"
+            disabled={saving || locataires.length === 0}
+          >
+            {factureId ? <BsArrowRepeat /> : <BsSave />}
             {saving ? "Enregistrement..." : factureId ? "Mettre à jour" : "Enregistrer la facture"}
           </button>
         </div>

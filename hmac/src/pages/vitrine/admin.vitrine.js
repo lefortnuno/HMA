@@ -11,6 +11,7 @@ import {
   BsEye, BsToggleOn, BsToggleOff, BsX, BsCloudUpload,
   BsHouseDoor, BsBuilding, BsCheckCircle, BsXCircle,
   BsSearch, BsGeoAlt,
+  BsXLg,
 } from "react-icons/bs";
 import { SkTableRows } from "../../components/skeleton/skeleton";
 import "./vitrine.css";
@@ -199,12 +200,12 @@ export default function AdminVitrine() {
                 </a>
                 {isMobile ? (
                   <Link to="/vitrine/admin/new"
-                    className="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                    className="btn btn-success btn-sm d-flex align-items-center gap-1">
                     <BsPlus size={16} /> Ajouter
                   </Link>
                 ) : (
                   <button onClick={openModal}
-                    className="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                    className="btn btn-success btn-sm d-flex align-items-center gap-1">
                     <BsPlus size={16} /> Ajouter un bien
                   </button>
                 )}
@@ -562,7 +563,7 @@ export default function AdminVitrine() {
                   display: "flex", justifyContent: "flex-end", gap: 8,
                   marginTop: 20, paddingTop: 16, borderTop: "1px solid #e2e8f0"
                 }}>
-                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={closeModal}>Annuler</button>
+                  <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={closeModal}><BsXLg /> Annuler</button>
                   <button type="submit" className="btn btn-primary btn-sm" disabled={saving || uploading}>
                     {saving ? "Publication…" : "Publier le bien"}
                   </button>

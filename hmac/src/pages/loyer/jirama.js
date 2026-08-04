@@ -18,6 +18,7 @@ import {
   BsGraphUp,
   BsGraphDown,
   BsCashCoin,
+  BsXLg,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import { SkLoyerRows } from "../../components/skeleton/skeleton";
@@ -336,7 +337,8 @@ export default function TableauJirama() {
   const factureDe = (locId, mois) => {
     const ligne = factures[locId]?.[mois];
     // Absent ce mois-la : rien ne lui est du, pas meme son forfait.
-    if (ligne?.exempt) return 0;
+    // Le signal vient du releve (case Absent) ou du statut du reglement.
+    if (ligne?.exempt || getCell(locId, mois)?.statutJIRAMA === "ABSENT") return 0;
     const releve = ligne?.montant || 0;
     const forfait = forfaitDe(locId);
     if (!forfait) return releve;
@@ -399,7 +401,8 @@ export default function TableauJirama() {
 
     // Absent ce mois-là : son forfait ne s'applique pas non plus, sinon la
     // saisie exigerait un minimum de 10 000 Ar pour quelqu'un qui ne doit rien.
-    const exempt = !!factures[loc.id]?.[mois]?.exempt;
+    const exempt =
+      !!factures[loc.id]?.[mois]?.exempt || p?.statutJIRAMA === "ABSENT";
     const forfait = exempt ? 0 : forfaitDe(loc.id);
 
     // Ni relevé ni règlement : rien à afficher pour ce mois.
@@ -787,7 +790,10 @@ export default function TableauJirama() {
 
 function ModalJirama({ cell, u_info, onClose, onSave }) {
   const [form, setForm] = useState({
-    statutJIRAMA: cell.existing?.statutJIRAMA || "PAYE",
+    statutJIRAMA:
+      cell.existing?.statutJIRAMA && cell.existing.statutJIRAMA !== "IMPAYE"
+        ? cell.existing.statutJIRAMA
+        : "PAYE",
     montantJIRAMA:
       cell.existing?.montantJIRAMA && cell.existing.montantJIRAMA > 0
         ? cell.existing.montantJIRAMA
@@ -800,7 +806,8 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
   const plancher = cell.forfait || 0;
   const montantSaisi = Number(form.montantJIRAMA) || 0;
   const sousLePlancher =
-    plancher > 0 && form.statutJIRAMA !== "IMPAYE" && form.statutJIRAMA !== "PARTIEL" &&
+    plancher > 0 &&
+    !["IMPAYE", "PARTIEL", "ABSENT"].includes(form.statutJIRAMA) &&
     montantSaisi < plancher;
 
   function handleSubmit(e) {
@@ -818,7 +825,9 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
           locataireId: cell.loc.id,
           mois: cell.mois,
           annee: cell.annee,
-          montantJIRAMA: form.statutJIRAMA === "IMPAYE" ? 0 : Number(form.montantJIRAMA) || 0,
+          montantJIRAMA: ["IMPAYE", "ABSENT"].includes(form.statutJIRAMA)
+            ? 0
+            : Number(form.montantJIRAMA) || 0,
           statutJIRAMA: form.statutJIRAMA,
         },
         u_info.opts
@@ -890,7 +899,11 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
                 setForm({
                   statutJIRAMA: s,
                   montantJIRAMA:
-                    s === "IMPAYE" ? 0 : s === "PAYE" ? cell.attendu || form.montantJIRAMA : form.montantJIRAMA,
+                    s === "IMPAYE" || s === "ABSENT"
+                      ? 0
+                      : s === "PAYE"
+                        ? cell.attendu || form.montantJIRAMA
+                        : form.montantJIRAMA,
                 });
               }}
             >
@@ -898,6 +911,7 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
               <option value="PARTIEL">Partiel</option>
               <option value="DOUTE">Doute — dit avoir payé, à confirmer</option>
               <option value="IMPAYE">Impayé</option>
+              <option value="ABSENT">Absent — rien à payer ce mois</option>
             </select>
           </div>
 
@@ -915,9 +929,9 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
               className={`form-control form-control-sm ${sousLePlancher ? "is-invalid" : ""}`}
               min={form.statutJIRAMA === "PARTIEL" ? 0 : plancher || 0}
               value={form.montantJIRAMA}
-              readOnly={form.statutJIRAMA === "IMPAYE"}
+              readOnly={["IMPAYE", "ABSENT"].includes(form.statutJIRAMA)}
               style={
-                form.statutJIRAMA === "IMPAYE"
+                ["IMPAYE", "ABSENT"].includes(form.statutJIRAMA)
                   ? { background: "#f8fafc", cursor: "default", color: "#64748b" }
                   : {}
               }
@@ -943,8 +957,8 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
           </div>
 
           <div className="d-flex justify-content-end gap-2">
-            <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onClose}>
-              Annuler
+            <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={onClose}>
+              <BsXLg /> Annuler
             </button>
             <button type="submit" className="btn btn-primary btn-sm" disabled={saving || sousLePlancher}>
               {saving ? "..." : "Enregistrer"}

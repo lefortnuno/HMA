@@ -10,7 +10,7 @@ import {
   BsPeople,
   BsPencilSquare,
   BsFillTrashFill,
-  BsPlus,
+  BsPersonPlusFill,
   BsTelephone,
   BsChatDots,
   BsWhatsapp,
@@ -494,10 +494,10 @@ export default function Locataires() {
               <div className="d-flex align-items-center gap-2 flex-wrap">
                 <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
                 <button
-                  className="btn btn-primary d-flex align-items-center gap-1"
+                  className="btn btn-success d-flex align-items-center gap-1"
                   onClick={handleAjouter}
                 >
-                  <BsPlus size={18} /> Ajouter
+                  <BsPersonPlusFill size={16} /> Ajouter un locataire
                 </button>
               </div>
             </div>
@@ -507,8 +507,8 @@ export default function Locataires() {
             ) : locataires.length === 0 ? (
               <div className="card-pro text-center py-5">
                 <p className="text-muted mb-3">Aucun locataire enregistré pour {current.nom}.</p>
-                <button className="btn btn-primary" onClick={handleAjouter}>
-                  <BsPlus /> Ajouter le premier locataire
+                <button className="btn btn-success" onClick={handleAjouter}>
+                  <BsPersonPlusFill /> Ajouter le premier locataire
                 </button>
               </div>
             ) : mono ? (

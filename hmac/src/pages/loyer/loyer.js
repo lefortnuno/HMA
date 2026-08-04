@@ -17,6 +17,7 @@ import {
   BsWhatsapp,
   BsExclamationTriangleFill,
   BsMessenger,
+  BsXLg,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -1477,10 +1478,10 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
             <div className="d-flex gap-2">
               <button
                 type="button"
-                className="btn btn-outline-secondary btn-sm"
+                className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
                 onClick={onClose}
               >
-                Annuler
+                <BsXLg /> Annuler
               </button>
               <button
                 type="submit"
