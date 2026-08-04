@@ -134,14 +134,18 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
   const estAbsent = (locId) =>
     !!exemptions[locId] || regles[locId]?.statut === "ABSENT";
 
+  // Bail sans eau ni électricité : rien ne lui sera jamais réclamé à ce titre.
+  const horsJirama = (locId) =>
+    !!locataires.find((l) => l.id === locId)?.jiramaNonSoumis;
+
   /**
    * Ce que le locataire doit réellement pour le mois, par ordre de priorité :
-   * absent (rien dû, forfait compris), montant saisi à la main faute de
-   * relevé, le plus élevé entre son forfait et sa consommation, et à défaut
-   * de tout cela ce qu'il a déjà réglé.
+   * hors JIRAMA ou absent (rien dû, forfait compris), montant saisi à la main
+   * faute de relevé, le plus élevé entre son forfait et sa consommation, et à
+   * défaut de tout cela ce qu'il a déjà réglé.
    */
   const getMontant = (locId) => {
-    if (estAbsent(locId)) return 0;
+    if (horsJirama(locId) || estAbsent(locId)) return 0;
     const manuel = montantsManuels[locId];
     if (manuel !== undefined && manuel !== "") return Number(manuel) || 0;
     const base = Math.max(forfaitDe(locId), getMontantReleve(locId));
@@ -332,7 +336,11 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                   locataires.map((loc) => (
                     <tr
                       key={loc.id}
-                      style={estAbsent(loc.id) ? { opacity: 0.55 } : undefined}
+                      style={
+                        horsJirama(loc.id) || estAbsent(loc.id)
+                          ? { opacity: 0.55 }
+                          : undefined
+                      }
                     >
                       <td>
                         <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
@@ -341,7 +349,16 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                       </td>
                       <td style={{ fontSize: "0.875rem" }}>
                         {loc.nom} {loc.prenom}
-                        {loc.jiramaForfait > 0 && (
+                        {loc.jiramaNonSoumis ? (
+                          <span
+                            className="text-muted ms-1"
+                            style={{ fontSize: "0.72rem" }}
+                            title="Son bail ne comprend pas l'eau et l'électricité"
+                          >
+                            · hors JIRAMA
+                          </span>
+                        ) : null}
+                        {!loc.jiramaNonSoumis && loc.jiramaForfait > 0 && (
                           <span
                             className="text-muted ms-1"
                             style={{ fontSize: "0.72rem" }}
@@ -386,10 +403,15 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                           min={0}
                           step={500}
                           value={getMontant(loc.id)}
-                          disabled={estAbsent(loc.id)}
+                          disabled={horsJirama(loc.id) || estAbsent(loc.id)}
                           onChange={(e) => handleMontantChange(loc.id, e.target.value)}
                         />
-                        {!estAbsent(loc.id) && forfaitDe(loc.id) > 0 && (
+                        {horsJirama(loc.id) ? (
+                          <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
+                            hors JIRAMA
+                          </div>
+                        ) : null}
+                        {!horsJirama(loc.id) && !estAbsent(loc.id) && forfaitDe(loc.id) > 0 && (
                           <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
                             {getMontant(loc.id) > forfaitDe(loc.id)
                               ? "au-dessus du forfait"
@@ -422,7 +444,8 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                         <input
                           type="checkbox"
                           className="form-check-input"
-                          checked={estAbsent(loc.id)}
+                          checked={horsJirama(loc.id) || estAbsent(loc.id)}
+                          disabled={horsJirama(loc.id)}
                           onChange={() => basculeExemption(loc.id)}
                           title={`${loc.nom} n'était pas là ce mois-ci : rien ne lui est dû`}
                         />

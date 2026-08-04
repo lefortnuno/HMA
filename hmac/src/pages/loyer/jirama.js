@@ -38,6 +38,25 @@ const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const PAR_PAGE = 9;
 
+// Jour du mois ou la facture de la compagnie arrive habituellement.
+const JOUR_FACTURE = 25;
+
+/**
+ * La facture JIRAMA d'un mois est-elle censee etre arrivee ?
+ *
+ * L'eau et l'electricite se consomment puis se paient : rien ne peut etre
+ * reclame pour le mois en cours avant l'arrivee de la facture, vers le 25.
+ */
+function factureArrivee(mois, annee, aujourdhui = new Date()) {
+  const anneeCourante = aujourdhui.getFullYear();
+  const moisCourant = aujourdhui.getMonth() + 1;
+  if (Number(annee) < anneeCourante) return true;
+  if (Number(annee) > anneeCourante) return false;
+  if (Number(mois) < moisCourant) return true;
+  if (Number(mois) > moisCourant) return false;
+  return aujourdhui.getDate() >= JOUR_FACTURE;
+}
+
 function lienRelanceWhatsApp(loc, moisNom, annee, montant) {
   if (!loc.tel) return null;
   const num = loc.tel.replace(/\s+/g, "").replace(/^\+/, "");
@@ -72,6 +91,8 @@ function AlerteJirama({ locataires, getCell, factureDe, annee }) {
       for (let m = 1; m <= 12; m++) {
         const facture = factureDe(loc.id, m);
         if (facture <= 0) continue; // pas de relevé pour ce mois
+        // Facture pas encore arrivee : rien a reclamer, meme au forfait.
+        if (!factureArrivee(m, annee)) continue;
         const p = getCell(loc.id, m);
         if (p && p.statutJIRAMA === "PAYE") continue;
         const paye = p && p.statutJIRAMA === "PARTIEL" ? p.montantJIRAMA || 0 : 0;
@@ -335,6 +356,9 @@ export default function TableauJirama() {
    * reference quand il depasse : le surplus releve leur est facture en plus.
    */
   const factureDe = (locId, mois) => {
+    const loc0 = locataires.find((l) => l.id === locId);
+    // Bail sans eau ni electricite : rien ne lui est jamais reclame.
+    if (loc0?.jiramaNonSoumis) return 0;
     const ligne = factures[locId]?.[mois];
     // Absent ce mois-la : rien ne lui est du, pas meme son forfait.
     // Le signal vient du releve (case Absent) ou du statut du reglement.
@@ -349,6 +373,8 @@ export default function TableauJirama() {
       annee > maintenant.getFullYear() ||
       (annee === maintenant.getFullYear() && mois > maintenant.getMonth() + 1);
     if (aVenir) return releve;
+    // Le forfait du mois en cours n'est du qu'une fois la facture arrivee.
+    if (!releve && !factureArrivee(mois, annee)) return 0;
     return Math.max(forfait, releve);
   };
 

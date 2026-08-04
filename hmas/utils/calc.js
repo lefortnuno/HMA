@@ -64,6 +64,30 @@ function isStatutValide(statut) {
   return ["PAYE", "PARTIEL", "IMPAYE", "DOUTE"].includes(statut);
 }
 
+// Jour du mois ou la facture de la compagnie arrive habituellement.
+const JOUR_FACTURE_JIRAMA = 25;
+
+/**
+ * La facture JIRAMA d'un mois est-elle censee etre arrivee ?
+ *
+ * L'eau et l'electricite se consomment puis se paient : le releve du mois en
+ * cours n'existe pas encore, et rien ne peut etre reclame avant l'arrivee de
+ * la facture, vers le 25. Sans cette regle, le mois en cours apparaissait des
+ * le 1er dans les sommes a recouvrer.
+ */
+function factureJiramaArrivee(mois, annee, aujourdhui = new Date()) {
+  const m = Number(mois);
+  const a = Number(annee);
+  const anneeCourante = aujourdhui.getFullYear();
+  const moisCourant = aujourdhui.getMonth() + 1;
+
+  if (a < anneeCourante) return true;   // annee revolue
+  if (a > anneeCourante) return false;  // annee a venir
+  if (m < moisCourant) return true;     // mois revolu
+  if (m > moisCourant) return false;    // mois a venir
+  return aujourdhui.getDate() >= JOUR_FACTURE_JIRAMA;
+}
+
 /**
  * Statuts admis pour l'eau et l'electricite.
  *
@@ -89,4 +113,6 @@ module.exports = {
   isChambreValide,
   isStatutValide,
   isStatutJiramaValide,
+  factureJiramaArrivee,
+  JOUR_FACTURE_JIRAMA,
 };

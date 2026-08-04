@@ -77,6 +77,9 @@ function normaliseLocataire(body) {
       body.jiramaForfait === "" || body.jiramaForfait === undefined || body.jiramaForfait === null
         ? null
         : Math.max(0, Number(body.jiramaForfait) || 0),
+    // Bail sans eau ni electricite : rien ne lui sera jamais reclame a ce
+    // titre. A distinguer d'un forfait absent, qui veut dire  au releve .
+    jiramaNonSoumis: body.jiramaNonSoumis ? 1 : 0,
   };
 }
 
@@ -1019,10 +1022,20 @@ module.exports.getMonEspace = (req, res) => {
       const forfait = Number(loc.jiramaForfait) || 0;
       const maintenant = new Date();
       const jiramaDu = {};
+      // Bail sans eau ni electricite : rien ne lui est jamais reclame.
+      if (loc.jiramaNonSoumis) {
+        for (let m = 1; m <= 12; m++) jiramaDu[m] = 0;
+      } else
       for (let m = 1; m <= 12; m++) {
         const releve = releves[m] || 0;
         // Absent ce mois-la : rien n'est du, pas meme le forfait.
         if (exemptes[m]) {
+          jiramaDu[m] = 0;
+          continue;
+        }
+        // La facture JIRAMA du mois n'arrive que vers le 25 : avant cela, rien
+        // n'est encore reclamable, sauf si un releve a deja ete enregistre.
+        if (!releve && !V.factureJiramaArrivee(m, annee)) {
           jiramaDu[m] = 0;
           continue;
         }

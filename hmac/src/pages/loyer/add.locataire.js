@@ -37,6 +37,7 @@ export default function AddLocataire() {
     // Les nouveaux locataires reglent d avance (ils paient puis consomment).
     modePaiement: "AVANCE",
     jiramaForfait: "",
+    jiramaNonSoumis: false,
     messengerId: "",
   });
   const [saving, setSaving] = useState(false);
@@ -252,6 +253,22 @@ export default function AddLocataire() {
                     <div className="col-12">
                       <label className="form-label">Sens du règlement</label>
                       <ModePaiementPicker value={form.modePaiement} onChange={handleChange} />
+                    </div>
+                    <div className="col-12">
+                      <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
+                        <input type="checkbox" name="jiramaNonSoumis" className="form-check-input mt-1"
+                          checked={!!form.jiramaNonSoumis}
+                          onChange={(e) => handleChange({ target: { name: "jiramaNonSoumis", value: e.target.checked } })} />
+                        <span>
+                          <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+                            Ne paie pas le JIRAMA
+                          </span>
+                          <span className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
+                            Son bail ne comprend ni eau ni électricité : rien ne lui sera
+                            jamais réclamé à ce titre.
+                          </span>
+                        </span>
+                      </label>
                     </div>
                     <div className="col-12">
                       <label className="form-label">

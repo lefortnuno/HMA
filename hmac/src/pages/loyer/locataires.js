@@ -129,6 +129,7 @@ function initForm() {
     // Les nouveaux locataires reglent d avance (ils paient puis consomment).
     modePaiement: "AVANCE",
     jiramaForfait: "",
+    jiramaNonSoumis: false,
   };
 }
 
@@ -295,6 +296,7 @@ export default function Locataires() {
         jourPaiement: loc.jourPaiement || "",
         modePaiement: loc.modePaiement || "ECHU",
         jiramaForfait: loc.jiramaForfait ?? "",
+        jiramaNonSoumis: !!loc.jiramaNonSoumis,
       });
       setShowEditModal(true);
     } else {
@@ -683,6 +685,22 @@ export default function Locataires() {
                   <ModePaiementPicker value={editForm.modePaiement} onChange={handleEditChange} />
                 </div>
                 <div className="col-12">
+                  <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
+                    <input type="checkbox" name="jiramaNonSoumis" className="form-check-input mt-1"
+                      checked={!!editForm.jiramaNonSoumis}
+                      onChange={(e) => handleEditChange({ target: { name: "jiramaNonSoumis", value: e.target.checked } })} />
+                    <span>
+                      <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+                        Ne paie pas le JIRAMA
+                      </span>
+                      <span className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
+                        Son bail ne comprend ni eau ni électricité : rien ne lui sera
+                        jamais réclamé à ce titre.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+                <div className="col-12">
                   <label className="form-label">
                     Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
                   </label>
@@ -814,6 +832,22 @@ export default function Locataires() {
                 <div className="col-12">
                   <label className="form-label">Sens du règlement</label>
                   <ModePaiementPicker value={addForm.modePaiement} onChange={handleAddChange} />
+                </div>
+                <div className="col-12">
+                  <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
+                    <input type="checkbox" name="jiramaNonSoumis" className="form-check-input mt-1"
+                      checked={!!addForm.jiramaNonSoumis}
+                      onChange={(e) => handleAddChange({ target: { name: "jiramaNonSoumis", value: e.target.checked } })} />
+                    <span>
+                      <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+                        Ne paie pas le JIRAMA
+                      </span>
+                      <span className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
+                        Son bail ne comprend ni eau ni électricité : rien ne lui sera
+                        jamais réclamé à ce titre.
+                      </span>
+                    </span>
+                  </label>
                 </div>
                 <div className="col-12">
                   <label className="form-label">
