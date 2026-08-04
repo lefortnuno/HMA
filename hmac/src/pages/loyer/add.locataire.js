@@ -10,6 +10,7 @@ import { BsPeople, BsArrowLeft, BsXLg, BsSave, BsPersonBadge, BsDoorOpen, BsTele
 import AvatarPicker from "../../components/avatar/avatar";
 import JourPaiementPicker from "../../components/jour/jour.paiement";
 import ModePaiementPicker from "../../components/jour/mode.paiement";
+import JiramaPicker from "../../components/jour/jirama.picker";
 import { getSelectedBienId } from "../../components/appart/apart.select";
 import "./loyer.css";
 
@@ -296,6 +297,13 @@ export default function AddLocataire() {
                       placeholder="email@exemple.com"
                     />
                   </div>
+                  <div className="col-12">
+                    <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
+                    <input type="text" name="messengerId" className="form-control"
+                      autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                      value={form.messengerId || ""} onChange={handleChange}
+                      placeholder="Collez l&apos;URL de la conversation Messenger" />
+                  </div>
 
                   <div className="col-12 form-section">
                     <BsCalendarCheck /> Bail &amp; règlement
@@ -329,41 +337,12 @@ export default function AddLocataire() {
                       <BsLightningCharge /> Eau &amp; électricité
                     </div>
                     <div className="col-12">
-                      <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
-                        <input type="checkbox" name="jiramaNonSoumis" className="form-check-input mt-1"
-                          checked={!!form.jiramaNonSoumis}
-                          onChange={(e) => handleChange({ target: { name: "jiramaNonSoumis", value: e.target.checked } })} />
-                        <span>
-                          <span className="fw-semibold" style={{ fontSize: "0.85rem" }}>
-                            Ne paie pas le JIRAMA
-                          </span>
-                          <span className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
-                            Son bail ne comprend ni eau ni électricité : rien ne lui sera
-                            jamais réclamé à ce titre.
-                          </span>
-                        </span>
-                      </label>
+                      <JiramaPicker
+                        forfait={form.jiramaForfait}
+                        nonSoumis={form.jiramaNonSoumis}
+                        onChange={handleChange}
+                      />
                     </div>
-                    <div className="col-12">
-                      <label className="form-label">
-                        Forfait JIRAMA <span className="text-muted" style={{ fontWeight: 400 }}>(Ar/mois, vide = au compteur)</span>
-                      </label>
-                      <input type="number" name="jiramaForfait" min="0" step="500"
-                        className="form-control form-control-sm"
-                        placeholder="Ex. : 10000"
-                        value={form.jiramaForfait ?? ""} onChange={handleChange} />
-                      <small className="text-muted" style={{ fontSize: "0.72rem" }}>
-                        Montant dû chaque mois sans relevé. Si le compteur dépasse ce forfait,
-                        c est le relevé qui fait foi.
-                      </small>
-                    </div>
-                  <div className="col-12">
-                    <label className="form-label">Lien Messenger <span className="text-muted" style={{ fontWeight: 400 }}>(optionnel)</span></label>
-                    <input type="text" name="messengerId" className="form-control"
-                      autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-                      value={form.messengerId || ""} onChange={handleChange}
-                      placeholder="Collez l&apos;URL de la conversation Messenger" />
-                  </div>
 
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">

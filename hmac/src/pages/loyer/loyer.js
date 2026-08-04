@@ -12,6 +12,7 @@ import {
   BsGraphUp,
   BsGraphDown,
   BsFileEarmarkExcel,
+  BsLightningCharge,
   BsFileEarmarkPdf,
   BsShare,
   BsWhatsapp,
@@ -692,10 +693,10 @@ export default function Loyer() {
                   <BsPeople /> Locataires
                 </Link>
                 <Link
-                  to="/loyer/factures/"
+                  to="/loyer/jirama/"
                   className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
                 >
-                  <BsFileEarmarkExcel /> JIRAMA
+                  <BsLightningCharge /> JIRAMA
                 </Link>
               </div>
             </div>

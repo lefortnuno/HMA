@@ -294,3 +294,45 @@
   border-color: #bfdbfe;
   color: #2563eb;
 }
+
+/* ─── Régime JIRAMA ───────────────────────────────────────────
+   Trois options qui s'excluent, plutôt qu'une case à cocher doublée d'un
+   champ de montant : on pouvait cocher « ne paie pas » en laissant un
+   forfait rempli, deux réglages qui se contredisaient. */
+.jirama-regime .mode-option {
+  flex: 1 1 145px;
+}
+
+.jirama-forfait {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  animation: jour-apparition 0.15s ease-out;
+}
+
+.jirama-forfait .form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.jirama-forfait small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.jirama-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #64748b;
+  animation: jour-apparition 0.15s ease-out;
+}
