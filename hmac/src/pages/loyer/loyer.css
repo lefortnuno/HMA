@@ -349,3 +349,102 @@
   color: #2563eb;
   font-size: 0.9rem;
 }
+
+/* ─── Aperçu des pages locataire ──────────────────────────────
+   Sur un écran de bureau, un formulaire à 620 px laisse les deux tiers de la
+   largeur vides. Cette colonne leur donne un usage : la fiche telle qu'elle
+   sera enregistrée, avec le loyer que l'étage déclenche. */
+.form-apercu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+/* Elle suit la lecture du formulaire, qui est plus long qu'elle. */
+@media (min-width: 1200px) {
+  .form-apercu {
+    position: sticky;
+    top: 88px;
+  }
+}
+
+.apercu-nom {
+  margin-top: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-dark, #1e293b);
+  line-height: 1.25;
+}
+
+.apercu-chambre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+}
+
+.apercu-loyer {
+  margin-top: 12px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2563eb;
+  line-height: 1;
+}
+
+.apercu-loyer span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.apercu-statut {
+  margin-top: 10px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.apercu-statut.actif {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.apercu-statut.inactif {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Récapitulatif des conditions, en pied d'aperçu. */
+.apercu-liste {
+  width: 100%;
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #e2e8f0);
+  text-align: left;
+}
+
+.apercu-liste > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.apercu-liste dt {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.apercu-liste dd {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dark, #1e293b);
+  text-align: right;
+}

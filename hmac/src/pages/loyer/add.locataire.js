@@ -128,15 +128,74 @@ export default function AddLocataire() {
               </Link>
             </div>
 
-            <div className="card-pro" style={{ maxWidth: 620 }}>
-              <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
+              <div className="row g-4 align-items-start">
+
+                {/* Aperçu — la largeur d'un écran de bureau sert enfin à
+                    quelque chose : on voit la fiche se composer, et surtout
+                    le loyer que l'étage choisi déclenche. */}
+                <div className="col-12 col-xl-4">
+                  <div className="card-pro form-apercu">
+                    <AvatarPicker
+                      value={form.photo}
+                      onChange={(p) => setForm((fm) => ({ ...fm, photo: p }))}
+                      nom={`${form.nom} ${form.prenom}`}
+                      size={96}
+                    />
+                    <div className="apercu-nom">
+                      {form.nom || form.prenom
+                        ? `${form.nom} ${form.prenom}`.trim()
+                        : "Nouveau locataire"}
+                    </div>
+                    <div className="apercu-chambre">
+                      {form.chambre ? (
+                        <>
+                          <span className={form.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
+                            {form.chambre}
+                          </span>
+                          {form.etage === "RDC" ? " Rez-de-chaussée" : " 1er étage"}
+                        </>
+                      ) : (
+                        "Aucune chambre libre"
+                      )}
+                    </div>
+
+                    <div className="apercu-loyer">
+                      {loyer.toLocaleString()} <span>Ar / mois</span>
+                    </div>
+
+                    <dl className="apercu-liste">
+                      <div>
+                        <dt>Règlement</dt>
+                        <dd>
+                          {form.modePaiement === "AVANCE" ? "D'avance" : "Après consommation"}
+                          {form.jourPaiement ? ` · le ${form.jourPaiement}` : ""}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Caution</dt>
+                        <dd>{Number(form.caution || 0).toLocaleString()} Ar</dd>
+                      </div>
+                      <div>
+                        <dt>JIRAMA</dt>
+                        <dd>
+                          {form.jiramaNonSoumis
+                            ? "Hors bail"
+                            : form.jiramaForfait
+                              ? `Forfait ${Number(form.jiramaForfait).toLocaleString()} Ar`
+                              : "Au compteur"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+
+                {/* Formulaire */}
+                <div className="col-12 col-xl-8">
+                  <div className="card-pro">
                 <div className="row g-3">
                   <div className="col-12 form-section">
                     <BsPersonBadge /> Identité
-                  </div>
-                  <div className="col-12 pb-3 mb-1 border-bottom">
-                    <label className="form-label">Photo du locataire</label>
-                    <AvatarPicker value={form.photo} onChange={(p) => setForm((fm) => ({ ...fm, photo: p }))} nom={`${form.nom} ${form.prenom}`} size={72} />
                   </div>
                   <div className="col-sm-6">
                     <label className="form-label">Nom *</label>
@@ -308,9 +367,12 @@ export default function AddLocataire() {
 
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">
-                    <Link to="/loyer/locataires/" className="btn btn-outline-danger d-inline-flex align-items-center gap-1">
-            <BsXLg /> Annuler
-          </Link>
+                    <Link
+                      to="/loyer/locataires/"
+                      className="btn btn-outline-danger d-inline-flex align-items-center gap-1"
+                    >
+                      <BsXLg /> Annuler
+                    </Link>
                     <button
                       type="submit"
                       className="btn btn-success d-inline-flex align-items-center gap-2"
@@ -321,8 +383,11 @@ export default function AddLocataire() {
                     </button>
                   </div>
                 </div>
-              </form>
-            </div>
+                  </div>
+                </div>
+
+              </div>
+            </form>
 
           </main>
         </div>
