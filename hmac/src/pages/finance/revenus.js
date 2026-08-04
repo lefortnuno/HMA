@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import {
   BsGraphUp, BsGraphDown, BsPlus, BsPencilSquare, BsFillTrashFill,
   BsChevronLeft, BsChevronRight, BsCalendar3, BsSearch,
+  BsXLg,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
@@ -301,7 +302,7 @@ export default function FinanceRevenus() {
                         {charges.length === 0 ? "Aucune charge ce mois" : "Aucune entrée cette semaine"}
                         {charges.length === 0 && (
                           <div className="mt-2">
-                            <button className="btn btn-sm btn-danger" onClick={openAddChar}>
+                            <button className="btn btn-sm btn-success" onClick={openAddChar}>
                               <BsPlus /> Ajouter
                             </button>
                           </div>
@@ -385,7 +386,8 @@ export default function FinanceRevenus() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowRevModal(false)}>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowRevModal(false)}>
+                  <BsXLg />
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-success btn-sm" disabled={savingR}>
@@ -423,7 +425,8 @@ export default function FinanceRevenus() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowCharModal(false)}>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowCharModal(false)}>
+                  <BsXLg />
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-danger btn-sm" disabled={savingC}>

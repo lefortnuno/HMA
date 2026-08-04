@@ -5,7 +5,7 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
-import { BsCashStack, BsPlus, BsFillTrashFill, BsChevronLeft, BsChevronRight, BsCalendar3 } from "react-icons/bs";
+import { BsCashStack, BsPlus, BsFillTrashFill, BsChevronLeft, BsChevronRight, BsCalendar3 , BsXLg } from "react-icons/bs";
 import "../loyer/loyer.css";
 import "./finance.css";
 import { SkListeLignes } from "../../components/skeleton/skeleton";
@@ -132,7 +132,7 @@ export default function FinanceDepenses() {
               ) : depenses.length === 0 ? (
                 <div className="text-center py-5 text-muted">
                   <p className="mb-2">Aucune dépense cette semaine</p>
-                  <button className="btn btn-sm btn-primary" onClick={openModal}><BsPlus /> Ajouter</button>
+                  <button className="btn btn-sm btn-success" onClick={openModal}><BsPlus /> Ajouter</button>
                 </div>
               ) : (
                 <div className="table-responsive">
@@ -194,7 +194,8 @@ export default function FinanceDepenses() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowModal(false)}>Annuler</button>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowModal(false)}>
+                  <BsXLg />Annuler</button>
                 <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
                   {saving ? "Enregistrement..." : "Ajouter"}
                 </button>

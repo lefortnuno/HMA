@@ -6,7 +6,7 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
-import { BsImages, BsArrowLeft, BsX, BsCloudUpload } from "react-icons/bs";
+import { BsImages, BsArrowLeft, BsX, BsCloudUpload, BsXLg } from "react-icons/bs";
 
 const FEATURES = ["Eau","Électricité","Parking","Jardin","Sécurité","Meublé","Wifi","Climatisation","Cuisine équipée"];
 
@@ -188,7 +188,9 @@ export default function AddBien() {
                   </div>
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">
-                    <Link to="/vitrine/admin/" className="btn btn-outline-secondary">Annuler</Link>
+                    <Link to="/vitrine/admin/" className="btn btn-outline-danger d-inline-flex align-items-center gap-1">
+            <BsXLg /> Annuler
+          </Link>
                     <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
                       {saving ? "Publication…" : "Publier le bien"}
                     </button>

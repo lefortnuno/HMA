@@ -10,6 +10,7 @@ import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
 
 import "../../assets/styles/maForm.css";
+import { BsXLg, BsSave } from "react-icons/bs";
 
 const url_req = `histo/`;
 
@@ -204,17 +205,17 @@ export default function EditInComing() {
                         <button
                           onClick={onClose}
                           type="button"
-                          className="backBtn btn btn-danger"
+                          className="backBtn btn btn-outline-danger d-inline-flex align-items-center gap-1"
                         >
-                          <span>Annuler</span>
-                        </button>
+            <BsXLg /> <span>Annuler</span>
+          </button>
                         <button
                           onClick={validation}
                           type="submit"
-                          className="nextBtn btn btn-success"
+                          className="nextBtn btn btn-success d-inline-flex align-items-center gap-1"
                         >
-                          <span>Enregistrer</span>
-                        </button>
+            <BsSave /> <span>Enregistrer</span>
+          </button>
                       </div>
                     </div>
                   </div>

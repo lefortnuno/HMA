@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import Template from "../../components/template/template";
+import { BsXLg, BsSave } from "react-icons/bs";
 
 import "../../assets/styles/maForm.css"; 
 
@@ -271,17 +272,17 @@ export default function AddInComing() {
                         <button
                           onClick={onClose}
                           type="button"
-                          className="backBtn btn btn-danger"
+                          className="backBtn btn btn-outline-danger d-inline-flex align-items-center gap-1"
                         >
-                          <span>Annuler</span>
-                        </button>
+            <BsXLg /> <span>Annuler</span>
+          </button>
                         <button
                           onClick={validation}
                           type="submit"
-                          className="nextBtn btn btn-success"
+                          className="nextBtn btn btn-success d-inline-flex align-items-center gap-1"
                         >
-                          <span>Enregistrer</span>
-                        </button>
+            <BsSave /> <span>Enregistrer</span>
+          </button>
                       </div>
                     </div>
                   </div>

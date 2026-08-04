@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import {
   BsStarFill, BsCashStack, BsPlus, BsFillTrashFill, BsPencilSquare,
   BsChevronLeft, BsChevronRight, BsCalendar3, BsSearch,
+  BsXLg,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
@@ -276,7 +277,7 @@ export default function FinanceCasuel() {
                         {casuel.length === 0 ? "Aucun casuel ce mois" : "Aucun casuel cette semaine"}
                       </p>
                       {casuel.length === 0 && (
-                        <button className="btn btn-sm btn-warning text-white" onClick={openCasModal}>
+                        <button className="btn btn-sm btn-success text-white" onClick={openCasModal}>
                           <BsPlus /> Ajouter
                         </button>
                       )}
@@ -361,7 +362,7 @@ export default function FinanceCasuel() {
                   {loadingD ? <SkLocataires /> : filteredDep.length === 0 ? (
                     <div className="text-center py-5 text-muted">
                       <p className="mb-2" style={{ fontSize: "0.85rem" }}>Aucune dépense cette semaine</p>
-                      <button className="btn btn-sm btn-primary" onClick={openDepModal}>
+                      <button className="btn btn-sm btn-success" onClick={openDepModal}>
                         <BsPlus /> Ajouter
                       </button>
                     </div>
@@ -436,8 +437,9 @@ export default function FinanceCasuel() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm"
-                  onClick={() => setShowCasModal(false)}>Annuler</button>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
+                  onClick={() => setShowCasModal(false)}>
+                  <BsXLg />Annuler</button>
                 <button type="submit" className="btn btn-warning btn-sm text-white" disabled={savingC}>
                   {savingC ? "Enregistrement..." : editCas ? "Modifier" : "Ajouter"}
                 </button>
@@ -473,8 +475,9 @@ export default function FinanceCasuel() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm"
-                  onClick={() => setShowDepModal(false)}>Annuler</button>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
+                  onClick={() => setShowDepModal(false)}>
+                  <BsXLg />Annuler</button>
                 <button type="submit" className="btn btn-primary btn-sm" disabled={savingD}>
                   {savingD ? "Enregistrement..." : editDep ? "Modifier" : "Ajouter"}
                 </button>

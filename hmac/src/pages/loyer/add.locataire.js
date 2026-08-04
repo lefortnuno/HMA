@@ -6,7 +6,7 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
-import { BsPeople, BsArrowLeft } from "react-icons/bs";
+import { BsPeople, BsArrowLeft, BsXLg, BsSave } from "react-icons/bs";
 import AvatarPicker from "../../components/avatar/avatar";
 import JourPaiementPicker from "../../components/jour/jour.paiement";
 import ModePaiementPicker from "../../components/jour/mode.paiement";
@@ -293,9 +293,9 @@ export default function AddLocataire() {
 
 
                   <div className="col-12 d-flex justify-content-end gap-2 pt-2">
-                    <Link to="/loyer/locataires/" className="btn btn-outline-secondary">
-                      Annuler
-                    </Link>
+                    <Link to="/loyer/locataires/" className="btn btn-outline-danger d-inline-flex align-items-center gap-1">
+            <BsXLg /> Annuler
+          </Link>
                     <button
                       type="submit"
                       className="btn btn-primary"

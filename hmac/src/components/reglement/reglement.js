@@ -7,6 +7,7 @@ import {
   BsCashCoin, BsShieldLock, BsLightningCharge, BsCalendarCheck,
   BsReceipt, BsMoonStars, BsBrush, BsPeople, BsTools, BsPatchCheckFill, BsBoxSeam,
   BsChevronDown, BsChevronUp,
+  BsXLg,
 } from "react-icons/bs";
 import "./reglement.css";
 
@@ -308,7 +309,8 @@ export default function Reglement() {
               )}
 
               <div className="d-flex justify-content-end gap-2">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setEdition(null)}>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setEdition(null)}>
+                  <BsXLg />
                   Annuler
                 </button>
                 <button
@@ -340,12 +342,13 @@ export default function Reglement() {
                 Elle disparaîtra de l'accueil de tous les locataires.
               </p>
               <div className="d-flex justify-content-end gap-2">
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => setASupprimer(null)}>
+                <button className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setASupprimer(null)}>
+                  <BsXLg />
                   Annuler
                 </button>
-                <button className="btn btn-danger btn-sm" onClick={supprimer}>
-                  Retirer
-                </button>
+                <button className="btn btn-danger btn-sm d-inline-flex align-items-center gap-1" onClick={supprimer}>
+            <BsTrashFill /> Retirer
+          </button>
               </div>
             </div>
           </div>

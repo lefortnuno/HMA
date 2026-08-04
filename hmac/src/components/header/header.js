@@ -1,7 +1,7 @@
 import GetUserData from "../../contexts/api/udata";
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { BsGear, BsPower, BsChevronDown, BsBell } from "react-icons/bs";
+import { BsGear, BsPower, BsChevronDown, BsBell , BsXLg } from "react-icons/bs";
 import axios from "../../contexts/api/axios";
 import "./header.css";
 import hma from "../../assets/images/hma256.png";
@@ -180,9 +180,10 @@ export default function Header({ children }) {
               </p>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                 <button
-                  className="btn btn-outline-secondary btn-sm"
+                  className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
                   onClick={() => setShowConfirm(false)}
                 >
+                  <BsXLg />
                   Annuler
                 </button>
                 <button

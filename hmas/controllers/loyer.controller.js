@@ -1084,6 +1084,7 @@ module.exports.getMonEspace = (req, res) => {
           caution: loc.caution, dateEntree: loc.dateEntree, photo: loc.photo,
           jourPaiement: loc.jourPaiement, modePaiement: loc.modePaiement || "ECHU",
           jiramaForfait: loc.jiramaForfait || null,
+          jiramaNonSoumis: loc.jiramaNonSoumis ? 1 : 0,
         },
         annee: +annee,
         paiements: miens,

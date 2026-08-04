@@ -14,6 +14,10 @@ import {
   BsTelephone,
   BsChatDots,
   BsWhatsapp,
+  BsPersonBadge,
+  BsCalendarCheck,
+  BsLightningCharge,
+  BsXLg,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
@@ -374,6 +378,7 @@ export default function Locataires() {
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Date entrée</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Paiement habituel</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Règlement</th>
+                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>JIRAMA</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Statut</th>
                 <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Actions</th>
               </tr>
@@ -442,6 +447,34 @@ export default function Locataires() {
                     >
                       {estAvance(loc) ? "Avant conso." : "Après conso."}
                     </span>
+                  </td>
+                  {/* Eau & électricité : hors bail, au forfait, ou au compteur. */}
+                  <td>
+                    {loc.jiramaNonSoumis ? (
+                      <span
+                        className="rounded-pill px-2 fw-semibold"
+                        title="Son bail ne comprend ni eau ni électricité"
+                        style={{ background: "#f1f5f9", color: "#64748b", fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                      >
+                        Non soumis
+                      </span>
+                    ) : loc.jiramaForfait > 0 ? (
+                      <span
+                        className="rounded-pill px-2 fw-semibold"
+                        title={`Forfait mensuel de ${Number(loc.jiramaForfait).toLocaleString()} Ar ; le relevé ne prime que s'il dépasse ce montant`}
+                        style={{ background: "#fffbeb", color: "#b45309", fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                      >
+                        Forfait {(loc.jiramaForfait / 1000).toFixed(0)}k
+                      </span>
+                    ) : (
+                      <span
+                        className="text-muted"
+                        title="Facturé selon le relevé de son compteur"
+                        style={{ fontSize: "0.78rem" }}
+                      >
+                        Au compteur
+                      </span>
+                    )}
                   </td>
                   <td>
                     <span className={loc.actif ? "badge-paye" : "badge-impaye"}>
@@ -586,8 +619,8 @@ export default function Locataires() {
               </div>
 
               <div className="d-flex justify-content-end mt-3">
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowDeleteModal(false)}>
-                  Annuler
+                <button className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowDeleteModal(false)}>
+                  <BsXLg /> Annuler
                 </button>
               </div>
             </div>
@@ -609,6 +642,9 @@ export default function Locataires() {
             </div>
             <form onSubmit={handleEditSubmit} className="p-4">
               <div className="row g-3">
+                <div className="col-12 form-section">
+                  <BsPersonBadge /> Identité
+                </div>
                 <div className="col-12 pb-2 mb-1 border-bottom">
                   <label className="form-label">Photo du locataire</label>
                   <AvatarPicker value={editForm.photo} onChange={(p) => setEditForm((f) => ({ ...f, photo: p }))} nom={`${editForm.nom} ${editForm.prenom}`} size={68} />
@@ -654,6 +690,9 @@ export default function Locataires() {
                     </span>
                   </div>
                 </div>
+                <div className="col-12 form-section">
+                  <BsTelephone /> Contact
+                </div>
                 <div className="col-sm-6">
                   <label className="form-label">Téléphone</label>
                   <input type="tel" name="tel" className="form-control form-control-sm"
@@ -663,6 +702,9 @@ export default function Locataires() {
                   <label className="form-label">Email</label>
                   <input type="email" name="email" className="form-control form-control-sm"
                     value={editForm.email} onChange={handleEditChange} placeholder="email@exemple.com" />
+                </div>
+                <div className="col-12 form-section">
+                  <BsCalendarCheck /> Bail &amp; règlement
                 </div>
                 <div className="col-sm-6">
                   <label className="form-label">Date d'entrée</label>
@@ -683,6 +725,9 @@ export default function Locataires() {
                 <div className="col-12">
                   <label className="form-label">Sens du règlement</label>
                   <ModePaiementPicker value={editForm.modePaiement} onChange={handleEditChange} />
+                </div>
+                <div className="col-12 form-section">
+                  <BsLightningCharge /> Eau &amp; électricité
                 </div>
                 <div className="col-12">
                   <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
@@ -729,8 +774,8 @@ export default function Locataires() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowEditModal(false)}>
-                  Annuler
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowEditModal(false)}>
+                  <BsXLg /> Annuler
                 </button>
                 <button type="submit" className="btn btn-primary btn-sm" disabled={editSaving}>
                   {editSaving ? "Enregistrement..." : "Enregistrer"}
@@ -755,6 +800,9 @@ export default function Locataires() {
             </div>
             <form onSubmit={handleAddSubmit} className="p-4">
               <div className="row g-3">
+                <div className="col-12 form-section">
+                  <BsPersonBadge /> Identité
+                </div>
                 <div className="col-12 pb-2 mb-1 border-bottom">
                   <label className="form-label">Photo du locataire</label>
                   <AvatarPicker value={addForm.photo} onChange={(p) => setAddForm((f) => ({ ...f, photo: p }))} nom={`${addForm.nom} ${addForm.prenom}`} size={68} />
@@ -803,6 +851,9 @@ export default function Locataires() {
                     </span>
                   </div>
                 </div>
+                <div className="col-12 form-section">
+                  <BsTelephone /> Contact
+                </div>
                 <div className="col-sm-6">
                   <label className="form-label">Téléphone</label>
                   <input type="tel" name="tel" className="form-control form-control-sm"
@@ -812,6 +863,9 @@ export default function Locataires() {
                   <label className="form-label">Email</label>
                   <input type="email" name="email" className="form-control form-control-sm"
                     value={addForm.email} onChange={handleAddChange} placeholder="email@exemple.com" />
+                </div>
+                <div className="col-12 form-section">
+                  <BsCalendarCheck /> Bail &amp; règlement
                 </div>
                 <div className="col-sm-6">
                   <label className="form-label">Date d'entrée</label>
@@ -832,6 +886,9 @@ export default function Locataires() {
                 <div className="col-12">
                   <label className="form-label">Sens du règlement</label>
                   <ModePaiementPicker value={addForm.modePaiement} onChange={handleAddChange} />
+                </div>
+                <div className="col-12 form-section">
+                  <BsLightningCharge /> Eau &amp; électricité
                 </div>
                 <div className="col-12">
                   <label className="d-flex align-items-start gap-2" style={{ cursor: "pointer" }}>
@@ -871,8 +928,8 @@ export default function Locataires() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowAddModal(false)}>
-                  Annuler
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowAddModal(false)}>
+                  <BsXLg /> Annuler
                 </button>
                 <button type="submit" className="btn btn-primary btn-sm" disabled={saving || !addForm.chambre}>
                   {saving ? "Enregistrement..." : "Ajouter le locataire"}

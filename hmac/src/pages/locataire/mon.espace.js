@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import {
   BsHouseHeart, BsCheckCircleFill, BsXCircleFill, BsDashCircle, BsExclamationTriangleFill,
   BsCashCoin, BsHourglassSplit, BsSendCheck, BsCalendarPlus,
+  BsXLg,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import {
@@ -376,9 +377,10 @@ export default function MonEspace() {
               <div className="d-flex justify-content-end gap-2 mt-4">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary btn-sm"
+                  className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
                   onClick={() => setDeclaration(null)}
                 >
+                  <BsXLg />
                   Annuler
                 </button>
                 <button

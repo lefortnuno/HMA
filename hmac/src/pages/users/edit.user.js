@@ -9,6 +9,7 @@ import Template from "../../components/template/template";
 import {
   BsArrowLeft, BsPeopleFill, BsShieldFill, BsPersonFill, BsEyeFill, BsEyeSlashFill,
   BsHouseHeart,
+  BsXLg,
 } from "react-icons/bs";
 
 const url_req = "utilisateur/";
@@ -196,8 +197,9 @@ export default function EditUser() {
 
                     <div className="d-flex justify-content-end gap-2 mt-4 pt-3"
                       style={{ borderTop: "1px solid #f1f5f9" }}>
-                      <button type="button" className="btn btn-outline-secondary btn-sm"
+                      <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
                         onClick={() => navigate("/users/")}>
+                  <BsXLg />
                         Annuler
                       </button>
                       <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>

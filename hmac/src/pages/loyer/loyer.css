@@ -322,3 +322,30 @@
   flex-shrink: 0;
   opacity: 0.75;
 }
+
+/* ─── Intertitres de formulaire ───────────────────────────────
+   Les modales locataire alignaient une quinzaine de champs sans hiérarchie :
+   on ne voyait ni où commençait le logement, ni où finissait le contact. */
+.form-section {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+/* Le premier intertitre ne doit pas décoller du haut de la modale. */
+.form-section:first-child {
+  margin-top: 0;
+}
+
+.form-section svg {
+  color: #2563eb;
+  font-size: 0.9rem;
+}

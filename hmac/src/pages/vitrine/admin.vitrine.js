@@ -12,6 +12,8 @@ import {
   BsHouseDoor, BsBuilding, BsCheckCircle, BsXCircle,
   BsSearch, BsGeoAlt,
   BsXLg,
+  BsTrashFill,
+  BsHouseAdd,
 } from "react-icons/bs";
 import { SkTableRows } from "../../components/skeleton/skeleton";
 import "./vitrine.css";
@@ -321,7 +323,8 @@ export default function AdminVitrine() {
                               Aucun bien publié —{" "}
                               {isMobile
                                 ? <Link to="/vitrine/admin/new">Ajouter le premier bien</Link>
-                                : <button className="btn btn-link p-0" onClick={openModal}>Ajouter le premier bien</button>
+                                : <button className="btn btn-link p-0 btn-success d-inline-flex align-items-center gap-1" onClick={openModal}>
+                  <BsHouseAdd />Ajouter le premier bien</button>
                               }
                             </>
                           ) : (
@@ -423,8 +426,10 @@ export default function AdminVitrine() {
                 <small className="text-danger">Cette action est définitive.</small>
               </p>
               <div className="d-flex justify-content-end gap-2">
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => setToDelete(null)}>Annuler</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(toDelete.id)}>Supprimer</button>
+                <button className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setToDelete(null)}>
+                  <BsXLg />Annuler</button>
+                <button className="btn btn-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => handleDelete(toDelete.id)}>
+                  <BsTrashFill />Supprimer</button>
               </div>
             </div>
           </div>

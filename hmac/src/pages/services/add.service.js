@@ -214,6 +214,7 @@ import GetUserData from "../../contexts/api/udata";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { BsXLg, BsSave } from "react-icons/bs";
 
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
@@ -432,16 +433,16 @@ export default function AddService() {
                         <button
                           onClick={onClose}
                           type="button"
-                          className="backBtn btn btn-danger"
+                          className="backBtn btn btn-outline-danger"
                         >
-                          <span>Annuler</span>
+                          <BsXLg /> <span>Annuler</span>
                         </button>
                         <button
                           onClick={validation}
                           type="submit"
                           className="nextBtn btn btn-success"
                         >
-                          <span>Enregistrer</span>
+                          <BsSave /> <span>Enregistrer</span>
                         </button>
                       </div>
                     </div>

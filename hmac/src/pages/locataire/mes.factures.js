@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import {
   BsLightningCharge, BsCheckCircleFill, BsXCircleFill, BsDashCircle,
   BsExclamationTriangleFill, BsCashCoin, BsHourglassSplit, BsSendCheck,
+  BsXLg,
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import { AnneePicker } from "../../components/jour/periode.picker";
@@ -220,11 +221,19 @@ export default function MesFactures() {
                       <div className="stat-icon amber"><BsLightningCharge /></div>
                       <div className="stat-content">
                         <h3>
-                          {loc?.jiramaForfait
-                            ? `${(loc.jiramaForfait / 1000).toFixed(0)}k`
-                            : "Compteur"}
+                          {loc?.jiramaNonSoumis
+                            ? "—"
+                            : loc?.jiramaForfait
+                              ? `${(loc.jiramaForfait / 1000).toFixed(0)}k`
+                              : "Compteur"}
                         </h3>
-                        <p>{loc?.jiramaForfait ? "Forfait mensuel (Ar)" : "Facturé au relevé"}</p>
+                        <p>
+                          {loc?.jiramaNonSoumis
+                            ? "Non compris dans le bail"
+                            : loc?.jiramaForfait
+                              ? "Forfait mensuel (Ar)"
+                              : "Facturé au relevé"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -263,7 +272,20 @@ export default function MesFactures() {
 
                 <div className="card-pro">
                   <h6 className="fw-bold mb-3">Mes factures — {annee}</h6>
-                  {moisConcernes.length === 0 ? (
+                  {loc?.jiramaNonSoumis ? (
+                    <div
+                      className="rounded-3 p-3 d-flex align-items-start gap-2"
+                      style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}
+                    >
+                      <BsLightningCharge color="#64748b" size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                      <span style={{ fontSize: "0.85rem", color: "#475569" }}>
+                        <strong>Votre bail ne comprend pas l'eau et l'électricité.</strong>
+                        <span className="d-block text-muted" style={{ fontSize: "0.78rem" }}>
+                          Rien ne vous est réclamé à ce titre : cette page restera vide.
+                        </span>
+                      </span>
+                    </div>
+                  ) : moisConcernes.length === 0 ? (
                     <p className="text-muted mb-0" style={{ fontSize: "0.85rem" }}>
                       Aucune facture d'eau ou d'électricité pour {annee}.
                       <br />
@@ -352,8 +374,9 @@ export default function MesFactures() {
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm"
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
                   onClick={() => setDeclaration(null)}>
+                  <BsXLg />
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1"

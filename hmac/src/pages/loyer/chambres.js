@@ -6,7 +6,7 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { BsBuilding, BsDoorOpen, BsDoorClosedFill, BsPlus, BsPencilSquare } from "react-icons/bs";
+import { BsBuilding, BsDoorOpen, BsDoorClosedFill, BsPlus, BsPencilSquare , BsXLg } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import AvatarPicker, { Avatar } from "../../components/avatar/avatar";
 import ApartSelect, {
@@ -341,7 +341,8 @@ export default function Chambres() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowAdd(false)}>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowAdd(false)}>
+                  <BsXLg />
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>

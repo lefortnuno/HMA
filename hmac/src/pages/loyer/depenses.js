@@ -5,7 +5,7 @@ import Template from "../../components/template/template";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
-import { BsCurrencyExchange, BsPlus, BsFillTrashFill } from "react-icons/bs";
+import { BsCurrencyExchange, BsPlus, BsFillTrashFill , BsXLg } from "react-icons/bs";
 import ApartSelect, {
   useAppartements,
   getSelectedBienId,
@@ -110,7 +110,7 @@ export default function Depenses() {
                 <MoisPicker value={mois} onChange={setMois} />
                 <AnneePicker value={annee} onChange={setAnnee} />
                 <button
-                  className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                  className="btn btn-success btn-sm d-flex align-items-center gap-1"
                   onClick={() => { setForm(initForm(now)); setShowModal(true); }}
                 >
                   <BsPlus size={16} /> Ajouter
@@ -142,7 +142,7 @@ export default function Depenses() {
                       <tr>
                         <td colSpan={5} className="text-center text-muted py-5">
                           <div className="mb-2">Aucune dépense pour ce mois</div>
-                          <button className="btn btn-sm btn-primary" onClick={() => { setForm(initForm(now)); setShowModal(true); }}>
+                          <button className="btn btn-sm btn-success" onClick={() => { setForm(initForm(now)); setShowModal(true); }}>
                             <BsPlus /> Ajouter
                           </button>
                         </td>
@@ -232,7 +232,8 @@ export default function Depenses() {
                 </div>
               </div>
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowModal(false)}>
+                <button type="button" className="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" onClick={() => setShowModal(false)}>
+                  <BsXLg />
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
