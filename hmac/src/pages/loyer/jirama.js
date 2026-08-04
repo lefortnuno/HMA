@@ -310,7 +310,10 @@ export default function TableauJirama() {
           totaux[f.mois] = f.montantTotal || 0;
           (f.consommations || []).forEach((c) => {
             if (!map[c.locataireId]) map[c.locataireId] = {};
-            map[c.locataireId][f.mois] = c.montantJIRAMA || 0;
+            map[c.locataireId][f.mois] = {
+              montant: c.montantJIRAMA || 0,
+              exempt: !!c.exempt,
+            };
           });
         });
         setFactures(map);
@@ -331,7 +334,10 @@ export default function TableauJirama() {
    * reference quand il depasse : le surplus releve leur est facture en plus.
    */
   const factureDe = (locId, mois) => {
-    const releve = factures[locId]?.[mois] || 0;
+    const ligne = factures[locId]?.[mois];
+    // Absent ce mois-la : rien ne lui est du, pas meme son forfait.
+    if (ligne?.exempt) return 0;
+    const releve = ligne?.montant || 0;
     const forfait = forfaitDe(locId);
     if (!forfait) return releve;
     const loc = locataires.find((l) => l.id === locId);
@@ -391,17 +397,24 @@ export default function TableauJirama() {
     const paye = p?.montantJIRAMA || 0;
     const statut = p?.statutJIRAMA || "IMPAYE";
 
-    const forfait = forfaitDe(loc.id);
+    // Absent ce mois-là : son forfait ne s'applique pas non plus, sinon la
+    // saisie exigerait un minimum de 10 000 Ar pour quelqu'un qui ne doit rien.
+    const exempt = !!factures[loc.id]?.[mois]?.exempt;
+    const forfait = exempt ? 0 : forfaitDe(loc.id);
 
     // Ni relevé ni règlement : rien à afficher pour ce mois.
     if (attendu === 0 && paye === 0) {
       return (
         <span
           className="cell-vide"
-          title="Aucune consommation relevée — cliquer pour saisir un règlement"
+          title={
+            exempt
+              ? `${loc.nom} n'était pas concerné ce mois-ci`
+              : "Aucune consommation relevée — cliquer pour saisir un règlement"
+          }
           onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu, forfait })}
         >
-          —
+          {exempt ? "∅" : "—"}
         </span>
       );
     }
@@ -774,7 +787,7 @@ export default function TableauJirama() {
 
 function ModalJirama({ cell, u_info, onClose, onSave }) {
   const [form, setForm] = useState({
-    statutJIRAMA: cell.existing?.statutJIRAMA || (cell.attendu > 0 ? "PAYE" : "IMPAYE"),
+    statutJIRAMA: cell.existing?.statutJIRAMA || "PAYE",
     montantJIRAMA:
       cell.existing?.montantJIRAMA && cell.existing.montantJIRAMA > 0
         ? cell.existing.montantJIRAMA

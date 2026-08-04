@@ -20,7 +20,8 @@ Facture.getByMoisAnnee = (mois, annee, bienId, result) => {
       (SELECT JSON_ARRAYAGG(JSON_OBJECT(
         'id', c.id, 'locataireId', c.locataireId,
         'indexPrev', c.indexPrev, 'indexCurr', c.indexCurr,
-        'consommation', c.consommation, 'montantJIRAMA', c.montantJIRAMA
+        'consommation', c.consommation, 'montantJIRAMA', c.montantJIRAMA,
+        'exempt', c.exempt
       )) FROM consommation_locataire c WHERE c.factureId = f.id) AS consommations
      FROM facture_jirama f WHERE ${where}`,
     params,

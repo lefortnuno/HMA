@@ -584,6 +584,8 @@ module.exports.createFacture = (req, res) => {
         indexCurr: c.indexCurr || 0,
         consommation: c.consommation || 0,
         montantJIRAMA: c.montantJIRAMA || 0,
+        // Locataire absent ce mois : rien ne lui est du, forfait compris.
+        exempt: c.exempt ? 1 : 0,
       };
       Facture.insertConso(row, () => {
         done++;
@@ -619,6 +621,8 @@ module.exports.updateFacture = (req, res) => {
           indexCurr: c.indexCurr || 0,
           consommation: c.consommation || 0,
           montantJIRAMA: c.montantJIRAMA || 0,
+        // Locataire absent ce mois : rien ne lui est du, forfait compris.
+        exempt: c.exempt ? 1 : 0,
         };
         Facture.insertConso(row, () => {
           done++;
@@ -1002,11 +1006,13 @@ module.exports.getMonEspace = (req, res) => {
     // mois : son forfait, ou le releve de son compteur s'il est plus eleve.
     Facture.getByMoisAnnee(null, annee, loc.bienId, (errF, factures) => {
       const releves = {};
+      const exemptes = {}; // mois ou le locataire n'est pas concerne
       if (!errF) {
         (factures || []).forEach((f) => {
           (f.consommations || []).forEach((c) => {
-            if (String(c.locataireId) === String(locataireId))
-              releves[f.mois] = c.montantJIRAMA || 0;
+            if (String(c.locataireId) !== String(locataireId)) return;
+            releves[f.mois] = c.montantJIRAMA || 0;
+            if (c.exempt) exemptes[f.mois] = true;
           });
         });
       }
@@ -1015,6 +1021,11 @@ module.exports.getMonEspace = (req, res) => {
       const jiramaDu = {};
       for (let m = 1; m <= 12; m++) {
         const releve = releves[m] || 0;
+        // Absent ce mois-la : rien n'est du, pas meme le forfait.
+        if (exemptes[m]) {
+          jiramaDu[m] = 0;
+          continue;
+        }
         if (!forfait) {
           jiramaDu[m] = releve;
           continue;

@@ -30,12 +30,19 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
   const [locataires, setLocataires] = useState([]);
   const [consommations, setConsommations] = useState({});
   const [factureId, setFactureId] = useState(null);
+  // Montant saisi directement, quand on n a pas les index de compteur.
+  const [montantsManuels, setMontantsManuels] = useState({});
+  // Locataires absents ce mois : ils ne doivent rien, forfait compris.
+  const [exemptions, setExemptions] = useState({});
+  // Ce qui a deja ete encaisse, pour que les deux onglets se repondent.
+  const [regles, setRegles] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (mono) return; // appart "loyer seul" : pas de JIRAMA
     fetchLocataires();
     fetchFacture();
+    fetchReglements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mois, annee, bienId]);
 
@@ -56,6 +63,26 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
       .catch(() => setLocataires([]));
   }
 
+  // Reglements deja enregistres dans l onglet  Reglements  : sans cela, les
+  // deux vues du meme mois affichaient des chiffres differents.
+  function fetchReglements() {
+    axios
+      .get(`loyer/paiements?annee=${annee}`, u_info.opts)
+      .then((r) => {
+        const map = {};
+        (r.data || [])
+          .filter((p) => Number(p.mois) === Number(mois))
+          .forEach((p) => {
+            map[p.locataireId] = {
+              montant: p.montantJIRAMA || 0,
+              statut: p.statutJIRAMA || "IMPAYE",
+            };
+          });
+        setRegles(map);
+      })
+      .catch(() => setRegles({}));
+  }
+
   function fetchFacture() {
     axios
       .get(`loyer/factures?mois=${mois}&annee=${annee}&bienId=${bienId}`, u_info.opts)
@@ -70,10 +97,17 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         setMontantFacture(f.montantTotal || 0);
         if (f.consommations) {
           const map = {};
+          const manuels = {};
+          const exempts = {};
           f.consommations.forEach((c) => {
             map[c.locataireId] = { indexPrev: c.indexPrev || 0, indexCurr: c.indexCurr || 0 };
+            // Montant sans relève de compteur : il a forcément été saisi à la main.
+            if (!c.consommation && c.montantJIRAMA) manuels[c.locataireId] = c.montantJIRAMA;
+            if (c.exempt) exempts[c.locataireId] = true;
           });
           setConsommations((prev) => ({ ...prev, ...map }));
+          setMontantsManuels(manuels);
+          setExemptions(exempts);
         }
       })
       .catch(() => setFactureId(null));
@@ -89,11 +123,33 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
   // Montant releve au compteur, avant application du forfait.
   const getMontantReleve = (locId) => getConso(locId) * prixUnitaire;
 
-  // Ce que le locataire doit reellement : son forfait, ou sa consommation
-  // si elle le depasse. Sans cela, un locataire au forfait ressortait a 0
-  // et le total ne pouvait pas concorder avec la facture de la compagnie.
-  const getMontant = (locId) =>
-    Math.max(forfaitDe(locId), getMontantReleve(locId));
+  /**
+   * Ce que le locataire doit reellement pour le mois.
+   *
+   * Trois cas, dans cet ordre : absent (rien du, forfait compris), montant
+   * saisi a la main faute de releve, sinon le plus eleve entre son forfait
+   * et sa consommation relevee.
+   */
+  const getMontant = (locId) => {
+    if (exemptions[locId]) return 0;
+    const manuel = montantsManuels[locId];
+    if (manuel !== undefined && manuel !== "") return Number(manuel) || 0;
+    return Math.max(forfaitDe(locId), getMontantReleve(locId));
+  };
+
+  // Bascule  absent ce mois  : on efface au passage un eventuel montant.
+  function basculeExemption(locId) {
+    setExemptions((prev) => {
+      const suivant = { ...prev };
+      if (suivant[locId]) delete suivant[locId];
+      else suivant[locId] = true;
+      return suivant;
+    });
+  }
+
+  function handleMontantChange(locId, valeur) {
+    setMontantsManuels((prev) => ({ ...prev, [locId]: valeur }));
+  }
 
   const totalCalcule = locataires.reduce((s, l) => s + getMontant(l.id), 0);
   const ecart = totalCalcule - montantFacture;
@@ -103,6 +159,13 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
       ...prev,
       [locId]: { ...(prev[locId] || {}), [champ]: +valeur },
     }));
+    // Renseigner un index reprend la main sur un montant saisi manuellement.
+    setMontantsManuels((prev) => {
+      if (prev[locId] === undefined) return prev;
+      const suivant = { ...prev };
+      delete suivant[locId];
+      return suivant;
+    });
   }
 
   function handleSave(e) {
@@ -121,6 +184,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         indexCurr: consommations[l.id]?.indexCurr || 0,
         consommation: getConso(l.id),
         montantJIRAMA: getMontant(l.id),
+        exempt: exemptions[l.id] ? 1 : 0,
       })),
     };
     const req = factureId
@@ -130,6 +194,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
       .then(() => {
         toast.success("Facture JIRAMA enregistrée !");
         fetchFacture();
+        fetchReglements();
         if (onSaved) onSaved();
       })
       .catch(() => toast.error("Erreur d'enregistrement"))
@@ -234,20 +299,27 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                   <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Index précédent (kWh)</th>
                   <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Index actuel (kWh)</th>
                   <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Consommation</th>
-                  <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Montant JIRAMA</th>
+                  <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Montant dû (Ar)</th>
+                  <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Réglé</th>
+                  <th style={{ fontSize: "0.73rem", color: "#64748b" }} title="Locataire absent ce mois : il ne doit rien, forfait compris">
+                    Absent
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {locataires.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center text-muted py-4">
+                    <td colSpan={8} className="text-center text-muted py-4">
                       Aucun locataire —{" "}
                       <Link to="/loyer/locataires/">Ajouter des locataires</Link>
                     </td>
                   </tr>
                 ) : (
                   locataires.map((loc) => (
-                    <tr key={loc.id}>
+                    <tr
+                      key={loc.id}
+                      style={exemptions[loc.id] ? { opacity: 0.55 } : undefined}
+                    >
                       <td>
                         <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
                           {loc.chambre}
@@ -290,17 +362,56 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                           {getConso(loc.id)} kWh
                         </span>
                       </td>
+                      {/* Montant saisissable directement : on n'a pas toujours
+                          les index de compteur, mais on connaît la somme due. */}
                       <td>
-                        <span className="fw-bold text-primary" style={{ fontSize: "0.875rem" }}>
-                          {getMontant(loc.id).toLocaleString()} Ar
-                        </span>
-                        {forfaitDe(loc.id) > 0 && (
+                        <input
+                          type="number"
+                          className="form-control form-control-sm fw-bold"
+                          style={{ width: 110, color: "#2563eb" }}
+                          min={0}
+                          step={500}
+                          value={exemptions[loc.id] ? 0 : getMontant(loc.id)}
+                          disabled={exemptions[loc.id]}
+                          onChange={(e) => handleMontantChange(loc.id, e.target.value)}
+                        />
+                        {!exemptions[loc.id] && forfaitDe(loc.id) > 0 && (
                           <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>
-                            {getMontantReleve(loc.id) > forfaitDe(loc.id)
-                              ? "compteur au-dessus du forfait"
+                            {getMontant(loc.id) > forfaitDe(loc.id)
+                              ? "au-dessus du forfait"
                               : "forfait"}
                           </div>
                         )}
+                      </td>
+                      {/* Ce que l'onglet Règlements a déjà encaissé, pour que
+                          les deux vues du même mois ne se contredisent pas. */}
+                      <td>
+                        {regles[loc.id] && regles[loc.id].statut !== "IMPAYE" ? (
+                          <span
+                            className="rounded-pill px-2 py-1 fw-semibold"
+                            style={{
+                              background: regles[loc.id].statut === "PAYE" ? "#f0fdf4" : "#fffbeb",
+                              color: regles[loc.id].statut === "PAYE" ? "#16a34a" : "#d97706",
+                              fontSize: "0.72rem",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {(regles[loc.id].montant || 0).toLocaleString()} Ar
+                          </span>
+                        ) : (
+                          <span className="text-muted" style={{ fontSize: "0.78rem" }}>
+                            —
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={!!exemptions[loc.id]}
+                          onChange={() => basculeExemption(loc.id)}
+                          title={`${loc.nom} n'était pas là ce mois-ci : rien ne lui est dû`}
+                        />
                       </td>
                     </tr>
                   ))
@@ -314,6 +425,10 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                     </td>
                     <td className="fw-bold text-primary" style={{ fontSize: "0.875rem" }}>
                       {totalCalcule.toLocaleString()} Ar
+                    </td>
+                    <td colSpan={2} className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      {Object.keys(exemptions).length > 0 &&
+                        `${Object.keys(exemptions).length} absent(s)`}
                     </td>
                   </tr>
                 </tfoot>
