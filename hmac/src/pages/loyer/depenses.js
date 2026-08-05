@@ -12,6 +12,7 @@ import {
   BsXLg,
   BsSave,
   BsInfoCircle,
+  BsExclamationTriangle,
 } from "react-icons/bs";
 import ApartSelect, {
   useAppartements,
@@ -24,7 +25,21 @@ import { TYPES, ORDRE_TYPES } from "../../config/sorties";
 import "./loyer.css";
 import { dateDuJour, formatDate } from "../../config/dates";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+const MOIS_LABELS = [
+  "",
+  "Jan",
+  "Fév",
+  "Mar",
+  "Avr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Aoû",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Déc",
+];
 
 function initForm() {
   return {
@@ -75,11 +90,26 @@ export default function Depenses() {
   const [form, setForm] = useState(initForm());
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  // Sortie en attente de confirmation. Une suppression ne se rattrape pas :
+  // on montre d'abord ce qu'on efface, et l'effet sur le résultat du mois.
+  const [aSupprimer, setASupprimer] = useState(null);
+  const [suppression, setSuppression] = useState(false);
 
   useEffect(() => {
     fetchDepenses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mois, annee, bienId]);
+
+  // Échap referme la confirmation — le réflexe attendu devant une question
+  // qu'on n'a pas voulu poser. Pas pendant la suppression, elle est partie.
+  useEffect(() => {
+    if (!aSupprimer) return;
+    const auClavier = (e) => {
+      if (e.key === "Escape" && !suppression) setASupprimer(null);
+    };
+    window.addEventListener("keydown", auClavier);
+    return () => window.removeEventListener("keydown", auClavier);
+  }, [aSupprimer, suppression]);
 
   function changeAppart(id) {
     setBienId(id);
@@ -88,7 +118,10 @@ export default function Depenses() {
 
   function fetchDepenses() {
     axios
-      .get(`loyer/depenses?mois=${mois}&annee=${annee}&bienId=${bienId}`, u_info.opts)
+      .get(
+        `loyer/depenses?mois=${mois}&annee=${annee}&bienId=${bienId}`,
+        u_info.opts,
+      )
       .then((r) => setDepenses(r.data || []))
       .catch(() => setDepenses([]));
   }
@@ -104,7 +137,9 @@ export default function Depenses() {
     setForm((f) => ({
       ...f,
       type: cle,
-      categorie: t.categories.includes(f.categorie) ? f.categorie : t.categories[0],
+      categorie: t.categories.includes(f.categorie)
+        ? f.categorie
+        : t.categories[0],
       impacteBenefice: t.impacte,
       beneficiaire: t.beneficiaireRequis ? f.beneficiaire : "",
     }));
@@ -113,10 +148,15 @@ export default function Depenses() {
   function handleSubmit(e) {
     e.preventDefault();
     if (!form.description.trim()) return toast.warning("Description requise");
-    if (!form.montant || form.montant <= 0) return toast.warning("Montant invalide");
+    if (!form.montant || form.montant <= 0)
+      return toast.warning("Montant invalide");
     setSaving(true);
     axios
-      .post("loyer/depenses", { ...form, mois, annee, montant: +form.montant, bienId }, u_info.opts)
+      .post(
+        "loyer/depenses",
+        { ...form, mois, annee, montant: +form.montant, bienId },
+        u_info.opts,
+      )
       .then(() => {
         toast.success("Sortie enregistrée");
         setForm(initForm());
@@ -127,15 +167,20 @@ export default function Depenses() {
       .finally(() => setSaving(false));
   }
 
-  function handleDelete(id) {
+  function handleDelete() {
+    if (!aSupprimer) return;
+    const { id } = aSupprimer;
+    setSuppression(true);
     axios
       .delete(`loyer/depenses/${id}`, u_info.opts)
       .then(() => {
         toast.success("Sortie supprimée");
         setDepenses((prev) => prev.filter((x) => x.id !== id));
+        setASupprimer(null);
         fetchDepenses();
       })
-      .catch(() => toast.error("Erreur de suppression"));
+      .catch(() => toast.error("Erreur de suppression"))
+      .finally(() => setSuppression(false));
   }
 
   // ── Totaux ───────────────────────────────────────────────────────────────
@@ -154,7 +199,12 @@ export default function Depenses() {
   });
   const typesPresents = ORDRE_TYPES.filter((t) => parType[t]);
 
-  const visibles = filtre === "TOUS" ? depenses : depenses.filter((d) => (TYPES[d.type] ? d.type : "IMMOBILIER") === filtre);
+  const visibles =
+    filtre === "TOUS"
+      ? depenses
+      : depenses.filter(
+          (d) => (TYPES[d.type] ? d.type : "IMMOBILIER") === filtre,
+        );
 
   const typeForm = TYPES[form.type];
 
@@ -165,7 +215,6 @@ export default function Depenses() {
         <div className="row g-0">
           <Sidebar />
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
-
             <div className="page-header">
               <div>
                 <h1 className="page-title">
@@ -173,16 +222,25 @@ export default function Depenses() {
                 </h1>
                 <p className="text-muted small mb-0">
                   {current.nom} · {MOIS_LABELS[mois]} {annee} — Total :{" "}
-                  <span className="fw-bold text-danger">{totalMois.toLocaleString()} Ar</span>
+                  <span className="fw-bold text-danger">
+                    {totalMois.toLocaleString()} Ar
+                  </span>
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
-                <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
+                <ApartSelect
+                  list={apparts}
+                  value={bienId}
+                  onChange={changeAppart}
+                />
                 <MoisPicker value={mois} onChange={setMois} />
                 <AnneePicker value={annee} onChange={setAnnee} />
                 <button
                   className="btn btn-success btn-sm d-flex align-items-center gap-1"
-                  onClick={() => { setForm(initForm()); setShowModal(true); }}
+                  onClick={() => {
+                    setForm(initForm());
+                    setShowModal(true);
+                  }}
                 >
                   <BsPlus size={16} /> Ajouter
                 </button>
@@ -193,27 +251,57 @@ export default function Depenses() {
             {totalMois > 0 && (
               <div className="row g-3 mb-3">
                 <div className="col-sm-6">
-                  <div className="p-3 rounded-3 h-100" style={{ background: "#fff5f5", border: "1px solid #fecaca" }}>
-                    <div className="text-muted" style={{ fontSize: "0.74rem", fontWeight: 600 }}>
+                  <div
+                    className="p-3 rounded-3 h-100"
+                    style={{
+                      background: "#fff5f5",
+                      border: "1px solid #fecaca",
+                    }}
+                  >
+                    <div
+                      className="text-muted"
+                      style={{ fontSize: "0.74rem", fontWeight: 600 }}
+                    >
                       Charges de la résidence
                     </div>
-                    <div className="fw-bold text-danger" style={{ fontSize: "1.2rem" }}>
+                    <div
+                      className="fw-bold text-danger"
+                      style={{ fontSize: "1.2rem" }}
+                    >
                       {totalCharges.toLocaleString()} Ar
                     </div>
-                    <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                    <small
+                      className="text-muted"
+                      style={{ fontSize: "0.72rem" }}
+                    >
                       déduites du bénéfice du mois
                     </small>
                   </div>
                 </div>
                 <div className="col-sm-6">
-                  <div className="p-3 rounded-3 h-100" style={{ background: "#f5f3ff", border: "1px solid #ddd6fe" }}>
-                    <div className="text-muted" style={{ fontSize: "0.74rem", fontWeight: 600 }}>
+                  <div
+                    className="p-3 rounded-3 h-100"
+                    style={{
+                      background: "#f5f3ff",
+                      border: "1px solid #ddd6fe",
+                    }}
+                  >
+                    <div
+                      className="text-muted"
+                      style={{ fontSize: "0.74rem", fontWeight: 600 }}
+                    >
                       Sorties de bénéfice
                     </div>
-                    <div className="fw-bold" style={{ fontSize: "1.2rem", color: "#6d28d9" }}>
+                    <div
+                      className="fw-bold"
+                      style={{ fontSize: "1.2rem", color: "#6d28d9" }}
+                    >
                       {totalAffecte.toLocaleString()} Ar
                     </div>
-                    <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                    <small
+                      className="text-muted"
+                      style={{ fontSize: "0.72rem" }}
+                    >
                       envois famille et placements — sans effet sur le résultat
                     </small>
                   </div>
@@ -248,7 +336,8 @@ export default function Depenses() {
                         fontSize: "0.78rem",
                       }}
                     >
-                      <Icone size={13} /> {t.label} · {(parType[cle] / 1000).toFixed(0)}k
+                      <Icone size={13} /> {t.label} ·{" "}
+                      {(parType[cle] / 1000).toFixed(0)}k
                     </button>
                   );
                 })}
@@ -259,22 +348,38 @@ export default function Depenses() {
             <div className="card-pro p-0">
               <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
                 <h6 className="fw-bold mb-0">
-                  {filtre === "TOUS" ? "Sorties" : TYPES[filtre].label} — {MOIS_LABELS[mois]} {annee}
+                  {filtre === "TOUS" ? "Sorties" : TYPES[filtre].label} —{" "}
+                  {MOIS_LABELS[mois]} {annee}
                 </h6>
                 <span className="fw-bold text-danger">
-                  {visibles.reduce((s, d) => s + (+d.montant || 0), 0).toLocaleString()} Ar
+                  {visibles
+                    .reduce((s, d) => s + (+d.montant || 0), 0)
+                    .toLocaleString()}{" "}
+                  Ar
                 </span>
               </div>
               <div className="table-responsive">
                 <table className="table table-hover mb-0">
                   <thead style={{ background: "#f8fafc" }}>
                     <tr>
-                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Date</th>
-                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Description</th>
-                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Nature</th>
-                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Catégorie</th>
-                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Montant</th>
-                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Action</th>
+                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
+                        Description
+                      </th>
+                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
+                        Date
+                      </th>
+                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
+                        Nature
+                      </th>
+                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
+                        Catégorie
+                      </th>
+                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
+                        Montant
+                      </th>
+                      <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -288,7 +393,10 @@ export default function Depenses() {
                           </div>
                           <button
                             className="btn btn-sm btn-success d-inline-flex align-items-center gap-1"
-                            onClick={() => { setForm(initForm()); setShowModal(true); }}
+                            onClick={() => {
+                              setForm(initForm());
+                              setShowModal(true);
+                            }}
                           >
                             <BsPlus /> Ajouter
                           </button>
@@ -297,22 +405,52 @@ export default function Depenses() {
                     ) : (
                       visibles.map((d) => (
                         <tr key={d.id}>
-                          <td style={{ fontSize: "0.875rem", whiteSpace: "nowrap" }}>{formatDate(d.date)}</td>
                           <td style={{ fontSize: "0.875rem" }}>
                             {d.description}
                             {d.beneficiaire && (
-                              <small className="d-block text-muted" style={{ fontSize: "0.73rem" }}>
+                              <small
+                                className="d-block text-muted"
+                                style={{ fontSize: "0.73rem" }}
+                              >
                                 pour {d.beneficiaire}
                               </small>
                             )}
                           </td>
-                          <td><BadgeType cle={TYPES[d.type] ? d.type : "IMMOBILIER"} compact /></td>
+                          <td
+                            style={{
+                              fontSize: "0.875rem",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {formatDate(d.date)}
+                          </td>
+
                           <td>
-                            <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", borderRadius: 6, padding: "2px 8px" }}>
+                            <BadgeType
+                              cle={TYPES[d.type] ? d.type : "IMMOBILIER"}
+                              compact
+                            />
+                          </td>
+                          <td>
+                            <span
+                              style={{
+                                fontSize: "0.75rem",
+                                background: "#f1f5f9",
+                                color: "#475569",
+                                borderRadius: 6,
+                                padding: "2px 8px",
+                              }}
+                            >
                               {d.categorie}
                             </span>
                           </td>
-                          <td className="fw-bold text-danger" style={{ fontSize: "0.875rem", whiteSpace: "nowrap" }}>
+                          <td
+                            className="fw-bold text-danger"
+                            style={{
+                              fontSize: "0.875rem",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {(+d.montant).toLocaleString()} Ar
                             {d.impacteBenefice === 0 && (
                               <small
@@ -328,8 +466,8 @@ export default function Depenses() {
                             <button
                               className="btn-action btn-action-delete"
                               title="Supprimer cette sortie"
-                              aria-label="Supprimer cette sortie"
-                              onClick={() => handleDelete(d.id)}
+                              aria-label={`Supprimer la sortie « ${d.description} »`}
+                              onClick={() => setASupprimer(d)}
                             >
                               <BsFillTrashFill />
                             </button>
@@ -341,10 +479,146 @@ export default function Depenses() {
                 </table>
               </div>
             </div>
-
           </main>
         </div>
       </div>
+
+      {/* ── Confirmation de suppression ──
+          On rappelle la ligne exacte et, surtout, ce que son retrait change :
+          effacer une charge remonte le bénéfice du mois, effacer une sortie
+          de bénéfice ne le touche pas. */}
+      {aSupprimer && (
+        <div
+          className="modal-overlay"
+          onClick={() => !suppression && setASupprimer(null)}
+        >
+          <div
+            className="modal-content-pro"
+            style={{ maxWidth: 460 }}
+            onClick={(e) => e.stopPropagation()}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="titre-suppr-sortie"
+          >
+            <div className="modal-header-pro">
+              <h6 id="titre-suppr-sortie" className="text-danger">
+                <BsExclamationTriangle className="me-2" />
+                Supprimer cette sortie ?
+              </h6>
+              <button
+                className="btn-close"
+                aria-label="Fermer"
+                onClick={() => setASupprimer(null)}
+                disabled={suppression}
+              />
+            </div>
+
+            <div className="p-4">
+              <p className="text-muted mb-3" style={{ fontSize: "0.85rem" }}>
+                Cette sortie sera définitivement retirée du mois de{" "}
+                {MOIS_LABELS[mois]} {annee}. L'opération est irréversible.
+              </p>
+
+              {/* La ligne telle qu'elle figure dans la liste. */}
+              <div
+                className="p-3 rounded-3 mb-3"
+                style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}
+              >
+                <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
+                  <div>
+                    <div className="fw-bold" style={{ fontSize: "0.9rem" }}>
+                      {aSupprimer.description}
+                    </div>
+                    {aSupprimer.beneficiaire && (
+                      <small
+                        className="text-muted"
+                        style={{ fontSize: "0.76rem" }}
+                      >
+                        pour {aSupprimer.beneficiaire}
+                      </small>
+                    )}
+                  </div>
+                  <span
+                    className="fw-bold text-danger"
+                    style={{ fontSize: "1rem", whiteSpace: "nowrap" }}
+                  >
+                    {(+aSupprimer.montant).toLocaleString()} Ar
+                  </span>
+                </div>
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <BadgeType
+                    cle={
+                      TYPES[aSupprimer.type] ? aSupprimer.type : "IMMOBILIER"
+                    }
+                    compact
+                  />
+                  <span
+                    style={{
+                      fontSize: "0.73rem",
+                      background: "#f1f5f9",
+                      color: "#475569",
+                      borderRadius: 6,
+                      padding: "2px 8px",
+                    }}
+                  >
+                    {aSupprimer.categorie}
+                  </span>
+                  <small className="text-muted" style={{ fontSize: "0.76rem" }}>
+                    {formatDate(aSupprimer.date)}
+                  </small>
+                </div>
+              </div>
+
+              {/* Conséquence sur le résultat, qui n'est pas la même selon
+                  que la sortie était comptée comme une charge ou non. */}
+              {aSupprimer.impacteBenefice === 0 ? (
+                <div
+                  className="p-2 rounded-3"
+                  style={{ background: "#f5f3ff", border: "1px solid #ddd6fe" }}
+                >
+                  <small style={{ fontSize: "0.78rem", color: "#5b21b6" }}>
+                    Cette sortie n'entrait pas dans le résultat de la résidence
+                    : le bénéfice de {MOIS_LABELS[mois]} ne bougera pas.
+                  </small>
+                </div>
+              ) : (
+                <div
+                  className="p-2 rounded-3"
+                  style={{ background: "#fffbeb", border: "1px solid #fde68a" }}
+                >
+                  <small style={{ fontSize: "0.78rem", color: "#92400e" }}>
+                    Elle était comptée comme une charge : le bénéfice de{" "}
+                    {MOIS_LABELS[mois]} remontera de{" "}
+                    <strong>{(+aSupprimer.montant).toLocaleString()} Ar</strong>
+                    .
+                  </small>
+                </div>
+              )}
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+                  onClick={() => setASupprimer(null)}
+                  disabled={suppression}
+                  autoFocus
+                >
+                  <BsXLg /> Annuler
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm d-inline-flex align-items-center gap-1"
+                  onClick={handleDelete}
+                  disabled={suppression}
+                >
+                  <BsFillTrashFill />
+                  {suppression ? "Suppression..." : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal ajout ── */}
       {showModal && (
@@ -355,11 +629,16 @@ export default function Depenses() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-header-pro">
-              <h6><BsCashCoin className="me-2" />Nouvelle sortie — {MOIS_LABELS[mois]} {annee}</h6>
-              <button className="btn-close" onClick={() => setShowModal(false)} />
+              <h6>
+                <BsCashCoin className="me-2" />
+                Nouvelle sortie — {MOIS_LABELS[mois]} {annee}
+              </h6>
+              <button
+                className="btn-close"
+                onClick={() => setShowModal(false)}
+              />
             </div>
             <form onSubmit={handleSubmit} className="p-4">
-
               {/* La nature d'abord : elle commande le reste du formulaire. */}
               <label className="form-label">Nature de la sortie</label>
               <div className="d-flex gap-2 flex-wrap mb-1">
@@ -397,7 +676,9 @@ export default function Depenses() {
                     type="text"
                     className="form-control form-control-sm"
                     value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
                     placeholder={
                       form.type === "FAMILLE"
                         ? "Ex: envoi mensuel"
@@ -416,7 +697,9 @@ export default function Depenses() {
                       type="text"
                       className="form-control form-control-sm"
                       value={form.beneficiaire}
-                      onChange={(e) => setForm({ ...form, beneficiaire: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, beneficiaire: e.target.value })
+                      }
                       placeholder="À qui l'argent est parti"
                     />
                   </div>
@@ -428,7 +711,9 @@ export default function Depenses() {
                     type="number"
                     className="form-control form-control-sm"
                     value={form.montant}
-                    onChange={(e) => setForm({ ...form, montant: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, montant: e.target.value })
+                    }
                     min={0}
                     placeholder="0"
                   />
@@ -438,9 +723,15 @@ export default function Depenses() {
                   <select
                     className="form-select form-select-sm"
                     value={form.categorie}
-                    onChange={(e) => setForm({ ...form, categorie: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, categorie: e.target.value })
+                    }
                   >
-                    {typeForm.categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {typeForm.categories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="col-sm-6">
@@ -458,7 +749,10 @@ export default function Depenses() {
                 <div className="col-12">
                   <div
                     className="p-3 rounded-3 d-flex gap-2 align-items-start"
-                    style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}
+                    style={{
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                    }}
                   >
                     <div className="form-check mb-0">
                       <input
@@ -466,18 +760,37 @@ export default function Depenses() {
                         className="form-check-input"
                         id="impacteBenefice"
                         checked={form.impacteBenefice}
-                        onChange={(e) => setForm({ ...form, impacteBenefice: e.target.checked })}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            impacteBenefice: e.target.checked,
+                          })
+                        }
                       />
-                      <label className="form-check-label fw-semibold" htmlFor="impacteBenefice" style={{ fontSize: "0.82rem" }}>
+                      <label
+                        className="form-check-label fw-semibold"
+                        htmlFor="impacteBenefice"
+                        style={{ fontSize: "0.82rem" }}
+                      >
                         Déduire du bénéfice de la résidence
                       </label>
-                      <small className="d-block text-muted" style={{ fontSize: "0.73rem" }}>
+                      <small
+                        className="d-block text-muted"
+                        style={{ fontSize: "0.73rem" }}
+                      >
                         {form.impacteBenefice
                           ? "Cette sortie sera comptée comme une charge du mois."
                           : "Cette sortie n'entrera pas dans le résultat : c'est une part du bénéfice qu'on en sort, pas un coût de la maison."}
                       </small>
                     </div>
-                    <BsInfoCircle size={15} style={{ color: "#94a3b8", flex: "0 0 auto", marginTop: 2 }} />
+                    <BsInfoCircle
+                      size={15}
+                      style={{
+                        color: "#94a3b8",
+                        flex: "0 0 auto",
+                        marginTop: 2,
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -490,7 +803,11 @@ export default function Depenses() {
                 >
                   <BsXLg /> Annuler
                 </button>
-                <button type="submit" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" disabled={saving}>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1"
+                  disabled={saving}
+                >
                   <BsSave /> {saving ? "Enregistrement..." : "Enregistrer"}
                 </button>
               </div>
