@@ -26,12 +26,12 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import "./loyer.css";
+import { MOIS_COURT as MOIS_FR } from "../../config/dates";
 
 
 const LOYER_RDC = 150000;
 const LOYER_1ER = 200000;
 
-const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 function formatDate(str) {
   if (!str) return "—";
   const d = new Date(str);

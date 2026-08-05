@@ -9,10 +9,8 @@ import { BsCashStack, BsPlus, BsFillTrashFill, BsChevronLeft, BsChevronRight, Bs
 import "../loyer/loyer.css";
 import "./finance.css";
 import { SkListeLignes } from "../../components/skeleton/skeleton";
-import { versDateISOLocale, aujourdhuiLocal, maintenantLocal } from "../../config/dates";
+import { versDateISOLocale, aujourdhuiLocal, maintenantLocal, MOIS_COURT_1 as MOIS_COURT } from "../../config/dates";
 
-const MOIS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const MOIS_COURT = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 
 function getWeekBounds(date) {
   const d = new Date(date);
@@ -29,7 +27,9 @@ function getWeekBounds(date) {
 function toISO(d) { return versDateISOLocale(d); }
 
 function fmt(d) {
-  return `${String(d.getDate()).padStart(2, "0")} ${MOIS_FR[d.getMonth()].slice(0, 4)} ${d.getFullYear()}`;
+  // Le mois abrégé vient de la liste commune : le tronquer à la main donnait
+  // « Avri », « Octo » et « Déce ».
+  return `${String(d.getDate()).padStart(2, "0")} ${MOIS_COURT[d.getMonth() + 1]} ${d.getFullYear()}`;
 }
 
 function semaineDuMois(day) { return Math.min(Math.ceil(day / 7), 5); }

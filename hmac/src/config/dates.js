@@ -17,7 +17,27 @@
 
 export const FUSEAU_LOGEMENT = "Indian/Antananarivo";
 
-const MOIS_COURT = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+/**
+ * Noms des mois — la seule source de l'application.
+ *
+ * Ils étaient recopiés dans une vingtaine de fichiers, et les fautes se sont
+ * propagées avec les copies : « Jul » et « Jun » sont anglais, « Aoû » et
+ * « Jui » tronquent des noms déjà courts.
+ *
+ * La règle retenue est celle de l'usage français : on n'abrège que ce qui y
+ * gagne. Mars, Mai, Juin et Août s'écrivent en entier — les tronquer ne fait
+ * économiser qu'une lettre au prix de la lisibilité. Juillet devient Juil,
+ * seule abréviation qui le distingue de Juin.
+ *
+ * Deux formes sont exportées car les deux existent dans le code : indexée
+ * depuis 0 (`MOIS_COURT[d.getMonth()]`) et depuis 1 (`MOIS_COURT_1[mois]`).
+ */
+export const MOIS_COURT = ["Jan","Fév","Mars","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+export const MOIS_LONG  = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
+// Mêmes listes décalées d'un cran, pour les codes qui indexent par 1 à 12.
+export const MOIS_COURT_1 = ["", ...MOIS_COURT];
+export const MOIS_LONG_1  = ["", ...MOIS_LONG];
 
 /**
  * Date du jour au format AAAA-MM-JJ, dans le fuseau du logement.

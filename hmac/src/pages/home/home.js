@@ -12,6 +12,7 @@ import Reglement from "../../components/reglement/reglement";
 import "./home.css";
 
 import BanniereAccueil from "./banniere";
+import { MOIS_LONG as MONTHS } from "../../config/dates";
 
 /* ─── Module shortcuts ─────────────────────────────────────── */
 const MODULES = [
@@ -26,7 +27,6 @@ const MODULES = [
 ];
 
 const DAYS   = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
-const MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
 /* ─── Page ─────────────────────────────────────────────────── */
 export default function Home() {

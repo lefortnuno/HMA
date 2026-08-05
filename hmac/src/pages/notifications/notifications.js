@@ -18,7 +18,7 @@ import {
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
-import { formatDateHeure as formatDateTime } from "../../config/dates";
+import { formatDateHeure as formatDateTime, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
 const ACTIONS = {
   AJOUT:        { label: "Ajout",        color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", Icon: BsPlusCircle },
@@ -32,7 +32,6 @@ const STATUTS = {
   REFUSE:     { label: "Refusée",    color: "#dc2626", bg: "#fef2f2", Icon: BsXCircleFill },
 };
 
-const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
 // Champs affichés dans le diff, par type d'entité.
 // Ils doivent couvrir TOUT ce que le serveur enregistre dans avant/apres :

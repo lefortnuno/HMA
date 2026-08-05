@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { BsCalendar3, BsCalendarRange, BsChevronDown, BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import "./jour.css";
+import { MOIS_COURT, MOIS_LONG } from "../../config/dates";
 
 /**
  * Sélecteurs de mois et d'année, sur le même principe que le choix du jour de
@@ -11,8 +12,6 @@ import "./jour.css";
  * parcourt par pages de douze, sans borne.
  */
 
-const MOIS_COURT = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_LONG = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
 // Ferme au clic extérieur et à la touche Échap.
 function useFermeture(ouvert, fermer) {

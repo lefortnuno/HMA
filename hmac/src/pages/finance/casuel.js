@@ -14,9 +14,9 @@ import { SkLocataires } from "../../components/skeleton/skeleton";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 import "./finance.css";
+import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_FR     = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
 function fmtDate(dt) {
   if (!dt) return "—";
   const s = String(dt).replace(" ", "T");

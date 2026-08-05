@@ -43,36 +43,8 @@ import {
 } from "../../config/echeance";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
-import { dateDuJour } from "../../config/dates";
+import { dateDuJour, MOIS_COURT as MOIS, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
-const MOIS = [
-  "Jan",
-  "Fév",
-  "Mar",
-  "Avr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Aoû",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Déc",
-];
-const MOIS_FULL = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
 
 async function imgToBase64(url) {
   const res = await fetch(url);

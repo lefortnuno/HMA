@@ -18,9 +18,8 @@ import ApartSelect, {
 } from "../../components/appart/apart.select";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
-import { formatDateHeure as formatDateTime, formatDate } from "../../config/dates";
+import { formatDateHeure as formatDateTime, formatDate, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
-const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
 const ACTIONS = {
   ENTREE: { label: "Entrée", color: "#16a34a", bg: "#f0fdf4", Icon: BsBoxArrowInRight },

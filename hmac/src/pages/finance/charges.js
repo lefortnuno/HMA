@@ -10,8 +10,9 @@ import { SkLocataires } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./finance.css";
+import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+
 export default function FinanceCharges() {
   const u_info = GetUserData();
   const now    = new Date();

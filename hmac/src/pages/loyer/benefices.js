@@ -27,8 +27,8 @@ import ApartSelect, {
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import FeuilleProvenance from "../../components/provenance/feuille.provenance";
 import "./loyer.css";
+import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
 
-const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 
 export default function Benefices() {
   const u_info = GetUserData();

@@ -5,8 +5,8 @@ import GetUserData from "../../contexts/api/udata";
 import { BsWallet2, BsCheckCircleFill, BsExclamationTriangleFill, BsInfoCircle } from "react-icons/bs";
 import LogoCheck from "./logo.check";
 import "./provenance.css";
+import { MOIS_LONG_1 as MOIS_FULL } from "../../config/dates";
 
-const MOIS_FULL = ["","Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const REGLE = ["PAYE", "PARTIEL"];
 
 /**

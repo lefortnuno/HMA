@@ -20,10 +20,9 @@ import {
 } from "../../config/echeance";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
-import { dateDuJour } from "../../config/dates";
+import { dateDuJour, MOIS_COURT as MOIS, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
-const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
 /**
  * Espace personnel : le locataire ne voit QUE sa fiche et ses paiements.
  * Aucune donnée des autres locataires n'est chargée ici.

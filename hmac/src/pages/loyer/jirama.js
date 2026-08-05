@@ -33,9 +33,8 @@ import SaisieReleves from "./releves.jirama";
 import { estAvantEntree } from "../../config/echeance";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
+import { MOIS_COURT as MOIS, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
-const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const PAR_PAGE = 9;
 
 // Jour du mois ou la facture de la compagnie arrive habituellement.
