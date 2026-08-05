@@ -362,6 +362,15 @@ export default function Depenses() {
                 <table className="table table-hover mb-0">
                   <thead style={{ background: "#f8fafc" }}>
                     <tr>
+                      <th
+                        style={{
+                          fontSize: "0.73rem",
+                          color: "#64748b",
+                          width: 52,
+                        }}
+                      >
+                        N°
+                      </th>
                       <th style={{ fontSize: "0.73rem", color: "#64748b" }}>
                         Description
                       </th>
@@ -385,7 +394,7 @@ export default function Depenses() {
                   <tbody>
                     {visibles.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="text-center text-muted py-5">
+                        <td colSpan={7} className="text-center text-muted py-5">
                           <div className="mb-2">
                             {depenses.length === 0
                               ? "Aucune sortie pour ce mois"
@@ -405,6 +414,18 @@ export default function Depenses() {
                     ) : (
                       visibles.map((d) => (
                         <tr key={d.id}>
+                          {/* Le numéro de la ligne en base : de quoi désigner
+                              une sortie sans ambiguïté quand deux libellés se
+                              ressemblent. */}
+                          <td
+                            className="text-muted"
+                            style={{
+                              fontSize: "0.78rem",
+                              fontVariantNumeric: "tabular-nums",
+                            }}
+                          >
+                            #{d.id}
+                          </td>
                           <td style={{ fontSize: "0.875rem" }}>
                             {d.description}
                             {d.beneficiaire && (
