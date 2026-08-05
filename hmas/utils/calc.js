@@ -3,6 +3,7 @@
  * Logique metier pure (sans DB) : calculs JIRAMA / benefices + validations.
  * Testee par tests/calc.test.js.
  */
+const { jourLocal } = require("./dates");
 
 const CHAMBRES_RDC = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const CHAMBRES_1ER = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -74,18 +75,24 @@ const JOUR_FACTURE_JIRAMA = 25;
  * cours n'existe pas encore, et rien ne peut etre reclame avant l'arrivee de
  * la facture, vers le 25. Sans cette regle, le mois en cours apparaissait des
  * le 1er dans les sommes a recouvrer.
+ *
+ * Le quantieme est celui de Tananarive, pas celui du serveur : Render tourne
+ * en UTC et le 25 y commence trois heures apres le 25 malgache.
  */
 function factureJiramaArrivee(mois, annee, aujourdhui = new Date()) {
   const m = Number(mois);
   const a = Number(annee);
-  const anneeCourante = aujourdhui.getFullYear();
-  const moisCourant = aujourdhui.getMonth() + 1;
+  const {
+    annee: anneeCourante,
+    mois: moisCourant,
+    jour: jourCourant,
+  } = jourLocal(aujourdhui);
 
   if (a < anneeCourante) return true;   // annee revolue
   if (a > anneeCourante) return false;  // annee a venir
   if (m < moisCourant) return true;     // mois revolu
   if (m > moisCourant) return false;    // mois a venir
-  return aujourdhui.getDate() >= JOUR_FACTURE_JIRAMA;
+  return jourCourant >= JOUR_FACTURE_JIRAMA;
 }
 
 /**

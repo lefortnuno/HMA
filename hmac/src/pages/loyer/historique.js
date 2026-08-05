@@ -18,23 +18,9 @@ import ApartSelect, {
 } from "../../components/appart/apart.select";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
+import { formatDateHeure as formatDateTime, formatDate } from "../../config/dates";
 
-const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-
-function formatDateTime(str) {
-  if (!str) return "—";
-  const d = new Date(str);
-  if (isNaN(d)) return "—";
-  return `${d.getDate()} ${MOIS_FR[d.getMonth()]} ${d.getFullYear()} à ${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function formatDate(str) {
-  if (!str) return "—";
-  const d = new Date(str);
-  if (isNaN(d)) return "—";
-  return `${d.getDate()} ${MOIS_FR[d.getMonth()]} ${d.getFullYear()}`;
-}
 
 const ACTIONS = {
   ENTREE: { label: "Entrée", color: "#16a34a", bg: "#f0fdf4", Icon: BsBoxArrowInRight },

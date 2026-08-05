@@ -120,3 +120,37 @@ test("statut DOUTE accepte (dit avoir paye, a confirmer)", () => {
   assert.ok(V.isStatutValide("DOUTE"));
   assert.ok(!V.isStatutValide("DOUTEUX"));
 });
+
+// ── Fuseau horaire ───────────────────────────────────────────────────────────
+// Le serveur tourne en UTC, le logement vit a UTC+3. Les regles qui comparent
+// un quantieme doivent suivre Tananarive, sinon elles se trompent chaque nuit
+// entre minuit et 3 h.
+const D = require("../utils/dates");
+
+test("le jour courant suit Tananarive, pas le serveur", () => {
+  // 24 aout 22h30 UTC = 25 aout 01h30 a Tananarive.
+  const instant = new Date("2026-08-24T22:30:00Z");
+  assert.strictEqual(instant.getUTCDate(), 24);
+  assert.deepStrictEqual(D.jourLocal(instant), {
+    annee: 2026,
+    mois: 8,
+    jour: 25,
+  });
+  assert.strictEqual(D.dateDuJour(instant), "2026-08-25");
+});
+
+test("la facture JIRAMA arrive le 25 malgache, pas le 25 UTC", () => {
+  // Meme instant : deja le 25 a Tananarive, encore le 24 pour le serveur.
+  assert.ok(V.factureJiramaArrivee(8, 2026, new Date("2026-08-24T22:30:00Z")));
+  // La veille au soir a Tananarive : la facture n'est pas encore la.
+  assert.ok(!V.factureJiramaArrivee(8, 2026, new Date("2026-08-23T22:30:00Z")));
+});
+
+test("bascule d'annee prise dans le bon fuseau", () => {
+  // 31 decembre 22h UTC = 1er janvier 01h a Tananarive : l'annee a tourne.
+  assert.deepStrictEqual(D.jourLocal(new Date("2026-12-31T22:00:00Z")), {
+    annee: 2027,
+    mois: 1,
+    jour: 1,
+  });
+});

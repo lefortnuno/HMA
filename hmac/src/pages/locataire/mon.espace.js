@@ -20,6 +20,7 @@ import {
 } from "../../config/echeance";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
+import { dateDuJour } from "../../config/dates";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -93,7 +94,7 @@ export default function MonEspace() {
       mois: m,
       // Mois échu : ce qui reste dû. Mois à venir : le mois entier.
       montantLoyer: resteDe(m) > 0 ? resteDe(m) : resteTotalDe(m),
-      datePaiement: new Date().toISOString().split("T")[0],
+      datePaiement: dateDuJour(),
       avance: resteDe(m) === 0,
     });
   }

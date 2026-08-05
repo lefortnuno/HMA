@@ -13,6 +13,7 @@ import {
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
+import { dateDuJour } from "../../config/dates";
 
 const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const MOIS_FULL = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -86,7 +87,7 @@ export default function MesFactures() {
     setDeclaration({
       mois: m,
       montantJIRAMA: resteDe(m) || jiramaDu[m] || 0,
-      datePaiement: new Date().toISOString().split("T")[0],
+      datePaiement: dateDuJour(),
     });
   }
 

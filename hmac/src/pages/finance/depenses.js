@@ -9,6 +9,7 @@ import { BsCashStack, BsPlus, BsFillTrashFill, BsChevronLeft, BsChevronRight, Bs
 import "../loyer/loyer.css";
 import "./finance.css";
 import { SkListeLignes } from "../../components/skeleton/skeleton";
+import { versDateISOLocale, aujourdhuiLocal, maintenantLocal } from "../../config/dates";
 
 const MOIS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const MOIS_COURT = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -24,7 +25,8 @@ function getWeekBounds(date) {
   return { start: mon, end: sun };
 }
 
-function toISO(d) { return d.toISOString().split("T")[0]; }
+// Bornes de semaine : deja construites sur le bon jour, aucune conversion.
+function toISO(d) { return versDateISOLocale(d); }
 
 function fmt(d) {
   return `${String(d.getDate()).padStart(2, "0")} ${MOIS_FR[d.getMonth()].slice(0, 4)} ${d.getFullYear()}`;
@@ -34,7 +36,7 @@ function semaineDuMois(day) { return Math.min(Math.ceil(day / 7), 5); }
 
 export default function FinanceDepenses() {
   const u_info = GetUserData();
-  const [refDate,    setRefDate]   = useState(new Date());
+  const [refDate,    setRefDate]   = useState(aujourdhuiLocal());
   const [depenses,   setDepenses]  = useState([]);
   const [loading,    setLoading]   = useState(true);
   const [showModal,  setShowModal] = useState(false);
@@ -59,7 +61,7 @@ export default function FinanceDepenses() {
     setRefDate(d);
   }
 
-  function goToday() { setRefDate(new Date()); }
+  function goToday() { setRefDate(aujourdhuiLocal()); }
 
   function openModal() { setForm({ nom: "", montant: "" }); setShowModal(true); }
 
@@ -68,13 +70,14 @@ export default function FinanceDepenses() {
     if (!form.nom.trim())    return toast.warning("Nom de la dépense requis");
     if (!form.montant || +form.montant <= 0) return toast.warning("Montant invalide");
     setSaving(true);
-    const now = new Date();
-    const pad = n => String(n).padStart(2, "0");
-    const date_depense  = toISO(now);
-    const heure_depense = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    const mois    = now.getMonth() + 1;
-    const annee   = now.getFullYear();
-    const semaine = semaineDuMois(now.getDate());
+    // Horodatée à l'heure du logement : une dépense saisie le soir à Tana ne
+    // doit pas atterrir la veille parce qu'on la saisit depuis un autre fuseau.
+    const now = maintenantLocal();
+    const date_depense  = now.date;
+    const heure_depense = now.heure;
+    const mois    = now.mois;
+    const annee   = now.annee;
+    const semaine = semaineDuMois(now.jour);
     axios.post("finance/depenses", { userId: u_info.u_id, nom: form.nom, montant: +form.montant, date_depense, heure_depense, semaine, mois, annee }, u_info.opts)
       .then(() => { toast.success("Dépense ajoutée"); setShowModal(false); fetch(true); })
       .catch(() => toast.error("Erreur"))
@@ -88,7 +91,7 @@ export default function FinanceDepenses() {
   }
 
   const total = depenses.reduce((s, d) => s + (+d.montant || 0), 0);
-  const isCurrentWeek = toISO(start) === toISO(getWeekBounds(new Date()).start);
+  const isCurrentWeek = toISO(start) === toISO(getWeekBounds(aujourdhuiLocal()).start);
 
   return (
     <Template>

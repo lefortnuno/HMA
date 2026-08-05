@@ -43,6 +43,7 @@ import {
 } from "../../config/echeance";
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
+import { dateDuJour } from "../../config/dates";
 
 const MOIS = [
   "Jan",
@@ -947,7 +948,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     montantJIRAMA: cell.existing?.montantJIRAMA ?? 0,
     datePaiement: cell.existing?.datePaiement
       ? cell.existing.datePaiement.split("T")[0]
-      : new Date().toISOString().split("T")[0],
+      : dateDuJour(),
   });
   const [saving, setSaving] = useState(false);
 

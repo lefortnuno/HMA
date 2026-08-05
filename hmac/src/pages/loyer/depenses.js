@@ -14,6 +14,7 @@ import ApartSelect, {
 } from "../../components/appart/apart.select";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
+import { dateDuJour } from "../../config/dates";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const CATEGORIES = ["Réparation","Entretien","Charges","Fournitures","Salaires","Autre"];
@@ -26,7 +27,7 @@ function formatDate(str) {
 }
 
 function initForm(now) {
-  return { description: "", montant: "", categorie: "Autre", date: now.toISOString().split("T")[0] };
+  return { description: "", montant: "", categorie: "Autre", date: dateDuJour() };
 }
 
 export default function Depenses() {

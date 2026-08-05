@@ -16,6 +16,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import "./loyer.css";
+import { dateDuJour } from "../../config/dates";
 
 const LOYER_RDC = 150000;
 const LOYER_1ER = 200000;
@@ -31,7 +32,7 @@ function initForm(etage, chambre) {
     chambre,
     tel: "",
     email: "",
-    dateEntree: new Date().toISOString().split("T")[0],
+    dateEntree: dateDuJour(),
     actif: true,
     caution: 0,
     photo: "",

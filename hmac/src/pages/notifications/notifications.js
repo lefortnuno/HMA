@@ -18,15 +18,7 @@ import {
 } from "react-icons/bs";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
-
-const MOIS_FR = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-
-function formatDateTime(str) {
-  if (!str) return "—";
-  const d = new Date(str);
-  if (isNaN(d)) return "—";
-  return `${d.getDate()} ${MOIS_FR[d.getMonth()]} ${d.getFullYear()} à ${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`;
-}
+import { formatDateHeure as formatDateTime } from "../../config/dates";
 
 const ACTIONS = {
   AJOUT:        { label: "Ajout",        color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", Icon: BsPlusCircle },

@@ -6,6 +6,7 @@ import Template from "../../components/template/template";
 import DeleteModal from "../../components/modals/delete";
 import { SkTableRows } from "../../components/skeleton/skeleton";
 import { copierEtOuvrirMessenger, extraireMessengerId, URL_APP } from "../../config/contact";
+import { formatDate, versDateISO } from "../../config/dates";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -18,15 +19,9 @@ import {
 const url_req = "utilisateur/";
 const PER_PAGE = 8;
 const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4"];
-const MOIS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
-
-function fmtDate(dt) {
-  if (!dt) return "—";
-  const s = String(dt).replace(" ", "T");
-  const d = new Date(s.includes("T") ? s : s + "T12:00:00");
-  if (isNaN(d.getTime())) return "—";
-  return `${String(d.getDate()).padStart(2, "0")} ${MOIS[d.getMonth() + 1]} ${d.getFullYear()}`;
-}
+// La date d'inscription est un instant : on la rend dans le fuseau du
+// logement, et non dans celui du navigateur qui la consulte.
+const fmtDate = (dt) => (dt ? formatDate(versDateISO(dt)) : "—");
 
 function UserAvatar({ nom, prenom }) {
   const initials = `${(nom || "?")[0]}${(prenom || "?")[0]}`.toUpperCase();

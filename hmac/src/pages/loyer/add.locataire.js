@@ -13,6 +13,7 @@ import ModePaiementPicker from "../../components/jour/mode.paiement";
 import JiramaPicker from "../../components/jour/jirama.picker";
 import { getSelectedBienId } from "../../components/appart/apart.select";
 import "./loyer.css";
+import { dateDuJour } from "../../config/dates";
 
 const CHAMBRES_RDC = ["1","2","3","4","5","6","7","8","9","10"];
 const CHAMBRES_1ER = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
@@ -30,7 +31,7 @@ export default function AddLocataire() {
     chambre: "1",
     tel: "",
     email: "",
-    dateEntree: new Date().toISOString().split("T")[0],
+    dateEntree: dateDuJour(),
     actif: true,
     caution: 0,
     photo: "",
