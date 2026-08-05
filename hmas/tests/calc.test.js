@@ -154,3 +154,36 @@ test("bascule d'annee prise dans le bon fuseau", () => {
     jour: 1,
   });
 });
+
+// ── Nature des sorties d'argent ──────────────────────────────────────────────
+// Un envoi a la famille n'est pas une charge de la maison : le compter comme
+// telle ferait fondre le resultat de la residence sans qu'elle ait rien coute.
+const S = require("../utils/sorties");
+
+test("seules les charges reelles grevent le benefice", () => {
+  assert.strictEqual(S.impacteBenefice("IMMOBILIER"), 1);
+  assert.strictEqual(S.impacteBenefice("QUOTIDIEN"), 1);
+  assert.strictEqual(S.impacteBenefice("FAMILLE"), 0);
+  assert.strictEqual(S.impacteBenefice("INVESTISSEMENT"), 0);
+});
+
+test("le choix explicite prime sur le defaut de la nature", () => {
+  // Un envoi familial qu'on decide malgre tout d'imputer a la maison.
+  assert.strictEqual(S.impacteBenefice("FAMILLE", true), 1);
+  // Une charge immobiliere qu'on prefere sortir du resultat.
+  assert.strictEqual(S.impacteBenefice("IMMOBILIER", false), 0);
+});
+
+test("une nature inconnue retombe sur l'immobilier, sans rien casser", () => {
+  assert.strictEqual(S.normaliseType("N_IMPORTE_QUOI"), "IMMOBILIER");
+  assert.strictEqual(S.normaliseType(undefined), "IMMOBILIER");
+  assert.ok(!S.isTypeValide("N_IMPORTE_QUOI"));
+  assert.ok(S.isTypeValide("FAMILLE"));
+});
+
+test("une case laissee vide n'est pas prise pour un refus", () => {
+  // "" et null doivent laisser parler le defaut, pas valoir false.
+  assert.strictEqual(S.impacteBenefice("IMMOBILIER", ""), 1);
+  assert.strictEqual(S.impacteBenefice("IMMOBILIER", null), 1);
+  assert.strictEqual(S.impacteBenefice("FAMILLE", undefined), 0);
+});

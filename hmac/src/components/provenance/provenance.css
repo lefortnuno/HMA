@@ -1,0 +1,179 @@
+/* ── Témoin de provenance ─────────────────────────────────────────────────
+   Le logo de la maison sert d'interrupteur : allumé, la somme est arrivée
+   entre les mains du bailleur. Éteint, elle est grise et en retrait — on
+   voit d'un coup d'œil, sur toute une colonne, ce qui a échappé à l'encaisse. */
+.logo-check {
+  width: 26px;
+  height: 26px;
+  padding: 2px;
+  border-radius: 7px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 0 0 auto;
+}
+.logo-check img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-check.actif {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+.logo-check.actif img {
+  opacity: 1;
+}
+.logo-check.actif:hover:not(:disabled) {
+  border-color: #86efac;
+  background: #dcfce7;
+}
+
+/* Éteint : décoloré et à peine visible — l'argent n'est pas passé par ici. */
+.logo-check.inactif {
+  border-style: dashed;
+  border-color: #e2e8f0;
+  background: #fff;
+}
+.logo-check.inactif img {
+  opacity: 0.28;
+  filter: grayscale(1);
+}
+.logo-check.inactif:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+.logo-check.inactif:hover:not(:disabled) img {
+  opacity: 0.55;
+}
+
+.logo-check:disabled {
+  cursor: not-allowed;
+  border-color: transparent;
+  background: transparent;
+}
+.logo-check:disabled img {
+  opacity: 0.12;
+  filter: grayscale(1);
+}
+
+.logo-check:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* ── Feuille de provenance ─────────────────────────────────────────────── */
+.prov-table {
+  width: 100%;
+  margin-bottom: 0;
+}
+.prov-table th {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem 0.5rem;
+  white-space: nowrap;
+}
+.prov-table td {
+  font-size: 0.82rem;
+  padding: 0.4rem 0.5rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+.prov-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* Montant et témoin sur la même ligne, le montant aligné à droite pour que
+   les colonnes de chiffres se comparent verticalement. */
+.prov-montant {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+.prov-montant .somme {
+  font-variant-numeric: tabular-nums;
+  min-width: 62px;
+  text-align: right;
+}
+/* Barré : la somme est réglée, mais pas par ce canal-là. */
+.prov-montant.hors .somme {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+.prov-montant .somme.nulle {
+  color: #cbd5e1;
+}
+
+.prov-total-row td {
+  border-top: 2px solid #cbd5e1;
+  border-bottom: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding-top: 0.6rem;
+  background: #f8fafc;
+}
+
+/* Encart de solde : le seul endroit de la page où l'on confronte le calcul
+   à la réalité. */
+.prov-solde {
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  border: 2px solid;
+}
+.prov-solde.accord {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.prov-solde.ecart {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.prov-solde.attente {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+.prov-solde .remarque {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.prov-ligne-saisie {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.prov-ligne-saisie .form-label {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .prov-table td,
+  .prov-table th {
+    padding: 0.35rem 0.3rem;
+  }
+  .prov-montant .somme {
+    min-width: 50px;
+    font-size: 0.78rem;
+  }
+  .logo-check {
+    width: 23px;
+    height: 23px;
+  }
+}

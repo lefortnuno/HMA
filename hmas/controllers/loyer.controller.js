@@ -9,6 +9,8 @@ const { sendErr, badRequest } = require("../utils/http");
 const V = require("../utils/calc");
 const Compte = require("../utils/compte");
 const PaiementHisto = require("../models/paiementhisto.model");
+const Provenance = require("../models/provenance.model");
+const S = require("../utils/sorties");
 
 
 const isAdmin = (req) => req.user && Number(req.user.karazana) === 1;
@@ -892,14 +894,24 @@ module.exports.getDepenses = (req, res) => {
 };
 
 module.exports.createDepense = (req, res) => {
-  const { description, montant, mois, annee, categorie, date, bienId } = req.body;
+  const { description, montant, mois, annee, categorie, date, bienId,
+          type, beneficiaire, impacteBenefice } = req.body;
   if (!description || !String(description).trim())
     return badRequest(res, "Description requise.");
   if (!V.isMontantValide(montant)) return badRequest(res, "Montant invalide (positif requis).");
   if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
   if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  if (type && !S.isTypeValide(type)) return badRequest(res, "Nature de sortie inconnue.");
   Depense.create(
-    { description, montant, mois, annee, categorie: categorie || "Autre", date: date || null, bienId: Number(bienId) || 0 },
+    {
+      description, montant, mois, annee,
+      categorie: categorie || "Autre",
+      date: date || null,
+      bienId: Number(bienId) || 0,
+      type: S.normaliseType(type),
+      beneficiaire: beneficiaire || null,
+      impacteBenefice: S.impacteBenefice(type, impacteBenefice),
+    },
     (err, result) => {
       if (err) sendErr(res, err);
       else res.send(result);
@@ -908,12 +920,22 @@ module.exports.createDepense = (req, res) => {
 };
 
 module.exports.updateDepense = (req, res) => {
-  const { description, montant, categorie, date } = req.body;
+  const { description, montant, categorie, date, type, beneficiaire, impacteBenefice } = req.body;
   if (!V.isMontantValide(montant)) return badRequest(res, "Montant invalide (positif requis).");
-  Depense.update(req.params.id, { description, montant, categorie, date: date || null }, (err, result) => {
-    if (err) sendErr(res, err);
-    else res.send(result);
-  });
+  if (type && !S.isTypeValide(type)) return badRequest(res, "Nature de sortie inconnue.");
+  Depense.update(
+    req.params.id,
+    {
+      description, montant, categorie,
+      date: date || null,
+      type: S.normaliseType(type),
+      beneficiaire: beneficiaire || null,
+      impacteBenefice: S.impacteBenefice(type, impacteBenefice),
+    },
+    (err, result) => {
+      if (err) sendErr(res, err);
+      else res.send(result);
+    });
 };
 
 module.exports.deleteDepense = (req, res) => {
@@ -938,16 +960,73 @@ module.exports.getBenefices = (req, res) => {
       Paiement.getByMoisAnnee(mois, annee, bienId, (err3, paiements) => {
         if (err3) return sendErr(res, err3);
 
-        res.send({
-          mois: +mois,
-          annee: +annee,
-          totalLoyers: sums.totalLoyers || 0,
-          totalJIRAMA: sums.totalJIRAMA || 0,
-          totalDepenses: depSum.totalDepenses || 0,
-          paiements: paiements || [],
+        Provenance.get(bienId, mois, annee, (err4, prov) => {
+          if (err4) return sendErr(res, err4);
+
+          // Encaisse : la part des sommes reglees qui est reellement arrivee
+          // entre les mains du bailleur. Un loyer remis sur place est bien
+          // paye — il compte dans les recettes — mais pas dans l'encaisse.
+          const encaisse = (paiements || []).reduce(
+            (acc, p) => {
+              if (["PAYE", "PARTIEL"].includes(p.statut) && p.loyerRecuParMoi)
+                acc.loyers += p.montantLoyer || 0;
+              if (["PAYE", "PARTIEL"].includes(p.statutJIRAMA) && p.jiramaRecuParMoi)
+                acc.jirama += p.montantJIRAMA || 0;
+              return acc;
+            },
+            { loyers: 0, jirama: 0 },
+          );
+
+          res.send({
+            mois: +mois,
+            annee: +annee,
+            totalLoyers: sums.totalLoyers || 0,
+            totalJIRAMA: sums.totalJIRAMA || 0,
+            totalDepenses: depSum.totalDepenses || 0,
+            encaisseLoyers: encaisse.loyers,
+            encaisseJIRAMA: encaisse.jirama,
+            provenance: prov,
+            paiements: paiements || [],
+          });
         });
       });
     });
+  });
+};
+
+/**
+ * Marque qui a encaisse un paiement (le bailleur, ou quelqu'un sur place).
+ *
+ * Volontairement hors du circuit de validation : cela ne touche ni au montant
+ * ni au statut, seulement a la tracabilite de l'argent.
+ */
+module.exports.setProvenancePaiement = (req, res) => {
+  const { id } = req.params;
+  if (!id || Number.isNaN(Number(id))) return badRequest(res, "Paiement invalide.");
+  Paiement.setProvenance(id, req.body || {}, (err, resp) => {
+    if (err) return sendErr(res, err);
+    res.send(resp);
+  });
+};
+
+// Frais du mois et somme reellement recue (feuille de provenance).
+module.exports.getProvenance = (req, res) => {
+  const { mois, annee, bienId } = req.query;
+  if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  Provenance.get(bienId, mois, annee, (err, resp) => {
+    if (err) return sendErr(res, err);
+    res.send(resp || {});
+  });
+};
+
+module.exports.saveProvenance = (req, res) => {
+  const { mois, annee, bienId } = req.body || {};
+  if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
+  if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
+  Provenance.save(bienId, mois, annee, req.body, (err, resp) => {
+    if (err) return sendErr(res, err);
+    res.send(resp);
   });
 };
 

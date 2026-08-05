@@ -25,6 +25,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
+import FeuilleProvenance from "../../components/provenance/feuille.provenance";
 import "./loyer.css";
 
 const MOIS_LABELS = ["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
@@ -84,7 +85,9 @@ export default function Benefices() {
   const jirama = data?.totalJIRAMA || 0;
   const depenses = data?.totalDepenses || 0;
   const recettes = loyers + jirama;
-  const benefice = recettes - depenses;
+  const benefice = recettes - depenses;
+  // Part des recettes réellement arrivée entre les mains du bailleur.
+  const encaisse = (data?.encaisseLoyers || 0) + (data?.encaisseJIRAMA || 0);
   return (
     <Template>
       <Header />
@@ -207,6 +210,25 @@ export default function Benefices() {
                           <span className="text-muted">Total recettes</span>
                           <span className="fw-bold text-success">+ {recettes.toLocaleString()} Ar</span>
                         </div>
+                        {/* Placé juste après les recettes : le « dont » s'y
+                            rapporte. Passerelle vers la feuille de provenance
+                            — les recettes sont celles de la maison, cette
+                            ligne dit ce qui est arrivé entre vos mains. */}
+                        <div className="d-flex justify-content-between align-items-center py-2 border-bottom">
+                          <span className="text-muted">
+                            dont encaissé en main propre
+                            {recettes > 0 && (
+                              <small className="d-block" style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
+                                {recettes === encaisse
+                                  ? "la totalité des recettes"
+                                  : `${(recettes - encaisse).toLocaleString()} Ar réglés sur place`}
+                              </small>
+                            )}
+                          </span>
+                          <span className={`fw-bold ${recettes === encaisse ? "text-success" : "text-warning"}`}>
+                            {encaisse.toLocaleString()} Ar
+                          </span>
+                        </div>
                         <div className="d-flex justify-content-between align-items-center py-2 border-bottom">
                           <span className="text-muted">Total dépenses</span>
                           <span className="fw-bold text-danger">− {depenses.toLocaleString()} Ar</span>
@@ -227,42 +249,18 @@ export default function Benefices() {
                     </div>
                   </div>
 
+                  {/* Provenance — qui a réellement encaissé. Le récapitulatif
+                      ci-contre donne le résultat de la maison ; celui-ci dit
+                      ce qui est arrivé entre les mains du bailleur. */}
                   <div className="col-lg-6">
-                    <div className="card-pro">
-                      <h6 className="fw-bold mb-3">Détail des paiements</h6>
-                      {data?.paiements?.length > 0 ? (
-                        <div className="table-responsive">
-                          <table className="table table-sm mb-0">
-                            <thead>
-                              <tr>
-                                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Locataire</th>
-                                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Loyer</th>
-                                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>JIRAMA</th>
-                                <th style={{ fontSize: "0.73rem", color: "#64748b" }}>Statut</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {data.paiements.map((p, i) => (
-                                <tr key={i}>
-                                  <td style={{ fontSize: "0.8rem" }}>{p.nom}</td>
-                                  <td style={{ fontSize: "0.8rem" }}>{(p.montantLoyer || 0).toLocaleString()}</td>
-                                  <td style={{ fontSize: "0.8rem" }}>{(p.montantJIRAMA || 0).toLocaleString()}</td>
-                                  <td>
-                                    <span className={p.statut === "PAYE" ? "badge-paye" : p.statut === "PARTIEL" ? "badge-partiel" : "badge-impaye"}>
-                                      {p.statut}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <p className="text-muted text-center py-3">
-                          Aucun paiement enregistré pour ce mois.
-                        </p>
-                      )}
-                    </div>
+                    <FeuilleProvenance
+                      mois={mois}
+                      annee={annee}
+                      bienId={bienId}
+                      paiements={data?.paiements || []}
+                      provenance={data?.provenance || null}
+                      onChange={fetchBenefices}
+                    />
                   </div>
                 </div>
               </>

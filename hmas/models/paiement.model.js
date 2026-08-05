@@ -116,4 +116,25 @@ Paiement.sumByAnnee = (annee, bienId, result) => {
   });
 };
 
+/**
+ * Qui a encaisse ce paiement ?
+ *
+ * Ne touche qu'aux deux drapeaux de provenance : les montants et les statuts
+ * restent ceux qui ont ete valides, marquer une provenance n'est pas modifier
+ * un paiement.
+ */
+Paiement.setProvenance = (id, data, result) => {
+  const champs = {};
+  if (data.loyerRecuParMoi !== undefined)
+    champs.loyerRecuParMoi = data.loyerRecuParMoi ? 1 : 0;
+  if (data.jiramaRecuParMoi !== undefined)
+    champs.jiramaRecuParMoi = data.jiramaRecuParMoi ? 1 : 0;
+  if (!Object.keys(champs).length) return result(null, { success: true });
+
+  db.query("UPDATE paiement_loyer SET ? WHERE id=?", [champs, id], (err) => {
+    if (err) result(err, null);
+    else result(null, { success: true, ...champs });
+  });
+};
+
 module.exports = Paiement;

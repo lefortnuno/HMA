@@ -38,8 +38,10 @@ Depense.delete = (id, result) => {
 };
 
 Depense.sumByMoisAnnee = (mois, annee, bienId, result) => {
+  // impacteBenefice=1 : seules les sorties qui grevent reellement le
+  // resultat de la residence. Un envoi familial n est pas une charge.
   let sql =
-    "SELECT COALESCE(SUM(montant), 0) AS totalDepenses FROM depense_immo WHERE mois=? AND annee=?";
+    "SELECT COALESCE(SUM(montant), 0) AS totalDepenses FROM depense_immo WHERE impacteBenefice=1 AND mois=? AND annee=?";
   const params = [mois, annee];
   if (bienId !== undefined && bienId !== null && bienId !== "") {
     sql += " AND bienId=?";
@@ -54,7 +56,7 @@ Depense.sumByMoisAnnee = (mois, annee, bienId, result) => {
 // Somme des benefices par mois pour toute une annee (dashboard annuel).
 Depense.sumByAnnee = (annee, bienId, result) => {
   let sql =
-    "SELECT mois, COALESCE(SUM(montant),0) AS totalDepenses FROM depense_immo WHERE annee=?";
+    "SELECT mois, COALESCE(SUM(montant),0) AS totalDepenses FROM depense_immo WHERE impacteBenefice=1 AND annee=?";
   const params = [annee];
   if (bienId !== undefined && bienId !== null && bienId !== "") {
     sql += " AND bienId=?";

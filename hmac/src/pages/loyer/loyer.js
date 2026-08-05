@@ -475,6 +475,35 @@ export default function Loyer() {
     return { percu, impaye };
   }
 
+  /**
+   * Encaissé et relevé du mois.
+   *
+   * Relevé : tout ce qui a été enregistré comme réglé, loyer et JIRAMA.
+   * Encaissé : la part qui est réellement arrivée entre les mains du bailleur.
+   * Un loyer remis sur place est bien payé — il compte dans le relevé — mais
+   * pas dans l'encaisse. L'écart entre les deux, c'est ce qu'on a confié à
+   * quelqu'un d'autre.
+   */
+  function calcEncaisse(mois) {
+    let encaisse = 0,
+      releve = 0;
+    locataires.forEach((loc) => {
+      const p = getCellData(loc.id, mois);
+      if (!p) return;
+      if (["PAYE", "PARTIEL"].includes(p.statut)) {
+        const m = p.montantLoyer || 0;
+        releve += m;
+        if (p.loyerRecuParMoi !== 0) encaisse += m;
+      }
+      if (["PAYE", "PARTIEL"].includes(p.statutJIRAMA)) {
+        const m = p.montantJIRAMA || 0;
+        releve += m;
+        if (p.jiramaRecuParMoi !== 0) encaisse += m;
+      }
+    });
+    return { encaisse, releve };
+  }
+
   function renderCell(loc, moisIndex) {
     const mois = moisIndex + 1;
     const p = getCellData(loc.id, mois);
@@ -915,6 +944,82 @@ export default function Loyer() {
                       ))
                     )}
                   </tbody>
+
+                  {/* Encaissé / relevé — ce qui est arrivé entre les mains du
+                      bailleur, face à ce qui a été enregistré comme réglé. */}
+                  {!loading && locataires.length > 0 && (
+                    <tfoot className="tfoot-encaisse">
+                      <tr>
+                        <th colSpan={2} className="tfoot-libelle">
+                          <span className="tfoot-titre">Encaissé</span>
+                          <span className="tfoot-sur"> / relevé</span>
+                          <small
+                            className="d-block text-muted fw-normal"
+                            style={{ fontSize: "0.62rem", lineHeight: 1.2 }}
+                          >
+                            reçu en main / enregistré
+                          </small>
+                        </th>
+                        {MOIS.map((_, mi) => {
+                          const { encaisse, releve } = calcEncaisse(mi + 1);
+                          if (!releve)
+                            return (
+                              <td
+                                key={mi}
+                                className={mi + 1 === moisCourant ? "td-mois-courant" : ""}
+                              >
+                                <span className="tfoot-vide">—</span>
+                              </td>
+                            );
+                          const complet = encaisse === releve;
+                          return (
+                            <td
+                              key={mi}
+                              className={mi + 1 === moisCourant ? "td-mois-courant" : ""}
+                              title={
+                                complet
+                                  ? `Tout a été encaissé : ${encaisse.toLocaleString()} Ar`
+                                  : `Encaissé ${encaisse.toLocaleString()} Ar sur ${releve.toLocaleString()} Ar réglés\n` +
+                                    `Soit ${(releve - encaisse).toLocaleString()} Ar remis sur place`
+                              }
+                            >
+                              <div className={`tfoot-cell ${complet ? "ok" : "ecart"}`}>
+                                <span className="tfoot-enc">
+                                  {(encaisse / 1000).toFixed(0)}k
+                                </span>
+                                <span className="tfoot-rel">
+                                  {(releve / 1000).toFixed(0)}k
+                                </span>
+                              </div>
+                            </td>
+                          );
+                        })}
+                        <td>
+                          {(() => {
+                            const an = MOIS.reduce(
+                              (acc, _, mi) => {
+                                const { encaisse, releve } = calcEncaisse(mi + 1);
+                                acc.e += encaisse;
+                                acc.r += releve;
+                                return acc;
+                              },
+                              { e: 0, r: 0 }
+                            );
+                            if (!an.r) return <span className="tfoot-vide">—</span>;
+                            return (
+                              <div
+                                className={`tfoot-cell ${an.e === an.r ? "ok" : "ecart"}`}
+                                title={`Sur l'année : ${an.e.toLocaleString()} Ar encaissés sur ${an.r.toLocaleString()} Ar réglés`}
+                              >
+                                <span className="tfoot-enc">{(an.e / 1000).toFixed(0)}k</span>
+                                <span className="tfoot-rel">{(an.r / 1000).toFixed(0)}k</span>
+                              </div>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
               </div>
             </div>

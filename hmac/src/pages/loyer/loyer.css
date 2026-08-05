@@ -448,3 +448,87 @@
   color: var(--text-dark, #1e293b);
   text-align: right;
 }
+
+/* ── Pied du tableau : encaissé / relevé ─────────────────────────────────────
+   Le tableau dit qui a payé ; ce pied dit ce qui est réellement arrivé entre
+   les mains du bailleur. Les deux nombres sont empilés — encaissé au-dessus,
+   relevé en dessous, séparés d'un filet — pour se lire d'un coup d'œil comme
+   une fraction. Vert quand ils coïncident, ambre quand une part a été remise
+   sur place. */
+.tfoot-encaisse {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+}
+.tfoot-encaisse th,
+.tfoot-encaisse td {
+  background: #f8fafc;
+  border-top: 2px solid #cbd5e1;
+  padding: 0.4rem 0.3rem;
+  text-align: center;
+  vertical-align: middle;
+}
+.tfoot-encaisse .tfoot-libelle {
+  text-align: left;
+  padding-left: 0.6rem;
+  white-space: nowrap;
+}
+.tfoot-titre {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.tfoot-sur {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.tfoot-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  min-width: 42px;
+}
+.tfoot-enc {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+/* Le filet fait office de barre de fraction. */
+.tfoot-rel {
+  font-size: 0.66rem;
+  color: #64748b;
+  border-top: 1px solid #cbd5e1;
+  padding-top: 1px;
+  margin-top: 1px;
+}
+.tfoot-cell.ok {
+  background: #f0fdf4;
+}
+.tfoot-cell.ok .tfoot-enc {
+  color: #15803d;
+}
+.tfoot-cell.ecart {
+  background: #fffbeb;
+}
+.tfoot-cell.ecart .tfoot-enc {
+  color: #b45309;
+}
+.tfoot-cell.ecart .tfoot-rel {
+  border-top-color: #fcd34d;
+}
+.tfoot-vide {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .tfoot-encaisse th,
+  .tfoot-encaisse td {
+    padding: 0.3rem 0.15rem;
+  }
+  .tfoot-enc { font-size: 0.68rem; }
+  .tfoot-rel { font-size: 0.6rem; }
+}

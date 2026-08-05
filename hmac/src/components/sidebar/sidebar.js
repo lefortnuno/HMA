@@ -9,7 +9,7 @@ import {
   BsPeople,
   BsGraphUp,
   BsClipboardData,
-  BsCurrencyExchange,
+  BsCashCoin,
   BsBuilding,
   BsDoorOpen,
   BsClockHistory,
@@ -130,7 +130,7 @@ export default function Sidebar() {
         {nav("/loyer/locataires/", BsPeople, "Locataires", true)}
         {/* {nav("/loyer/factures/", BsLightningCharge BsFileEarmarkText, "Factures JIRAMA", true)} */}
         {nav("/loyer/jirama/", BsLightningCharge, "Factures JIRAMA", true)}
-        {isAdmin && nav("/loyer/depenses/", BsCurrencyExchange, "Dépenses Immo", true)}
+        {isAdmin && nav("/loyer/depenses/", BsCashCoin, "Sorties d'argent", true)}
         {isAdmin && nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
         {isAdmin && nav("/loyer/historique/", BsClockHistory, "Historique", true)}
 

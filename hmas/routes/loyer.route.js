@@ -23,6 +23,13 @@ router.post("/paiements",     user.checkUtilisateur, ctrl.createPaiement);
 router.post("/paiements/jirama", user.checkUtilisateur, ctrl.upsertJirama);
 router.put("/paiements/:id",  user.checkUtilisateur, ctrl.updatePaiement);
 
+// ── Provenance de l'encaisse ──────────────────────────────────
+// Qui a effectivement recu l'argent. Reserve a l'admin, comme la page
+// Benefices d'ou cela se saisit : c'est la tresorerie du bailleur.
+router.put("/paiements/:id/provenance", admin.checkUtilisateur, ctrl.setProvenancePaiement);
+router.get("/provenance",  admin.checkUtilisateur, ctrl.getProvenance);
+router.post("/provenance", admin.checkUtilisateur, ctrl.saveProvenance);
+
 // ── Dépenses ──────────────────────────────────────────────────
 router.get("/depenses",       user.checkUtilisateur, ctrl.getDepenses);
 router.post("/depenses",      user.checkUtilisateur, ctrl.createDepense);
