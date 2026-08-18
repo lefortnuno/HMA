@@ -58,6 +58,8 @@ import EditLocataire from "./pages/loyer/edit.locataire";
 import Factures from "./pages/loyer/factures";
 import TableauJirama from "./pages/loyer/jirama";
 import Depenses from "./pages/loyer/depenses";
+// MODULE TEMPORAIRE — budget OTIP, a retirer avec hmas/scripts/remove_otip.js
+import BudgetOtip from "./pages/otip/budget.otip";
 import Benefices from "./pages/loyer/benefices";
 
 // ─── Finance (VOLA) ───────────────────────────────────────────
@@ -132,6 +134,8 @@ function App() {
           <Route path="loyer/jirama/" element={<LocataireProtection Cmp={TableauJirama} />} />
           <Route path="loyer/depenses/" element={<AdminProtection Cmp={Depenses} />} />
           <Route path="loyer/benefices/" element={<AdminProtection Cmp={Benefices} />} />
+          {/* MODULE TEMPORAIRE — budget OTIP */}
+          <Route path="otip/" element={<AdminProtection Cmp={BudgetOtip} />} />
           <Route path="loyer/historique/" element={<AdminProtection Cmp={Historique} />} />
 
           {/* ── Finance (admin) ── */}

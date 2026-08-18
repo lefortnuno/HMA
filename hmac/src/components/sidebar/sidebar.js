@@ -10,6 +10,7 @@ import {
   BsGraphUp,
   BsClipboardData,
   BsCashCoin,
+  BsPiggyBank,
   BsBuilding,
   BsDoorOpen,
   BsClockHistory,
@@ -151,6 +152,12 @@ export default function Sidebar() {
             <div className="separator" />
 
             {nav("/users/", BsPeople, "Utilisateurs", true)}
+
+            {/* MODULE TEMPORAIRE — budget OTIP.
+                Se retire avec hmas/scripts/remove_otip.js. */}
+            <div className="separator" />
+            <div className="sidebar-section-label">Temporaire</div>
+            {nav("/otip/", BsPiggyBank, "Budget OTIP", true)}
           </>
         )}
         {nav("/about/", BsInfoCircle, "À propos", true)}

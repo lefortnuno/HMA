@@ -81,6 +81,8 @@ app.use("/api/boutique", boutiqueRoute);
 app.use("/api/loyer", loyerRoute);
 app.use("/api/vitrine", vitrineRoute);
 app.use("/api/finance", financeRoute);
+// MODULE TEMPORAIRE — budget OTIP, a retirer avec scripts/remove_otip.js
+app.use("/api/otip", require("./routes/otip.route"));
 
 const PORT = process.env.PORT || 5103;
 app.listen(PORT, () => {
