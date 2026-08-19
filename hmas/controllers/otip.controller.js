@@ -11,7 +11,9 @@ const { sendErr, badRequest } = require("../utils/http");
  * comme l'affichage doivent en donner le meme resultat.
  */
 
-const PARAMS_AUTORISES = ["objectif", "periode1", "periode2", "titre", "echeance"];
+const PARAMS_AUTORISES = [
+  "objectif", "periode1", "periode2", "depart1", "depart2", "titre", "echeance",
+];
 
 /** Etat complet : lignes, depenses, parametres et previsionnel. */
 module.exports.getTout = (req, res) => {
@@ -27,6 +29,7 @@ module.exports.getTout = (req, res) => {
           ...l,
           montant: Number(l.montant),
           montant2: Number(l.montant2),
+          finDeMois: !!Number(l.finDeMois),
         });
         const L = (lignes || []).map(num);
         const D = (depenses || []).map((d) => ({ ...d, montant: Number(d.montant) }));
@@ -38,6 +41,8 @@ module.exports.getTout = (req, res) => {
             objectif: Number(params.objectif),
             periode1: params.periode1,
             periode2: params.periode2,
+            depart1: params.depart1,
+            depart2: params.depart2,
           }),
         });
       });

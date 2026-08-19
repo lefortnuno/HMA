@@ -1,9 +1,10 @@
 "use strict";
 /**
- * Le previsionnel doit rendre exactement ce que calcule Budget_OTIP_Iruno.xlsx.
+ * Budget OTIP — previsionnel des deux dates de depart.
  *
- * Les valeurs attendues ci-dessous sont celles mises en cache par Excel dans
- * le classeur : si le calcul reimplemente derive, ces tests le disent.
+ * Iruno part le 29 aout ou le 7 septembre. Seule la paie de fin de mois
+ * separe les deux cas, et le « reste a trouver » se calcule sur le depart le
+ * plus tot — celui qui laisse le moins d'argent.
  *
  * Fichier temporaire, supprime avec le module (scripts/remove_otip.js).
  */
@@ -11,9 +12,15 @@ const { test } = require("node:test");
 const assert = require("node:assert");
 const O = require("../utils/otip");
 
-// Reprise fidele du classeur, salaire de 9 000 DH sur les deux mois.
-const PARAMS = { objectif: 120000, periode1: "Août", periode2: "Septembre" };
+const PARAMS = {
+  objectif: 120000,
+  periode1: "Août",
+  periode2: "Septembre",
+  depart1: "29 août",
+  depart2: "7 septembre",
+};
 
+// Jeu de reference : la situation reellement saisie par le bailleur.
 const LIGNES = [
   { section: "LIQUIDITE", libelle: "Compte bancaire (CIH)", montant: 6954 },
   { section: "LIQUIDITE", libelle: "Portefeuille (cash)", montant: 230 },
@@ -24,13 +31,12 @@ const LIGNES = [
   { section: "CREANCE", libelle: "Amie (2/2)", montant: 210, mois: "Septembre" },
   { section: "CREANCE", libelle: "Ami (petite dette)", montant: 10, mois: "Août" },
 
+  { section: "EMPRUNT", libelle: "Papa", montant: 21000, mois: "Août" },
   { section: "EMPRUNT", libelle: "Souria / AC2I", montant: 30000, mois: "Août",
     montant2: 3000, moisRemb: "Septembre" },
-  { section: "EMPRUNT", libelle: "Rica", montant: 20000, mois: "Août", montant2: 0 },
-  { section: "EMPRUNT", libelle: "Tom", montant: 15000, mois: "Août", montant2: 0 },
-  { section: "EMPRUNT", libelle: "Nasser", montant: 10000, mois: "Août", montant2: 0 },
+  { section: "EMPRUNT", libelle: "Tom", montant: 20000, mois: "Août" },
 
-  { section: "REVENU", libelle: "Salaire", montant: 9000, montant2: 9000 },
+  { section: "REVENU", libelle: "Salaire", montant: 9000, montant2: 9000, finDeMois: 1 },
   { section: "REVENU", libelle: "Loyers Madagascar", montant: 2152, montant2: 2152 },
 
   { section: "FIXE", libelle: "Loyer", montant: 1150 },
@@ -41,62 +47,88 @@ const LIGNES = [
   { section: "FIXE", libelle: "Redal", montant: 100 },
   { section: "FIXE", libelle: "Abonnement Claude Pro", montant: 231 },
 
-  { section: "PONCTUELLE", libelle: "Événement (Caustard)", montant: 950, mois: "Août" },
+  { section: "PONCTUELLE", libelle: "Nourriture", montant: 500, mois: "Août" },
   { section: "PONCTUELLE", libelle: "Enterrement", montant: 1000, mois: "Août" },
   { section: "PONCTUELLE", libelle: "Mariage", montant: 1000, mois: "Septembre" },
 ];
 
-test("les totaux de section rejoignent le classeur", () => {
-  const r = O.calculer(LIGNES, [], PARAMS);
-  assert.strictEqual(r.liquidites, 7729);        // B13
-  assert.strictEqual(r.totalEmprunts, 75000);    // C35
-  assert.strictEqual(r.totalFixes, 2491);        // B52
-  assert.strictEqual(r.totalPonctuelles, 2950);  // B59
-  assert.strictEqual(r.totalCreances, 585);      // B21
+const DEPENSES = [{ montant: 316 }];
+
+//  7 729 de liquidites − 316 de depenses          =  7 413
+//  + 2 152 loyers + 375 creances + 71 000 emprunts
+//  − 2 491 fixes − 1 500 ponctuelles              = 76 949  (depart le 29 aout)
+//  + 9 000 de paie                                = 85 949  (depart le 7 septembre)
+const SANS_PAIE = 76949;
+const AVEC_PAIE = 85949;
+
+test("les deux departs ne different que de la paie de fin de mois", () => {
+  const r = O.calculer(LIGNES, DEPENSES, PARAMS);
+  assert.strictEqual(r.scenarios.length, 2);
+  assert.strictEqual(r.scenarios[0].libelle, "29 août");
+  assert.strictEqual(r.scenarios[1].libelle, "7 septembre");
+  assert.strictEqual(r.scenarios[0].disponible, SANS_PAIE);
+  assert.strictEqual(r.scenarios[1].disponible, AVEC_PAIE);
+  assert.strictEqual(r.scenarios[1].disponible - r.scenarios[0].disponible, 9000);
 });
 
-test("le solde de cloture reproduit exactement le classeur", () => {
-  const r = O.calculer(LIGNES, [], PARAMS);
-  assert.strictEqual(r.colonnes[0].cloture, 89815); // B71
-  assert.strictEqual(r.colonnes[1].cloture, 94686); // C71
-  assert.strictEqual(r.resteATrouver, 25314);       // B77
-  assert.strictEqual(r.surplus, 0);
+test("le reste a trouver se base sur le depart le plus tot", () => {
+  const r = O.calculer(LIGNES, DEPENSES, PARAMS);
+  assert.strictEqual(r.reference.libelle, "29 août");
+  assert.strictEqual(r.soldeReference, SANS_PAIE);
+  assert.strictEqual(r.resteATrouver, 120000 - SANS_PAIE);
+  // Surtout pas le scenario le plus favorable : il masquerait 9 000 DH.
+  assert.notStrictEqual(r.resteATrouver, 120000 - AVEC_PAIE);
 });
 
-test("septembre part du solde d'aout, il ne repart pas de zero", () => {
-  const r = O.calculer(LIGNES, [], PARAMS);
-  assert.strictEqual(r.colonnes[1].ouverture, r.colonnes[0].cloture);
+test("un revenu sans drapeau est acquis dans les deux cas", () => {
+  const r = O.calculer(LIGNES, DEPENSES, PARAMS);
+  assert.strictEqual(r.revenusCourants, 2152); // loyers Madagascar
+  assert.strictEqual(r.revenusFinDeMois, 9000); // salaire
+  assert.strictEqual(r.scenarios[0].revenus, 2152);
+  assert.strictEqual(r.scenarios[1].revenus, 11152);
 });
 
-test("un remboursement commence en aout court aussi en septembre", () => {
-  // Souria demarre en septembre : rien en aout, 3 000 en septembre.
-  const r = O.calculer(LIGNES, [], PARAMS);
-  assert.strictEqual(r.colonnes[0].remboursements, 0);
-  assert.strictEqual(r.colonnes[1].remboursements, 3000);
+test("plus aucun horizon « fin septembre »", () => {
+  const r = O.calculer(LIGNES, DEPENSES, PARAMS);
+  assert.strictEqual(r.colonnes, undefined);
+  assert.ok(!("cloture" in r.scenarios[0]));
+});
 
-  // Le meme pret demarre en aout : preleve les deux mois.
+test("ce qui tombe apres le depart est conserve mais hors garantie", () => {
+  const r = O.calculer(LIGNES, DEPENSES, PARAMS);
+  assert.strictEqual(r.horsFenetre.creances, 210);      // Amie 2/2
+  assert.strictEqual(r.horsFenetre.ponctuelles, 1000);  // Mariage
+  assert.strictEqual(r.horsFenetre.remboursements, 3000); // Souria, fin sept.
+  assert.strictEqual(r.horsFenetre.revenus, 11152);
+  // et rien de tout cela n'entre dans les scenarios
+  assert.strictEqual(r.scenarios[0].creances, 375);
+  assert.strictEqual(r.scenarios[0].ponctuelles, 1500);
+  assert.strictEqual(r.scenarios[0].remboursements, 0);
+});
+
+test("un remboursement demarrant avant le depart greve les deux scenarios", () => {
   const avance = LIGNES.map((l) =>
     l.libelle === "Souria / AC2I" ? { ...l, moisRemb: "Août" } : l,
   );
-  const r2 = O.calculer(avance, [], PARAMS);
-  assert.strictEqual(r2.colonnes[0].remboursements, 3000);
-  assert.strictEqual(r2.colonnes[1].remboursements, 3000);
+  const r = O.calculer(avance, DEPENSES, PARAMS);
+  assert.strictEqual(r.scenarios[0].remboursements, 3000);
+  assert.strictEqual(r.scenarios[0].disponible, SANS_PAIE - 3000);
+  assert.strictEqual(r.scenarios[1].disponible, AVEC_PAIE - 3000);
 });
 
-test("les depenses journalieres se deduisent du point de depart", () => {
-  const r = O.calculer(LIGNES, [{ montant: 500 }, { montant: 229 }], PARAMS);
-  assert.strictEqual(r.depensesEngagees, 729);
-  assert.strictEqual(r.liquidites, 7000);
-  // Le retrait se propage jusqu'au bout de la chaine.
-  assert.strictEqual(r.colonnes[1].cloture, 94686 - 729);
-  assert.strictEqual(r.resteATrouver, 25314 + 729);
+test("les depenses journalieres se deduisent des deux scenarios", () => {
+  const r = O.calculer(LIGNES, [...DEPENSES, { montant: 500 }], PARAMS);
+  assert.strictEqual(r.depensesEngagees, 816);
+  assert.strictEqual(r.scenarios[0].disponible, SANS_PAIE - 500);
+  assert.strictEqual(r.scenarios[1].disponible, AVEC_PAIE - 500);
+  assert.strictEqual(r.resteATrouver, 120000 - SANS_PAIE + 500);
 });
 
 test("objectif atteint : plus de reste, un surplus apparait", () => {
-  const riche = [...LIGNES, { section: "LIQUIDITE", libelle: "Don", montant: 40000 }];
-  const r = O.calculer(riche, [], PARAMS);
+  const riche = [...LIGNES, { section: "LIQUIDITE", libelle: "Don", montant: 50000 }];
+  const r = O.calculer(riche, DEPENSES, PARAMS);
   assert.strictEqual(r.resteATrouver, 0);
-  assert.strictEqual(r.surplus, 94686 + 40000 - 120000);
+  assert.strictEqual(r.surplus, SANS_PAIE + 50000 - 120000);
   assert.strictEqual(r.progression, 100);
 });
 
@@ -108,7 +140,8 @@ test("une saisie vide ou aberrante ne casse pas le calcul", () => {
   );
   assert.strictEqual(r.liquidites, 0);
   assert.strictEqual(r.totalFixes, 0);
-  assert.ok(Number.isFinite(r.soldeFinal));
+  assert.ok(Number.isFinite(r.soldeReference));
+  assert.ok(Number.isFinite(r.scenarios[1].disponible));
 });
 
 test("sections connues seulement", () => {

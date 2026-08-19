@@ -5,17 +5,22 @@
  * MODULE TEMPORAIRE. Tout ce qui le concerne est prefixe `otip` et se
  * supprime d'un bloc : voir scripts/remove_otip.js.
  *
- * Ce fichier rejoue la chaine de calcul du classeur Budget_OTIP_Iruno.xlsx.
- * Le principe tient en une phrase : le solde roule d'un mois sur l'autre,
- * comme un compte en banque. Septembre ne repart pas de zero, il continue
- * sur ce qui reste fin aout.
+ * Le budget ne se lit plus mois par mois mais par DATE DE DEPART : Iruno part
+ * le 29 aout, ou le 7 septembre. L'argent doit etre reuni avant son depart —
+ * ce qui tombe apres ne sert plus la garantie.
+ *
+ * La difference entre les deux dates tient a une seule chose : la paie de fin
+ * de mois. Le 29 aout elle n'est pas encore versee, le 7 septembre si. D'ou
+ * le drapeau `finDeMois` sur les revenus.
+ *
+ * Le « reste a trouver » se calcule sur le depart le plus tot, celui qui
+ * laisse le moins d'argent : mieux vaut viser haut et etre en avance que
+ * decouvrir un trou la veille.
  *
  * Les montants sont en dirhams (MAD), et non en ariary comme le reste de
  * l'application : ce budget vit dans un pays different.
  */
 
-// Natures de ligne. Chacune n'utilise qu'une partie des colonnes, d'ou une
-// seule table plutot que six (voir models/otip.model.js).
 const SECTIONS = {
   LIQUIDITE: { label: "Liquidités actuelles" },
   CREANCE: { label: "Créances à recevoir" },
@@ -44,32 +49,20 @@ const sommeMois = (lignes, section, mois, champ = "montant") =>
     .reduce((s, l) => s + nb(l[champ]), 0);
 
 /**
- * Remboursements dus au cours d'un mois donne.
- *
- * Cumulatif a dessein : un pret dont le remboursement demarre en aout se
- * rembourse aussi en septembre. On additionne donc tous les prets dont le
- * debut tombe a ce mois-ci ou avant.
- */
-function remboursementsDus(lignes, moisOrdonnes, indexMois) {
-  const dejaCommences = moisOrdonnes.slice(0, indexMois + 1);
-  return lignes
-    .filter((l) => l.section === "EMPRUNT" && dejaCommences.includes(l.moisRemb))
-    .reduce((s, l) => s + nb(l.montant2), 0);
-}
-
-/**
- * Previsionnel complet.
+ * Previsionnel des deux dates de depart.
  *
  * @param lignes    lignes du budget (toutes sections confondues)
  * @param depenses  depenses journalieres deja engagees
- * @param params    { objectif, periode1, periode2 }
+ * @param params    { objectif, periode1, periode2, depart1, depart2 }
  */
 function calculer(lignes, depenses, params) {
   const l = Array.isArray(lignes) ? lignes : [];
-  const objectif = nb(params && params.objectif);
-  const p1 = (params && params.periode1) || "Août";
-  const p2 = (params && params.periode2) || "Septembre";
-  const mois = [p1, p2];
+  const p = params || {};
+  const objectif = nb(p.objectif);
+  // Periode retenue pour la garantie : celle d'avant le depart. Les libelles
+  // restent ceux des lignes ("Août"), on ne les renomme pas.
+  const P1 = p.periode1 || "Août";
+  const P2 = p.periode2 || "Septembre";
 
   const depensesEngagees = (Array.isArray(depenses) ? depenses : []).reduce(
     (s, d) => s + nb(d.montant),
@@ -80,49 +73,85 @@ function calculer(lignes, depenses, params) {
   const liquidites = somme(l, "LIQUIDITE") - depensesEngagees;
   const fixes = somme(l, "FIXE");
 
-  const colonnes = mois.map((m, i) => {
-    const revenus = somme(l, "REVENU", i === 0 ? "montant" : "montant2");
-    const creances = sommeMois(l, "CREANCE", m);
-    const emprunts = sommeMois(l, "EMPRUNT", m);
-    const ponctuelles = sommeMois(l, "PONCTUELLE", m);
-    const remboursements = remboursementsDus(l, mois, i);
-    return {
-      mois: m,
-      revenus,
-      creances,
-      emprunts,
-      fixes,
-      remboursements,
-      ponctuelles,
-      net: revenus + creances + emprunts - fixes - remboursements - ponctuelles,
-    };
-  });
+  // Revenus : ceux qui tombent en cours de mois sont acquis dans les deux cas,
+  // ceux de fin de mois seulement si le depart est posterieur a la paie.
+  const revenus = l.filter((x) => x.section === "REVENU");
+  const revenusCourants = revenus
+    .filter((x) => !x.finDeMois)
+    .reduce((s, x) => s + nb(x.montant), 0);
+  const revenusFinDeMois = revenus
+    .filter((x) => x.finDeMois)
+    .reduce((s, x) => s + nb(x.montant), 0);
 
-  // Le solde roule : chaque mois ouvre sur la cloture du precedent.
-  let report = liquidites;
-  colonnes.forEach((c) => {
-    c.ouverture = report;
-    c.cloture = report + c.net;
-    report = c.cloture;
-  });
+  const creances = sommeMois(l, "CREANCE", P1);
+  const emprunts = sommeMois(l, "EMPRUNT", P1);
+  const ponctuelles = sommeMois(l, "PONCTUELLE", P1);
+  // Un remboursement ne pese que s'il a demarre avant le depart. Celui de
+  // Souria commence fin septembre : il ne greve aucun des deux scenarios.
+  const remboursements = l
+    .filter((x) => x.section === "EMPRUNT" && x.moisRemb === P1)
+    .reduce((s, x) => s + nb(x.montant2), 0);
 
-  const final = colonnes[colonnes.length - 1].cloture;
+  const socle = liquidites + revenusCourants + creances + emprunts - fixes - ponctuelles - remboursements;
+
+  const scenarios = [
+    {
+      cle: "TOT",
+      libelle: p.depart1 || "29 août",
+      paieRecue: false,
+      disponible: socle,
+    },
+    {
+      cle: "TARD",
+      libelle: p.depart2 || "7 septembre",
+      paieRecue: true,
+      disponible: socle + revenusFinDeMois,
+    },
+  ].map((s) => ({
+    ...s,
+    liquidites,
+    revenus: revenusCourants + (s.paieRecue ? revenusFinDeMois : 0),
+    creances,
+    emprunts,
+    fixes,
+    ponctuelles,
+    remboursements,
+    manque: Math.max(objectif - s.disponible, 0),
+  }));
+
+  // Le scenario de reference est le depart le plus tot : c'est celui qui
+  // laisse le moins d'argent, donc celui qui ne reserve pas de surprise.
+  const reference = scenarios[0];
+
+  // Ce qui tombe apres le depart : conserve et affiche, mais hors garantie.
+  const horsFenetre = {
+    revenus: revenus.reduce((s, x) => s + nb(x.montant2), 0),
+    creances: sommeMois(l, "CREANCE", P2),
+    ponctuelles: sommeMois(l, "PONCTUELLE", P2),
+    remboursements: l
+      .filter((x) => x.section === "EMPRUNT" && x.moisRemb === P2)
+      .reduce((s, x) => s + nb(x.montant2), 0),
+  };
 
   return {
     objectif,
     depensesEngagees,
     liquidites,
+    revenusCourants,
+    revenusFinDeMois,
     totalCreances: somme(l, "CREANCE"),
     totalEmprunts: somme(l, "EMPRUNT"),
     totalRemboursementMensuel: somme(l, "EMPRUNT", "montant2"),
     totalFixes: fixes,
     totalPonctuelles: somme(l, "PONCTUELLE"),
-    colonnes,
-    soldeFinal: final,
-    resteATrouver: Math.max(objectif - final, 0),
-    surplus: Math.max(final - objectif, 0),
-    // Part de l'objectif deja couverte, bornee a 100 % pour la barre de progression.
-    progression: objectif > 0 ? Math.min((final / objectif) * 100, 100) : 0,
+    scenarios,
+    reference,
+    soldeReference: reference.disponible,
+    resteATrouver: Math.max(objectif - reference.disponible, 0),
+    surplus: Math.max(reference.disponible - objectif, 0),
+    // Part de l'objectif deja couverte, bornee a 100 % pour la barre.
+    progression: objectif > 0 ? Math.min((reference.disponible / objectif) * 100, 100) : 0,
+    horsFenetre,
   };
 }
 

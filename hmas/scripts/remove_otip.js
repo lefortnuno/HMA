@@ -37,6 +37,7 @@ const FICHIERS = [
   "hmas/routes/otip.route.js",
   "hmas/tests/otip.test.js",
   "hmas/scripts/migrate_otip.js",
+  "hmas/scripts/migrate_otip_depart.js",
   "hmas/scripts/remove_otip.js",
   "hmac/src/pages/otip/  (tout le dossier)",
 ];

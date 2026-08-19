@@ -14,7 +14,7 @@ const Otip = {};
 // le client ne choisit ni l'id ni la table.
 const CHAMPS = [
   "section", "libelle", "contact", "montant", "montant2",
-  "mois", "moisRemb", "statut", "notes", "ordre",
+  "mois", "moisRemb", "statut", "notes", "ordre", "finDeMois",
 ];
 
 const filtrer = (data, champs) => {

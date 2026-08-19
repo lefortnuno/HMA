@@ -258,3 +258,96 @@
     min-width: 96px;
   }
 }
+
+/* ── Deux dates de départ ───────────────────────────────────────────────────
+   Le budget ne se lit plus par mois mais par date de départ. Celle du 29 août
+   sert de référence : c'est la plus tôt, donc la moins bien pourvue, et c'est
+   sur elle qu'on veut être tranquille. */
+.otip-kpi-note {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+/* La carte de référence porte un filet, pour qu'on sache d'un coup d'œil
+   laquelle des deux commande le « reste à trouver ». */
+.stat-card.otip-reference {
+  border-left: 3px solid #2563eb;
+}
+
+.otip-ref-tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+.otip-mini {
+  font-size: 0.66rem;
+  color: #94a3b8;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* Interrupteur « versé en cours de mois / en fin de mois ». */
+.otip-bascule {
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+}
+.otip-bascule.courant {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+.otip-bascule.fin {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+.otip-bascule:hover {
+  filter: brightness(0.97);
+}
+.otip-bascule:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+/* Ce qui tombe après le départ : conservé, mais visiblement à l'écart. */
+.otip-hors-fenetre {
+  border-left: 3px solid #cbd5e1;
+  background: #fcfdfe;
+}
+.otip-liste-hors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.otip-liste-hors li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.84rem;
+}
+.otip-liste-hors li:last-child {
+  border-bottom: none;
+}
+.otip-liste-hors span {
+  color: #64748b;
+}

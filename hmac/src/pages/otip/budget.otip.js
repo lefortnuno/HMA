@@ -169,15 +169,15 @@ export default function BudgetOtip() {
   // foi côté serveur, on n'exporte pas des formules qui pourraient diverger.
   function exporterExcel() {
     if (!data || !calcul) return;
-    const c = calcul.colonnes;
+    const [sA, sB] = calcul.scenarios;
     const l = [];
     l.push(["BUDGET OTIP — GARANT D'IRUNO"]);
     l.push([params.echeance || ""]);
     l.push([]);
     l.push(["Objectif", Number(params.objectif || 0)]);
-    l.push([`Disponible fin ${P1}`, c[0].cloture]);
-    l.push([`Disponible fin ${P2}`, c[1].cloture]);
-    l.push(["Reste à trouver", calcul.resteATrouver]);
+    l.push([`Disponible si départ le ${sA.libelle}`, sA.disponible]);
+    l.push([`Disponible si départ le ${sB.libelle}`, sB.disponible]);
+    l.push([`Reste à trouver (sur un départ le ${sA.libelle})`, calcul.resteATrouver]);
     l.push([]);
 
     const bloc = (titre, entetes, lignes, apres = []) => {
@@ -214,9 +214,12 @@ export default function BudgetOtip() {
     );
     bloc(
       "4 · Revenus mensuels",
-      ["Poste", P1, P2],
-      lignesDe("REVENU").map((x) => [x.libelle, x.montant, x.montant2]),
-      [["TOTAL REVENUS", c[0].revenus, c[1].revenus]]
+      ["Poste", P1, P2, "Versement"],
+      lignesDe("REVENU").map((x) => [
+        x.libelle, x.montant, x.montant2,
+        x.finDeMois ? "fin de mois" : "en cours de mois",
+      ]),
+      [["TOTAL DU MOIS", calcul.revenusCourants + calcul.revenusFinDeMois, calcul.horsFenetre.revenus]]
     );
     bloc(
       "5 · Dépenses fixes",
@@ -231,16 +234,22 @@ export default function BudgetOtip() {
       [["TOTAL DÉPENSES PONCTUELLES", calcul.totalPonctuelles]]
     );
 
-    l.push(["7 · Prévisionnel de trésorerie"]);
-    l.push(["Poste", P1, P2]);
-    l.push(["Solde reporté (ouverture)", c[0].ouverture, c[1].ouverture]);
-    l.push(["(+) Revenus", c[0].revenus, c[1].revenus]);
-    l.push(["(+) Créances reçues", c[0].creances, c[1].creances]);
-    l.push(["(+) Emprunts reçus", c[0].emprunts, c[1].emprunts]);
-    l.push(["(–) Dépenses fixes", -c[0].fixes, -c[1].fixes]);
-    l.push(["(–) Remboursements prêts", -c[0].remboursements, -c[1].remboursements]);
-    l.push(["(–) Dépenses ponctuelles", -c[0].ponctuelles, -c[1].ponctuelles]);
-    l.push(["SOLDE DE CLÔTURE", c[0].cloture, c[1].cloture]);
+    l.push(["7 · Disponible au départ"]);
+    l.push(["Poste", `Départ le ${sA.libelle}`, `Départ le ${sB.libelle}`]);
+    l.push(["Liquidités nettes", sA.liquidites, sB.liquidites]);
+    l.push(["(+) Revenus acquis", sA.revenus, sB.revenus]);
+    l.push(["(+) Créances reçues", sA.creances, sB.creances]);
+    l.push(["(+) Emprunts reçus", sA.emprunts, sB.emprunts]);
+    l.push(["(–) Dépenses fixes", -sA.fixes, -sB.fixes]);
+    l.push(["(–) Remboursements prêts", -sA.remboursements, -sB.remboursements]);
+    l.push(["(–) Dépenses ponctuelles", -sA.ponctuelles, -sB.ponctuelles]);
+    l.push(["DISPONIBLE AU DÉPART", sA.disponible, sB.disponible]);
+    l.push(["Manque pour l'objectif", sA.manque, sB.manque]);
+    l.push([]);
+    l.push([`Après le départ (${P2}) — conservé, hors garantie`]);
+    l.push(["Créances à recevoir", calcul.horsFenetre.creances]);
+    l.push(["Dépenses ponctuelles", -calcul.horsFenetre.ponctuelles]);
+    l.push(["Remboursements de prêts", -calcul.horsFenetre.remboursements]);
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(l);
@@ -353,13 +362,23 @@ export default function BudgetOtip() {
                       </div>
                     </div>
                   </div>
-                  {calcul.colonnes.map((c) => (
-                    <div className="col-sm-6 col-lg-3" key={c.mois}>
-                      <div className="stat-card">
-                        <div className="stat-icon green"><BsWallet2 /></div>
+                  {/* Les deux départs possibles. Le premier sert de référence :
+                      c'est celui qui laisse le moins d'argent. */}
+                  {calcul.scenarios.map((s, i) => (
+                    <div className="col-sm-6 col-lg-3" key={s.cle}>
+                      <div className={`stat-card ${i === 0 ? "otip-reference" : ""}`}>
+                        <div className={`stat-icon ${i === 0 ? "blue" : "green"}`}>
+                          <BsWallet2 />
+                        </div>
                         <div className="stat-content">
-                          <h3>{Math.round(c.cloture).toLocaleString("fr-FR")}</h3>
-                          <p>Disponible fin {c.mois} (DH)</p>
+                          <h3>{Math.round(s.disponible).toLocaleString("fr-FR")}</h3>
+                          <p>
+                            Départ le {s.libelle} (DH)
+                            <small className="d-block otip-kpi-note">
+                              {s.paieRecue ? "paie de fin de mois reçue" : "avant la paie"}
+                              {i === 0 ? " · référence" : ""}
+                            </small>
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -375,7 +394,12 @@ export default function BudgetOtip() {
                             ? Math.round(calcul.resteATrouver).toLocaleString("fr-FR")
                             : `+${Math.round(calcul.surplus).toLocaleString("fr-FR")}`}
                         </h3>
-                        <p>{calcul.resteATrouver > 0 ? "Reste à trouver (DH)" : "Surplus (DH)"}</p>
+                        <p>
+                          {calcul.resteATrouver > 0 ? "Reste à trouver (DH)" : "Surplus (DH)"}
+                          <small className="d-block otip-kpi-note">
+                            sur un départ le {calcul.reference.libelle}
+                          </small>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -387,8 +411,11 @@ export default function BudgetOtip() {
                       Progression vers l'objectif
                     </span>
                     <span className="text-muted" style={{ fontSize: "0.8rem" }}>
-                      {DH(Math.round(calcul.soldeFinal))} sur {DH(calcul.objectif)} ·{" "}
+                      {DH(Math.round(calcul.soldeReference))} sur {DH(calcul.objectif)} ·{" "}
                       <strong>{calcul.progression.toFixed(1)} %</strong>
+                      <span className="d-none d-sm-inline">
+                        {" "}· départ le {calcul.reference.libelle}
+                      </span>
                     </span>
                   </div>
                   <div className="otip-barre">
@@ -545,12 +572,18 @@ export default function BudgetOtip() {
                     <div className="col-12 col-xl-6">
                       <Section
                         num="4" titre="Revenus mensuels" Icone={BsArrowRepeat}
-                        aide="Ce qui rentre chaque mois"
+                        aide="Un revenu « fin de mois » n'est acquis que si le départ est après la paie"
                         onAjouter={() => ajouterLigne("REVENU")}
                       >
                         <table className="table otip-table mb-0">
                           <thead>
-                            <tr><th>Poste</th><th className="text-end">{P1}</th><th className="text-end">{P2}</th><th /></tr>
+                            <tr>
+                              <th>Poste</th>
+                              <th className="text-end">{P1}</th>
+                              <th className="text-end">{P2}</th>
+                              <th className="text-center">Versé</th>
+                              <th />
+                            </tr>
                           </thead>
                           <tbody>
                             {lignesDe("REVENU").map((x) => (
@@ -558,16 +591,46 @@ export default function BudgetOtip() {
                                 <td><Cellule valeur={x.libelle} onSave={(v) => majLigne(x.id, "libelle", v)} /></td>
                                 <td><Cellule valeur={x.montant} type="nombre" onSave={(v) => majLigne(x.id, "montant", v)} /></td>
                                 <td><Cellule valeur={x.montant2} type="nombre" onSave={(v) => majLigne(x.id, "montant2", v)} /></td>
+                                <td className="text-center">
+                                  {/* Décide si ce revenu tombe avant ou après le 29 août. */}
+                                  <button
+                                    type="button"
+                                    className={`otip-bascule ${x.finDeMois ? "fin" : "courant"}`}
+                                    onClick={() => majLigne(x.id, "finDeMois", x.finDeMois ? 0 : 1)}
+                                    aria-pressed={!!x.finDeMois}
+                                    title={
+                                      x.finDeMois
+                                        ? "Versé en fin de mois — perdu si le départ est le 29 août"
+                                        : "Versé en cours de mois — acquis dans les deux cas"
+                                    }
+                                  >
+                                    {x.finDeMois ? "fin de mois" : "en cours"}
+                                  </button>
+                                </td>
                                 <td className="otip-actions">
                                   {btnSuppr({ type: "ligne", id: x.id, libelle: x.libelle, montant: x.montant }, x.libelle)}
                                 </td>
                               </tr>
                             ))}
                             <tr className="otip-total">
-                              <td>Total revenus</td>
-                              <td className="text-end">{DH(calcul.colonnes[0].revenus)}</td>
-                              <td className="text-end">{DH(calcul.colonnes[1].revenus)}</td>
-                              <td />
+                              <td>Total du mois</td>
+                              <td className="text-end">
+                                {DH(calcul.revenusCourants + calcul.revenusFinDeMois)}
+                              </td>
+                              <td className="text-end">{DH(calcul.horsFenetre.revenus)}</td>
+                              <td colSpan={2} />
+                            </tr>
+                            {/* Ce qui compte vraiment : la part acquise selon la
+                                date de départ, colonne « Août » seulement. */}
+                            <tr className="otip-ligne-calc">
+                              <td>dont acquis au départ</td>
+                              <td className="text-end">
+                                {DH(calcul.scenarios[0].revenus)} <span className="otip-mini">le {calcul.scenarios[0].libelle}</span>
+                              </td>
+                              <td className="text-end">
+                                {DH(calcul.scenarios[1].revenus)} <span className="otip-mini">le {calcul.scenarios[1].libelle}</span>
+                              </td>
+                              <td colSpan={2} />
                             </tr>
                           </tbody>
                         </table>
@@ -645,10 +708,10 @@ export default function BudgetOtip() {
                             <span className="otip-num">7</span>
                             <div>
                               <h6 className="mb-0 fw-bold d-flex align-items-center gap-2">
-                                <BsJournalText /> Prévisionnel de trésorerie
+                                <BsJournalText /> Disponible au départ
                               </h6>
                               <small className="text-muted otip-aide">
-                                Le solde roule : {P2} continue sur ce qui reste fin {P1}
+                                Les deux dates ne diffèrent que par la paie de fin de mois
                               </small>
                             </div>
                           </div>
@@ -656,11 +719,19 @@ export default function BudgetOtip() {
                         <div className="table-responsive">
                           <table className="table otip-table otip-cashflow mb-0">
                             <thead>
-                              <tr><th>Poste</th><th className="text-end">{P1}</th><th className="text-end">{P2}</th></tr>
+                              <tr>
+                                <th>Poste</th>
+                                {calcul.scenarios.map((s, i) => (
+                                  <th key={s.cle} className="text-end">
+                                    {s.libelle}
+                                    {i === 0 && <span className="otip-ref-tag">réf.</span>}
+                                  </th>
+                                ))}
+                              </tr>
                             </thead>
                             <tbody>
                               {[
-                                ["Solde reporté", "ouverture", false],
+                                ["Liquidités nettes", "liquidites", false],
                                 ["(+) Revenus", "revenus", false],
                                 ["(+) Créances reçues", "creances", false],
                                 ["(+) Emprunts reçus", "emprunts", false],
@@ -670,22 +741,30 @@ export default function BudgetOtip() {
                               ].map(([lib, cle, negatif]) => (
                                 <tr key={cle}>
                                   <td>{lib}</td>
-                                  {calcul.colonnes.map((c) => (
+                                  {calcul.scenarios.map((s) => (
                                     <td
-                                      key={c.mois}
-                                      className={`text-end ${negatif && c[cle] ? "text-danger" : ""}`}
+                                      key={s.cle}
+                                      className={`text-end ${negatif && s[cle] ? "text-danger" : ""}`}
                                     >
-                                      {negatif && c[cle] ? "− " : ""}
-                                      {DH(c[cle])}
+                                      {negatif && s[cle] ? "− " : ""}
+                                      {DH(s[cle])}
                                     </td>
                                   ))}
                                 </tr>
                               ))}
                               <tr className="otip-total">
-                                <td>Solde de clôture</td>
-                                {calcul.colonnes.map((c) => (
-                                  <td key={c.mois} className="text-end">
-                                    {DH(Math.round(c.cloture))}
+                                <td>Disponible</td>
+                                {calcul.scenarios.map((s) => (
+                                  <td key={s.cle} className="text-end">
+                                    {DH(Math.round(s.disponible))}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr className="otip-ligne-calc">
+                                <td>Manque pour l'objectif</td>
+                                {calcul.scenarios.map((s) => (
+                                  <td key={s.cle} className="text-end">
+                                    {s.manque ? DH(Math.round(s.manque)) : "objectif atteint"}
                                   </td>
                                 ))}
                               </tr>
@@ -694,6 +773,47 @@ export default function BudgetOtip() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Ce qui tombe après le départ : conservé, mais hors garantie. */}
+                    {(calcul.horsFenetre.creances > 0 ||
+                      calcul.horsFenetre.ponctuelles > 0 ||
+                      calcul.horsFenetre.remboursements > 0) && (
+                      <div className="col-12 col-xl-6">
+                        <div className="card-pro otip-hors-fenetre">
+                          <h6 className="fw-bold mb-1 d-flex align-items-center gap-2">
+                            <BsCalendarEvent /> Après le départ — {P2}
+                          </h6>
+                          <p className="text-muted mb-3" style={{ fontSize: "0.78rem" }}>
+                            Ces lignes restent enregistrées mais ne comptent plus pour la
+                            garantie : elles tombent une fois Iruno parti.
+                          </p>
+                          <ul className="otip-liste-hors">
+                            {calcul.horsFenetre.creances > 0 && (
+                              <li>
+                                <span>Créances à recevoir</span>
+                                <strong>+ {DH(calcul.horsFenetre.creances)}</strong>
+                              </li>
+                            )}
+                            {calcul.horsFenetre.ponctuelles > 0 && (
+                              <li>
+                                <span>Dépenses ponctuelles</span>
+                                <strong className="text-danger">
+                                  − {DH(calcul.horsFenetre.ponctuelles)}
+                                </strong>
+                              </li>
+                            )}
+                            {calcul.horsFenetre.remboursements > 0 && (
+                              <li>
+                                <span>Remboursements de prêts</span>
+                                <strong className="text-danger">
+                                  − {DH(calcul.horsFenetre.remboursements)}
+                                </strong>
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   /* Dépenses journalières */
