@@ -2,6 +2,7 @@
 const Otip = require("../models/otip.model");
 const O = require("../utils/otip");
 const { sendErr, badRequest } = require("../utils/http");
+const Change = require("../utils/otip.change");
 
 /**
  * Budget OTIP. MODULE TEMPORAIRE (voir utils/otip.js).
@@ -97,4 +98,17 @@ module.exports.setParam = (req, res) => {
   const { cle, valeur } = req.body || {};
   if (!PARAMS_AUTORISES.includes(cle)) return badRequest(res, "Paramètre inconnu.");
   Otip.setParam(cle, valeur, (err, r) => (err ? sendErr(res, err) : res.send(r)));
+};
+
+/**
+ * Taux de change pour le convertisseur (ariary / euro / dirham).
+ *
+ * Passe par le serveur : la politique de securite du site interdit au
+ * navigateur d'appeler un domaine externe, et le cache est ainsi partage
+ * entre tous les ecrans.
+ */
+module.exports.getTaux = (req, res) => {
+  Change.getTaux()
+    .then((r) => res.send(r))
+    .catch((e) => sendErr(res, e));
 };

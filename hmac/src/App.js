@@ -76,11 +76,25 @@ import AdminVitrine from "./pages/vitrine/admin.vitrine";
 import AddBien from "./pages/vitrine/add.bien";
 import EditBien from "./pages/vitrine/edit.bien";
 
+import useTraceurVisites from "./contexts/api/traceur";
+
+/**
+ * Journal de navigation.
+ *
+ * Composant sans rendu, place a l'interieur du routeur : c'est la seule
+ * facon de lire la route courante. Il n'affiche rien et ne bloque rien.
+ */
+function Traceur() {
+  useTraceurVisites();
+  return null;
+}
+
 function App() {
   return (
     <div className="App">
       <ToastContainer autoClose={3000} position="bottom-right" />
       <BrowserRouter>
+        <Traceur />
         <Routes>
           {/* Auth */}
           <Route index element={<LogOutProtection Cmp={LogIn} />} />

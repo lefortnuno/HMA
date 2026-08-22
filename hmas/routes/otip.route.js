@@ -20,4 +20,7 @@ router.delete("/depenses/:id", admin.checkUtilisateur, ctrl.deleteDepense);
 
 router.post("/params", admin.checkUtilisateur, ctrl.setParam);
 
+// Taux de change du convertisseur.
+router.get("/taux", admin.checkUtilisateur, ctrl.getTaux);
+
 module.exports = router;

@@ -19,6 +19,7 @@ import ApartSelect, {
 import { AnneePicker } from "../../components/jour/periode.picker";
 import "./loyer.css";
 import { formatDateHeure as formatDateTime, formatDate, MOIS_LONG as MOIS_FULL } from "../../config/dates";
+import Visites from "./visites";
 
 
 const ACTIONS = {
@@ -163,6 +164,12 @@ export default function Historique() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // La vue des visites charge ses propres donnees : inutile d'aller
+    // chercher les paiements pour un ecran qui ne les affiche pas.
+    if (vue === "CONNEXIONS") {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const requetes =
       vue === "OCCUPATION"
@@ -264,7 +271,9 @@ export default function Historique() {
                 <p className="text-muted small mb-0">
                   {vue === "PAIEMENTS"
                     ? "Tous les paiements enregistrés — pour vérifier une attribution"
-                    : "Qui a occupé quelle chambre, et quand"}
+                    : vue === "OCCUPATION"
+                      ? "Qui a occupé quelle chambre, et quand"
+                      : "Qui s'est connecté, et quelles pages ont été consultées"}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -280,6 +289,7 @@ export default function Historique() {
               {[
                 { cle: "PAIEMENTS", label: "Paiements de loyer", Icon: BsCashCoin },
                 { cle: "OCCUPATION", label: "Occupation des chambres", Icon: BsArrowLeftRight },
+                { cle: "CONNEXIONS", label: "Connexions & visites", Icon: BsBoxArrowInRight },
               ].map(({ cle, label, Icon }) => {
                 const actif = vue === cle;
                 return (
@@ -303,11 +313,16 @@ export default function Historique() {
             {/* Cartes-filtres : même principe que la page Utilisateurs */}
             {vue === "PAIEMENTS" ? (
               <CartesFiltre cartes={cartesPaiements} valeur={filtreStatut} onChange={setFiltreStatut} />
-            ) : (
+            ) : vue === "OCCUPATION" ? (
               <CartesFiltre cartes={cartesOccupation} valeur={filtreAction} onChange={setFiltreAction} />
-            )}
+            ) : null}
 
-            {/* Recherche, taille de page et filtre mensuel */}
+            {/* Recherche, taille de page et filtre mensuel.
+                Retiree du rendu sur les visites : cette vue filtre et pagine
+                cote serveur, avec ses propres commandes. Un simple style
+                `display` ne suffirait pas, la classe Bootstrap `d-flex`
+                l'emporte avec son !important. */}
+            {vue !== "CONNEXIONS" && (
             <div className="d-flex gap-2 mb-3 flex-wrap align-items-center">
               <div className="input-group input-group-sm" style={{ width: 260 }}>
                 <span className="input-group-text bg-white border-end-0">
@@ -366,7 +381,11 @@ export default function Historique() {
               )}
             </div>
 
-            {loading ? (
+            )}
+
+            {vue === "CONNEXIONS" ? (
+              <Visites />
+            ) : loading ? (
               <SkLocataires />
             ) : vue === "PAIEMENTS" ? (
               <>

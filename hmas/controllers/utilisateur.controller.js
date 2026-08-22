@@ -4,6 +4,7 @@ const { sendErr } = require("../utils/http");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Visite = require("./visite.controller");
 const tmp = 3 * 24 * 60 * 60 * 1000;
 
 /**
@@ -51,6 +52,10 @@ module.exports.loginUtilisateur = (req, res) => {
           // Le hash du mot de passe ne quitte jamais le serveur.
           const user = resp.map(({ pwd: _pwd, ...reste }) => reste);
           res.send({ success: true, token, user, message: "Connecté à HMA!" });
+          // Journal des connexions : ecrit apres la reponse, et sans
+          // l'attendre. Tracer une connexion ne doit pas la ralentir, ni la
+          // faire echouer si la table est indisponible.
+          Visite.tracerConnexion(resp[0], req.headers["user-agent"]);
         } else {
           res.send({ success: false, message : "Mot de passe incorrect!" });
         }

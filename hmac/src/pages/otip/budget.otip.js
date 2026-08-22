@@ -9,9 +9,11 @@ import {
   BsPiggyBank, BsPlus, BsFillTrashFill, BsXLg, BsFileEarmarkExcel,
   BsExclamationTriangle, BsWallet2, BsPeople, BsBank, BsCashCoin,
   BsReceipt, BsCalendarEvent, BsArrowRepeat, BsJournalText, BsCheckCircleFill,
+  BsCurrencyExchange,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import Cellule from "./cellule";
+import Convertisseur from "./convertisseur";
 import { dateDuJour, formatDate } from "../../config/dates";
 import "../loyer/loyer.css";
 import "./otip.css";
@@ -54,6 +56,7 @@ export default function BudgetOtip() {
   const [chargement, setChargement] = useState(true);
   const [onglet, setOnglet] = useState("budget");
   const [aSupprimer, setASupprimer] = useState(null);
+  const [convertisseur, setConvertisseur] = useState(false);
   const [suppression, setSuppression] = useState(false);
 
   const charger = useCallback((silencieux = false) => {
@@ -330,6 +333,13 @@ export default function BudgetOtip() {
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
+                <button
+                  className="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1"
+                  onClick={() => setConvertisseur(true)}
+                  title="Convertir entre ariary, franc malgache, euro et dirham"
+                >
+                  <BsCurrencyExchange /> Convertir
+                </button>
                 <button
                   className="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1"
                   onClick={exporterExcel}
@@ -900,6 +910,8 @@ export default function BudgetOtip() {
           </main>
         </div>
       </div>
+
+      {convertisseur && <Convertisseur onClose={() => setConvertisseur(false)} />}
 
       {/* Confirmation de suppression */}
       {aSupprimer && (

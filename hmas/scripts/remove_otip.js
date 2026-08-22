@@ -32,6 +32,7 @@ const TABLES = ["otip_ligne", "otip_depense", "otip_param"];
 
 const FICHIERS = [
   "hmas/utils/otip.js",
+  "hmas/utils/otip.change.js",
   "hmas/models/otip.model.js",
   "hmas/controllers/otip.controller.js",
   "hmas/routes/otip.route.js",
