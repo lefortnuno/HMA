@@ -1316,7 +1316,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
       N();
       doc.setFontSize(6);
       doc.setTextColor(90);
-      doc.text("Scanner pour vérifier", qrX + qrSize / 2, qrY + qrSize + 3.5, {
+      doc.text("", qrX + qrSize / 2, qrY + qrSize + 3.5, {
         align: "center",
       });
       K();

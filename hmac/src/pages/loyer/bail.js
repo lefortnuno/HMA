@@ -7,8 +7,14 @@ import Sidebar from "../../components/sidebar/sidebar";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import {
-  BsFileEarmarkText, BsPerson, BsPeopleFill, BsFileEarmarkPdf,
-  BsCheckSquare, BsSquare, BsExclamationTriangle, BsSendFill,
+  BsFileEarmarkText,
+  BsPerson,
+  BsPeopleFill,
+  BsFileEarmarkPdf,
+  BsCheckSquare,
+  BsSquare,
+  BsExclamationTriangle, 
+  BsShare,
 } from "react-icons/bs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -19,8 +25,15 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import {
-  BAILLEUR, VILLE, SOUS_TITRE, LOYER,
-  article1, ARTICLE_2, ARTICLE_3, nomLegalDe, cinDe,
+  BAILLEUR,
+  VILLE,
+  SOUS_TITRE,
+  LOYER,
+  article1,
+  ARTICLE_2,
+  ARTICLE_3,
+  nomLegalDe,
+  cinDe,
 } from "../../config/bail";
 import { genererQrVerification } from "../../config/verification";
 import "./loyer.css";
@@ -42,8 +55,8 @@ import "./bail.css";
  * construit dans le navigateur, comme les autres PDF de l'application.
  */
 
-const RDC = ["1","2","3","4","5","6","7","8","9","10"];
-const PREMIER = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+const RDC = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+const PREMIER = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 const ordreChambre = (c, etage) => (etage === "RDC" ? RDC : PREMIER).indexOf(c);
 
 export default function ContratBail() {
@@ -82,11 +95,16 @@ export default function ContratBail() {
     const tri = (etage) =>
       locataires
         .filter((l) => l.etage === etage)
-        .sort((a, b) => ordreChambre(a.chambre, etage) - ordreChambre(b.chambre, etage));
+        .sort(
+          (a, b) =>
+            ordreChambre(a.chambre, etage) - ordreChambre(b.chambre, etage),
+        );
     return { RDC: tri("RDC"), "1ER": tri("1ER") };
   }, [locataires]);
 
-  const nbSansCin = locataires.filter((l) => selection.has(l.id) && !cinDe(l)).length;
+  const nbSansCin = locataires.filter(
+    (l) => selection.has(l.id) && !cinDe(l),
+  ).length;
 
   function basculer(id) {
     setSelection((s) => {
@@ -128,7 +146,9 @@ export default function ContratBail() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6);
     doc.setTextColor(90);
-    doc.text("Vérifier ce contrat", x + taille / 2, y + taille + 3, { align: "center" });
+    doc.text("Vérifier ce contrat", x + taille / 2, y + taille + 3, {
+      align: "center",
+    });
     doc.setTextColor(0);
   }
 
@@ -190,7 +210,7 @@ export default function ContratBail() {
       doc.setFontSize(9);
       const note = doc.splitTextToSize(
         "La signature de chaque locataire figure dans la colonne « Signature » du tableau correspondant à sa chambre.",
-        R - mg
+        R - mg,
       );
       doc.text(note, mg, y);
     }
@@ -209,7 +229,10 @@ export default function ContratBail() {
       titre: `Contrat de bail groupe — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""} — ${current.nom}`,
       details: {
         bailleur: BAILLEUR.nom,
-        locataires: choisis.map((l) => ({ chambre: l.chambre, nom: nomLegalDe(l) })),
+        locataires: choisis.map((l) => ({
+          chambre: l.chambre,
+          nom: nomLegalDe(l),
+        })),
       },
     });
 
@@ -221,7 +244,9 @@ export default function ContratBail() {
     y = tableauBailleur(doc, y);
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9.5);
-    doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, { align: "right" });
+    doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, {
+      align: "right",
+    });
     y += 10;
 
     doc.setFont("helvetica", "normal");
@@ -230,7 +255,7 @@ export default function ContratBail() {
       "Et, d'autre part, les locataires de la résidence désignés ci-après, " +
         "chacun pour la chambre qu'il occupe (répartis par étage), ci-après " +
         "« LE LOCATAIRE » :",
-      R - mg
+      R - mg,
     );
     doc.text(intro, mg, y);
     y += intro.length * 5 + 8;
@@ -242,19 +267,40 @@ export default function ContratBail() {
       if (!lignes.length) return;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10.5);
-      doc.text(`${titre} — loyer mensuel : ${LOYER[etage].toLocaleString()} Ar`, mg, y);
+      doc.text(
+        `${titre} — loyer mensuel : ${LOYER[etage].toLocaleString()} Ar`,
+        mg,
+        y,
+      );
       y += 4;
       autoTable(doc, {
         startY: y,
         margin: { left: mg, right: mg },
         theme: "grid",
         styles: { fontSize: 9.5, textColor: 0, lineColor: 0, lineWidth: 0.2 },
-        headStyles: { fontStyle: "bold", fillColor: [255, 255, 255], textColor: 0, lineColor: 0 },
+        headStyles: {
+          fontStyle: "bold",
+          fillColor: [255, 255, 255],
+          textColor: 0,
+          lineColor: 0,
+        },
         head: [["Chambre", "Nom complet", "CIN", "Signature"]],
         body: lignes
-          .sort((a, b) => ordreChambre(a.chambre, etage) - ordreChambre(b.chambre, etage))
-          .map((l) => [l.chambre, nomLegalDe(l), cinDe(l) || "à compléter", ""]),
-        columnStyles: { 0: { cellWidth: 20 }, 2: { cellWidth: 34 }, 3: { cellWidth: 32 } },
+          .sort(
+            (a, b) =>
+              ordreChambre(a.chambre, etage) - ordreChambre(b.chambre, etage),
+          )
+          .map((l) => [
+            l.chambre,
+            nomLegalDe(l),
+            cinDe(l) || "à compléter",
+            "",
+          ]),
+        columnStyles: {
+          0: { cellWidth: 20 },
+          2: { cellWidth: 34 },
+          3: { cellWidth: 32 },
+        },
       });
       y = doc.lastAutoTable.finalY + 8;
     };
@@ -276,15 +322,21 @@ export default function ContratBail() {
     }
     pied(doc, y, mg, R, false);
 
-    return { doc, filename: `Contrat_de_bail_${current.nom.replace(/\s+/g, "_")}.pdf` };
+    return {
+      doc,
+      filename: `Contrat_de_bail_${current.nom.replace(/\s+/g, "_")}.pdf`,
+    };
   }
 
   async function handleGenererGroupe() {
     const choisis = locataires.filter((l) => selection.has(l.id));
-    if (!choisis.length) return toast.warning("Sélectionnez au moins un locataire");
+    if (!choisis.length)
+      return toast.warning("Sélectionnez au moins un locataire");
     const { doc, filename } = await construireGroupe(choisis);
     doc.save(filename);
-    toast.success(`Contrat généré — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""}`);
+    toast.success(
+      `Contrat généré — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""}`,
+    );
   }
 
   // ── Format individuel ────────────────────────────────────────────────
@@ -314,7 +366,9 @@ export default function ContratBail() {
     y = tableauBailleur(doc, y);
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9.5);
-    doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, { align: "right" });
+    doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, {
+      align: "right",
+    });
     y += 10;
 
     autoTable(doc, {
@@ -325,14 +379,19 @@ export default function ContratBail() {
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 28 } },
       body: [
         ["Nom :", nomLegalDe(loc)],
-        ["Adresse :", `Villa Kinya, chambre ${loc.chambre} — Andrainjato, ${VILLE}`],
+        [
+          "Adresse :",
+          `Villa Kinya, chambre ${loc.chambre} — Andrainjato, ${VILLE}`,
+        ],
         ["CIN :", cinDe(loc) || "à compléter"],
       ],
     });
     y = doc.lastAutoTable.finalY + 6;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9.5);
-    doc.text("Ci-après « LE LOCATAIRE », d'autre part", R, y, { align: "right" });
+    doc.text("Ci-après « LE LOCATAIRE », d'autre part", R, y, {
+      align: "right",
+    });
     y += 12;
 
     doc.setFont("helvetica", "bold");
@@ -340,7 +399,14 @@ export default function ContratBail() {
     doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
     y += 7;
     doc.setFontSize(10);
-    y = ecrireArticle(doc, y, "Article 1", article1(new Set([loc.etage])), mg, R);
+    y = ecrireArticle(
+      doc,
+      y,
+      "Article 1",
+      article1(new Set([loc.etage])),
+      mg,
+      R,
+    );
     y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
     y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
 
@@ -382,11 +448,17 @@ export default function ContratBail() {
     }
 
     const message = messageBail(loc);
-    const fichier = new File([doc.output("blob")], filename, { type: "application/pdf" });
+    const fichier = new File([doc.output("blob")], filename, {
+      type: "application/pdf",
+    });
 
     if (navigator.canShare?.({ files: [fichier] })) {
       try {
-        await navigator.share({ files: [fichier], title: filename, text: message });
+        await navigator.share({
+          files: [fichier],
+          title: filename,
+          text: message,
+        });
         return toast.success(`Contrat envoyé — ${loc.nom}`);
       } catch (err) {
         if (err?.name === "AbortError") return; // partage annulé, rien à signaler
@@ -396,10 +468,17 @@ export default function ContratBail() {
     doc.save(filename);
     const tel = (loc.tel || "").replace(/\s+/g, "").replace(/^\+/, "");
     if (tel) {
-      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(message)}`, "whatsapp");
-      toast.info("PDF téléchargé — joignez-le dans la conversation WhatsApp ouverte.");
+      window.open(
+        `https://wa.me/${tel}?text=${encodeURIComponent(message)}`,
+        "whatsapp",
+      );
+      toast.info(
+        "PDF téléchargé — joignez-le dans la conversation WhatsApp ouverte.",
+      );
     } else {
-      toast.info("PDF téléchargé — aucun téléphone enregistré pour l'envoyer automatiquement.");
+      toast.info(
+        "PDF téléchargé — aucun téléphone enregistré pour l'envoyer automatiquement.",
+      );
     }
   }
 
@@ -412,7 +491,6 @@ export default function ContratBail() {
         <div className="row g-0">
           <Sidebar />
           <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
-
             <div className="page-header">
               <div>
                 <h1 className="page-title">
@@ -422,7 +500,11 @@ export default function ContratBail() {
                   {current.nom} · génération PDF, individuelle ou groupée
                 </p>
               </div>
-              <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
+              <ApartSelect
+                list={apparts}
+                value={bienId}
+                onChange={changeAppart}
+              />
             </div>
 
             <div className="bail-onglets mb-3">
@@ -441,7 +523,9 @@ export default function ContratBail() {
             </div>
 
             {loading ? (
-              <div className="card-pro text-center py-5 text-muted">Chargement…</div>
+              <div className="card-pro text-center py-5 text-muted">
+                Chargement…
+              </div>
             ) : locataires.length === 0 ? (
               <div className="card-pro text-center py-5 text-muted">
                 Aucun locataire actif pour ce bien.
@@ -458,7 +542,12 @@ export default function ContratBail() {
                     >
                       {["RDC", "1ER"].map((etage) =>
                         parEtage[etage].length ? (
-                          <optgroup key={etage} label={etage === "RDC" ? "Rez-de-chaussée" : "1er étage"}>
+                          <optgroup
+                            key={etage}
+                            label={
+                              etage === "RDC" ? "Rez-de-chaussée" : "1er étage"
+                            }
+                          >
                             {parEtage[etage].map((l) => (
                               <option key={l.id} value={l.id}>
                                 {l.chambre} — {l.nom} {l.prenom}
@@ -466,24 +555,32 @@ export default function ContratBail() {
                               </option>
                             ))}
                           </optgroup>
-                        ) : null
+                        ) : null,
                       )}
                     </select>
                   </div>
                   <div className="col-sm-3">
                     <button
                       className="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2"
-                      onClick={() => handleGenererIndividuel(locataires.find((l) => l.id === individuelId))}
+                      onClick={() =>
+                        handleEnvoyerIndividuel(
+                          locataires.find((l) => l.id === individuelId),
+                        )
+                      }
                     >
-                      <BsFileEarmarkPdf /> Télécharger
+                      <BsShare /> Partager
                     </button>
                   </div>
                   <div className="col-sm-3">
                     <button
-                      className="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
-                      onClick={() => handleEnvoyerIndividuel(locataires.find((l) => l.id === individuelId))}
+                      className="btn btn-outline-danger w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                      onClick={() =>
+                        handleGenererIndividuel(
+                          locataires.find((l) => l.id === individuelId),
+                        )
+                      }
                     >
-                      <BsSendFill /> Envoyer
+                      <BsFileEarmarkPdf /> Télécharger
                     </button>
                   </div>
                 </div>
@@ -504,13 +601,16 @@ export default function ContratBail() {
                 <div className="card-pro mb-3">
                   <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
                     <h6 className="fw-bold mb-0">
-                      {nbSelectionnes} locataire{nbSelectionnes > 1 ? "s" : ""} sélectionné
+                      {nbSelectionnes} locataire{nbSelectionnes > 1 ? "s" : ""}{" "}
+                      sélectionné
                       {nbSelectionnes > 1 ? "s" : ""}
                     </h6>
                     <div className="d-flex gap-2">
                       <button
                         className="btn btn-sm btn-outline-secondary"
-                        onClick={() => setSelection(new Set(locataires.map((l) => l.id)))}
+                        onClick={() =>
+                          setSelection(new Set(locataires.map((l) => l.id)))
+                        }
                       >
                         Tout sélectionner
                       </button>
@@ -533,9 +633,11 @@ export default function ContratBail() {
                     <div className="bail-alerte mt-2">
                       <BsExclamationTriangle size={14} />
                       <span>
-                        {nbSansCin} locataire{nbSansCin > 1 ? "s" : ""} sélectionné
+                        {nbSansCin} locataire{nbSansCin > 1 ? "s" : ""}{" "}
+                        sélectionné
                         {nbSansCin > 1 ? "s" : ""} sans CIN renseigné — le
-                        contrat affichera « à compléter » pour {nbSansCin > 1 ? "eux" : "lui/elle"}.
+                        contrat affichera « à compléter » pour{" "}
+                        {nbSansCin > 1 ? "eux" : "lui/elle"}.
                       </span>
                     </div>
                   )}
@@ -548,12 +650,18 @@ export default function ContratBail() {
                         <div className="card-pro p-0 bail-section">
                           <div className="bail-section-tete">
                             <span>
-                              {etage === "RDC" ? "Rez-de-chaussée" : "1er étage"} —{" "}
-                              {LOYER[etage].toLocaleString()} Ar
+                              {etage === "RDC"
+                                ? "Rez-de-chaussée"
+                                : "1er étage"}{" "}
+                              — {LOYER[etage].toLocaleString()} Ar
                             </span>
                             <div className="d-flex gap-1">
-                              <button onClick={() => toutEtage(etage, true)}>Tout</button>
-                              <button onClick={() => toutEtage(etage, false)}>Aucun</button>
+                              <button onClick={() => toutEtage(etage, true)}>
+                                Tout
+                              </button>
+                              <button onClick={() => toutEtage(etage, false)}>
+                                Aucun
+                              </button>
                             </div>
                           </div>
                           <ul className="bail-liste">
@@ -567,20 +675,30 @@ export default function ContratBail() {
                                     aria-pressed={coche}
                                   >
                                     {coche ? <BsCheckSquare /> : <BsSquare />}
-                                    <span className={etage === "RDC" ? "badge-rdc" : "badge-1er"}>
+                                    <span
+                                      className={
+                                        etage === "RDC"
+                                          ? "badge-rdc"
+                                          : "badge-1er"
+                                      }
+                                    >
                                       {l.chambre}
                                     </span>
                                     <span className="bail-nom">
                                       {l.nom} {l.prenom}
                                     </span>
-                                    {!cinDe(l) && <em className="bail-manque">CIN manquant</em>}
+                                    {!cinDe(l) && (
+                                      <em className="bail-manque">
+                                        CIN manquant
+                                      </em>
+                                    )}
                                   </button>
                                   <button
                                     className="bail-envoyer"
                                     title={`Envoyer son contrat individuel à ${l.nom}`}
                                     onClick={() => handleEnvoyerIndividuel(l)}
                                   >
-                                    <BsSendFill size={12} />
+                                    <BsShare size={12} />
                                   </button>
                                 </li>
                               );
@@ -588,12 +706,11 @@ export default function ContratBail() {
                           </ul>
                         </div>
                       </div>
-                    ) : null
+                    ) : null,
                   )}
                 </div>
               </>
             )}
-
           </main>
         </div>
       </div>

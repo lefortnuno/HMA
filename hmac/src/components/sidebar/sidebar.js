@@ -146,11 +146,11 @@ export default function Sidebar() {
 
             <div className="separator" />
 
-            <div className="sidebar-section-label">Vitrine</div>
+            <div className="sidebar-section-label">Manager</div>
             {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
             {nav("/loyer/historique/", BsClockHistory, "Historique", true)}
 
-            <div className="separator" />
+            {/* <div className="separator" /> */}
 
             {nav("/users/", BsPeople, "Utilisateurs", true)}
 
