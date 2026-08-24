@@ -11,7 +11,9 @@ import {
 import {
   extraireMessengerId,
   lienMessenger,
+  lienMessengerWeb,
   lienWhatsApp,
+  surMobile,
 } from "../../config/contact";
 import { estAvance } from "../../config/echeance";
 import { MOIS_LONG } from "../../config/dates";
@@ -135,6 +137,27 @@ export default function RappelLoyer({
       navigator.clipboard.writeText(ligne.texte).catch(() => {});
     }
     marquer(ligne, "Messenger");
+
+    // Sur telephone, l'ancre vise le schema de l'application. Celui-ci ne
+    // signale pas son echec : si Messenger n'est pas installe, il ne se passe
+    // rien. On guette donc le depart de la page — s'il n'a pas eu lieu, on
+    // bascule sur la version web plutot que de laisser l'utilisateur devant
+    // un ecran inchange.
+    if (!surMobile()) return;
+    const secours = setTimeout(() => {
+      if (!document.hidden) {
+        window.location.href = lienMessengerWeb(
+          ligne.loc.nom,
+          ligne.loc.messengerId,
+        );
+      }
+    }, 1500);
+    // L'application a pris la main : plus besoin du secours.
+    document.addEventListener(
+      "visibilitychange",
+      () => document.hidden && clearTimeout(secours),
+      { once: true },
+    );
   }
 
   return (
@@ -281,8 +304,7 @@ export default function RappelLoyer({
                           <a
                             className="btn btn-sm rappel-wa"
                             href={lienWhatsApp(loc.tel, ligne.texte)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            target="whatsapp"
                             onClick={() => marquer(ligne, "WhatsApp")}
                             title={`Ouvrir WhatsApp avec le message prêt (${loc.tel})`}
                           >
@@ -301,8 +323,7 @@ export default function RappelLoyer({
                           <a
                             className="btn btn-sm rappel-me"
                             href={lienMessenger(loc.nom, loc.messengerId)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            target={surMobile() ? undefined : "messenger"}
                             onClick={() => copierPourMessenger(ligne)}
                             title="Copier le message et ouvrir la conversation Messenger"
                           >

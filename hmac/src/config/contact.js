@@ -35,26 +35,37 @@ export function surMobile() {
 }
 
 /**
+ * Adresse web de la conversation. Toujours valable, jamais un lien profond.
+ * Sert d'affichage sur ordinateur, et de secours quand l'application ne
+ * repond pas sur telephone.
+ */
+export function lienMessengerWeb(nom, messengerId) {
+  const id = extraireMessengerId(messengerId);
+  if (id) return `https://www.facebook.com/messages/t/${id}`;
+  if (!nom) return "https://www.facebook.com/messages/";
+  return `https://www.facebook.com/search/people/?q=${encodeURIComponent(nom)}`;
+}
+
+/**
  * Lien vers la conversation.
  *
- * Sur mobile on passe par m.me, le lien profond officiel de Messenger :
- * facebook.com/messages/t/... ouvre l'application Facebook, ou le site, mais
- * pas la messagerie — c'est ce qui empechait l'application de s'ouvrir.
+ * Sur telephone on passe par le schema de l'application Messenger. Les deux
+ * adresses web echouent chacune a leur maniere :
  *
- * Sur ordinateur facebook.com/messages/t/... reste preferable : il affiche
- * directement la discussion dans le navigateur.
+ *   facebook.com/messages/t/...  ouvre Facebook, pas la messagerie ;
+ *   m.me/...                     ne resout que des noms d'utilisateur et des
+ *                                pages. Ce qu'on enregistre est un identifiant
+ *                                de conversation : m.me ne le reconnait pas et
+ *                                renvoie vers l'App Store.
  *
- * Sans identifiant enregistre, faute de mieux, on cherche la personne.
+ * `fb-messenger://user-thread/<id>` ouvre directement la bonne discussion.
+ * Il ne dit pas s'il a abouti : l'appelant prevoit un secours vers le web
+ * (voir le composant de rappel).
  */
 export function lienMessenger(nom, messengerId) {
   const id = extraireMessengerId(messengerId);
-  if (id) {
-    return surMobile()
-      ? `https://m.me/${id}`
-      : `https://www.facebook.com/messages/t/${id}`;
-  }
-  if (!nom) return "https://www.facebook.com/messages/";
-  return `https://www.facebook.com/search/people/?q=${encodeURIComponent(nom)}`;
+  if (id && surMobile()) return `fb-messenger://user-thread/${id}`;
+  return lienMessengerWeb(nom, messengerId);
 }
 
 /**
@@ -65,13 +76,11 @@ export function lienMessenger(nom, messengerId) {
  * l'utilisateur : le navigateur considerait alors la fenetre comme une
  * publicite et la bloquait — systematiquement sur mobile.
  *
- * La copie reste demandee dans la foulee ; si elle echoue, on n'a perdu que
- * le collage, pas l'ouverture.
+ * Fenetre nommee plutot que `_blank` : on retombe sur l'onglet Messenger
+ * deja ouvert au lieu d'en empiler un nouveau a chaque envoi.
  */
 export function copierEtOuvrirMessenger(texte, nom, messengerId) {
-  const lien = lienMessenger(nom, messengerId);
-  // Toujours dans le geste de l'utilisateur.
-  window.open(lien, "_blank", "noopener");
+  window.open(lienMessenger(nom, messengerId), "messenger");
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(texte).catch(() => {});
   }
