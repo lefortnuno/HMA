@@ -39,10 +39,10 @@ Facture.getByMoisAnnee = (mois, annee, bienId, result) => {
 };
 
 Facture.create = (data, result) => {
-  const { mois, annee, prixUnitaire, montantTotal, dateFacture, bienId } = data;
+  const { mois, annee, prixUnitaire, montantTotal, dateFacture, bienId, numeroFacture } = data;
   db.query(
-    "INSERT INTO facture_jirama (mois, annee, prixUnitaire, montantTotal, dateFacture, bienId) VALUES (?,?,?,?,?,?)",
-    [mois, annee, prixUnitaire, montantTotal || 0, dateFacture || null, Number(bienId) || 0],
+    "INSERT INTO facture_jirama (mois, annee, prixUnitaire, montantTotal, dateFacture, bienId, numeroFacture) VALUES (?,?,?,?,?,?,?)",
+    [mois, annee, prixUnitaire, montantTotal || 0, dateFacture || null, Number(bienId) || 0, numeroFacture || null],
     (err, res) => {
       if (err) result(err, null);
       else result(null, { id: res.insertId, success: true });
@@ -51,10 +51,10 @@ Facture.create = (data, result) => {
 };
 
 Facture.update = (id, data, result) => {
-  const { prixUnitaire, montantTotal, dateFacture } = data;
+  const { prixUnitaire, montantTotal, dateFacture, numeroFacture } = data;
   db.query(
-    "UPDATE facture_jirama SET prixUnitaire=?, montantTotal=?, dateFacture=? WHERE id=?",
-    [prixUnitaire, montantTotal || 0, dateFacture || null, id],
+    "UPDATE facture_jirama SET prixUnitaire=?, montantTotal=?, dateFacture=?, numeroFacture=? WHERE id=?",
+    [prixUnitaire, montantTotal || 0, dateFacture || null, numeroFacture || null, id],
     (err) => {
       if (err) result(err, null);
       else result(null, { success: true });

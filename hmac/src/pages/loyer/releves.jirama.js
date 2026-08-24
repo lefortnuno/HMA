@@ -9,6 +9,7 @@ import {
   BsLightningCharge,
   BsSave,
   BsArrowRepeat,
+  BsSearch,
 } from "react-icons/bs";
 import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
@@ -32,6 +33,8 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
   const [annee, setAnnee] = useState(moisPrecedent.getFullYear());
 
   const [prixUnitaire, setPrixUnitaire] = useState(0);
+  // Numéro de la facture reçue de la compagnie, pour la retrouver sur jirama.mg.
+  const [numeroFacture, setNumeroFacture] = useState("");
   const [montantFacture, setMontantFacture] = useState(0);
   const [locataires, setLocataires] = useState([]);
   const [consommations, setConsommations] = useState({});
@@ -96,11 +99,13 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         const f = r.data?.[0];
         if (!f) {
           setFactureId(null);
+          setNumeroFacture("");
           return;
         }
         setFactureId(f.id);
         setPrixUnitaire(f.prixUnitaire || 0);
         setMontantFacture(f.montantTotal || 0);
+        setNumeroFacture(f.numeroFacture || "");
         if (f.consommations) {
           const map = {};
           const manuels = {};
@@ -186,6 +191,16 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
     });
   }
 
+  function verifierSurJirama() {
+    if (numeroFacture.trim() && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(numeroFacture.trim()).catch(() => {});
+    }
+    window.open(
+      "https://www.jirama.mg/portal/espace/client/factures",
+      "jirama-verif",
+    );
+  }
+
   function handleSave(e) {
     e.preventDefault();
     if (!prixUnitaire) return toast.warning("Entrez le prix unitaire JIRAMA");
@@ -196,6 +211,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
       bienId,
       prixUnitaire,
       montantTotal: montantFacture,
+      numeroFacture: numeroFacture.trim() || null,
       consommations: locataires.map((l) => ({
         locataireId: l.id,
         indexPrev: consommations[l.id]?.indexPrev || 0,
@@ -267,6 +283,36 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
               min={0}
               placeholder="Montant total"
             />
+          </div>
+        </div>
+
+        {/* Numéro de facture : sert à la retrouver sur le portail JIRAMA.
+            Le bouton copie le numéro puis ouvre le site — il ne reste
+            qu'à coller dans le champ de recherche de la facture. */}
+        <div className="row g-3 mt-1">
+          <div className="col-sm-6">
+            <label className="form-label">Numéro de facture</label>
+            <input
+              type="text"
+              className="form-control"
+              value={numeroFacture}
+              onChange={(e) => setNumeroFacture(e.target.value)}
+              placeholder="Numéro imprimé sur la facture JIRAMA"
+            />
+          </div>
+          <div className="col-sm-6 d-flex align-items-end">
+            <button
+              type="button"
+              className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+              onClick={verifierSurJirama}
+              title={
+                numeroFacture.trim()
+                  ? "Copier le numéro et ouvrir le portail JIRAMA pour vérification"
+                  : "Ouvrir le portail JIRAMA (aucun numéro à copier pour l'instant)"
+              }
+            >
+              <BsSearch /> Vérifier sur jirama.mg
+            </button>
           </div>
         </div>
       </div>

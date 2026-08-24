@@ -561,7 +561,7 @@ function validesConsommations(consommations) {
 }
 
 module.exports.createFacture = (req, res) => {
-  const { mois, annee, prixUnitaire, montantTotal, dateFacture, consommations, bienId } = req.body;
+  const { mois, annee, prixUnitaire, montantTotal, dateFacture, consommations, bienId, numeroFacture } = req.body;
   if (!V.isMoisValide(mois)) return badRequest(res, "Mois invalide (1-12).");
   if (!V.isAnneeValide(annee)) return badRequest(res, "Année invalide.");
   if (!V.isMontantValide(prixUnitaire)) return badRequest(res, "Prix unitaire invalide.");
@@ -570,7 +570,7 @@ module.exports.createFacture = (req, res) => {
   const errConso = validesConsommations(consommations);
   if (errConso) return badRequest(res, errConso);
 
-  Facture.create({ mois, annee, prixUnitaire, montantTotal, dateFacture, bienId }, (err, fact) => {
+  Facture.create({ mois, annee, prixUnitaire, montantTotal, dateFacture, bienId, numeroFacture }, (err, fact) => {
     if (err) {
       if (err.code === "ER_DUP_ENTRY") {
         return res.status(409).send({ message: "Une facture existe déjà pour ce mois/année. Utilisez la mise à jour.", success: false });
@@ -601,7 +601,7 @@ module.exports.createFacture = (req, res) => {
 };
 
 module.exports.updateFacture = (req, res) => {
-  const { prixUnitaire, montantTotal, dateFacture, consommations } = req.body;
+  const { prixUnitaire, montantTotal, dateFacture, consommations, numeroFacture } = req.body;
   const id = req.params.id;
   if (!V.isMontantValide(prixUnitaire)) return badRequest(res, "Prix unitaire invalide.");
   if (montantTotal !== undefined && !V.isMontantValide(montantTotal))
@@ -609,7 +609,7 @@ module.exports.updateFacture = (req, res) => {
   const errConso = validesConsommations(consommations);
   if (errConso) return badRequest(res, errConso);
 
-  Facture.update(id, { prixUnitaire, montantTotal, dateFacture }, (err) => {
+  Facture.update(id, { prixUnitaire, montantTotal, dateFacture, numeroFacture }, (err) => {
     if (err) return sendErr(res, err);
 
     if (!consommations || consommations.length === 0) return res.send({ success: true });
