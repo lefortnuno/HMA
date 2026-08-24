@@ -43,6 +43,10 @@ export default function EditLocataire() {
     jiramaForfait: existing.jiramaForfait ?? "",
     jiramaNonSoumis: !!existing.jiramaNonSoumis,
     messengerId: existing.messengerId || "",
+    // Nom légal complet et CIN : distincts du nom d'usage, utilisés
+    // uniquement par le contrat de bail.
+    nomComplet: existing.nomComplet || "",
+    cin: existing.cin || "",
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -194,6 +198,21 @@ export default function EditLocataire() {
                   <div className="col-sm-6">
                     <label className="form-label">Prénom</label>
                     <input type="text" name="prenom" className="form-control" value={form.prenom} onChange={handleChange} />
+                  </div>
+                  <div className="col-sm-8">
+                    <label className="form-label">
+                      Nom complet (état civil)
+                      <span className="text-muted" style={{ fontWeight: 400 }}> — pour le contrat de bail</span>
+                    </label>
+                    <input type="text" name="nomComplet" className="form-control"
+                      value={form.nomComplet} onChange={handleChange}
+                      placeholder="Nom légal tel qu'il figure sur la CIN" />
+                  </div>
+                  <div className="col-sm-4">
+                    <label className="form-label">CIN</label>
+                    <input type="text" name="cin" className="form-control"
+                      value={form.cin} onChange={handleChange}
+                      placeholder="ex : 301 072 044 564" />
                   </div>
 
                   <div className="col-12 form-section">

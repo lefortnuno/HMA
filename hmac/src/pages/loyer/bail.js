@@ -1,0 +1,496 @@
+import { useState, useMemo } from "react";
+import axios from "../../contexts/api/axios";
+import GetUserData from "../../contexts/api/udata";
+import Template from "../../components/template/template";
+import Header from "../../components/header/header";
+import Sidebar from "../../components/sidebar/sidebar";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+import {
+  BsFileEarmarkText, BsPerson, BsPeopleFill, BsFileEarmarkPdf,
+  BsCheckSquare, BsSquare, BsExclamationTriangle,
+} from "react-icons/bs";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import ApartSelect, {
+  useAppartements,
+  getSelectedBienId,
+  setSelectedBienId,
+  KINYA,
+} from "../../components/appart/apart.select";
+import {
+  BAILLEUR, VILLE, SOUS_TITRE, LOYER,
+  article1, ARTICLE_2, ARTICLE_3, nomLegalDe, cinDe,
+} from "../../config/bail";
+import "./loyer.css";
+import "./bail.css";
+
+/**
+ * Contrat de bail — génération PDF.
+ *
+ * Deux formats, à la demande :
+ *
+ *  · Individuel — le modèle à deux parties classique (propriétaire /
+ *    locataire), pour un seul occupant.
+ *  · Groupe — un contrat unique listant les locataires sélectionnés dans un
+ *    tableau par étage, celui que le bailleur signe pour toute la résidence
+ *    (ou une sélection personnalisée).
+ *
+ * Le texte reprend celui du contrat déjà validé pour la résidence : mêmes
+ * trois articles, même mise en page. Rien n'est envoyé au serveur — tout se
+ * construit dans le navigateur, comme les autres PDF de l'application.
+ */
+
+const RDC = ["1","2","3","4","5","6","7","8","9","10"];
+const PREMIER = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+const ordreChambre = (c, etage) => (etage === "RDC" ? RDC : PREMIER).indexOf(c);
+
+export default function ContratBail() {
+  const u_info = GetUserData();
+  const [bienId, setBienId] = useState(getSelectedBienId());
+  const apparts = useAppartements(bienId, setBienId);
+  const current = apparts.find((a) => a.id === bienId) || KINYA;
+
+  const [locataires, setLocataires] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState("GROUPE"); // GROUPE | INDIVIDUEL
+  const [selection, setSelection] = useState(() => new Set());
+  const [individuelId, setIndividuelId] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`loyer/locataires?bienId=${bienId}`, u_info.opts)
+      .then((r) => {
+        const actifs = (r.data || []).filter((l) => l.actif);
+        setLocataires(actifs);
+        setSelection(new Set(actifs.map((l) => l.id)));
+        setIndividuelId(actifs[0]?.id ?? null);
+      })
+      .catch(() => setLocataires([]))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bienId]);
+
+  function changeAppart(id) {
+    setBienId(id);
+    setSelectedBienId(id);
+  }
+
+  const parEtage = useMemo(() => {
+    const tri = (etage) =>
+      locataires
+        .filter((l) => l.etage === etage)
+        .sort((a, b) => ordreChambre(a.chambre, etage) - ordreChambre(b.chambre, etage));
+    return { RDC: tri("RDC"), "1ER": tri("1ER") };
+  }, [locataires]);
+
+  const nbSansCin = locataires.filter((l) => selection.has(l.id) && !cinDe(l)).length;
+
+  function basculer(id) {
+    setSelection((s) => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
+  function toutEtage(etage, actif) {
+    setSelection((s) => {
+      const n = new Set(s);
+      parEtage[etage].forEach((l) => (actif ? n.add(l.id) : n.delete(l.id)));
+      return n;
+    });
+  }
+
+  // ── Mise en page commune ───────────────────────────────────────────────
+  function enTete(doc) {
+    const W = doc.internal.pageSize.getWidth();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(17);
+    doc.text("CONTRAT DE BAIL", W / 2, 18, { align: "center" });
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(10.5);
+    doc.text(SOUS_TITRE, W / 2, 25, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    return 36;
+  }
+
+  function tableauBailleur(doc, y) {
+    autoTable(doc, {
+      startY: y,
+      theme: "grid",
+      margin: { left: 15, right: 15 },
+      styles: { fontSize: 10, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 28 } },
+      body: [
+        ["Nom :", BAILLEUR.nom],
+        ["Adresse :", BAILLEUR.adresse],
+        ["CIN :", BAILLEUR.cin],
+      ],
+    });
+    return doc.lastAutoTable.finalY + 6;
+  }
+
+  // Un article : titre en gras suivi du texte, avec retour à la ligne géré
+  // à la main — jsPDF ne le fait pas tout seul.
+  function ecrireArticle(doc, y, titre, texte, mg, R) {
+    const espace = () => {
+      doc.setFont("helvetica", "bold");
+      const largeurTitre = doc.getTextWidth(titre + " : ");
+      doc.text(titre + " : ", mg, y);
+      doc.setFont("helvetica", "normal");
+      const lignes = doc.splitTextToSize(texte, R - mg - largeurTitre);
+      doc.text(lignes[0], mg + largeurTitre, y);
+      lignes.slice(1).forEach((l, i) => doc.text(l, mg, y + (i + 1) * 5));
+      return y + lignes.length * 5 + 4;
+    };
+    return espace();
+  }
+
+  function pied(doc, y, mg, R, avecLocataire) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Fait à ${VILLE}, le ..…/..…/…..….`, R, y, { align: "right" });
+    y += 16;
+    if (avecLocataire) {
+      doc.setFont("helvetica", "bold");
+      doc.text("LE PROPRIÉTAIRE", mg, y);
+      doc.text("LE LOCATAIRE", R, y, { align: "right" });
+      y += 18;
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8.5);
+      doc.text("(signature)", mg, y);
+      doc.text("(signature)", R, y, { align: "right" });
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.text("LE PROPRIÉTAIRE", mg, y);
+      y += 18;
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8.5);
+      doc.text("(signature)", mg, y);
+      y += 8;
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9);
+      const note = doc.splitTextToSize(
+        "La signature de chaque locataire figure dans la colonne « Signature » du tableau correspondant à sa chambre.",
+        R - mg
+      );
+      doc.text(note, mg, y);
+    }
+  }
+
+  // ── Format groupe ────────────────────────────────────────────────────
+  function genererGroupe() {
+    const choisis = locataires.filter((l) => selection.has(l.id));
+    if (!choisis.length) return toast.warning("Sélectionnez au moins un locataire");
+
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const mg = 15;
+    const R = doc.internal.pageSize.getWidth() - mg;
+    let y = enTete(doc);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text("Entre les soussignés", mg, y);
+    y += 6;
+
+    y = tableauBailleur(doc, y);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9.5);
+    doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, { align: "right" });
+    y += 10;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const intro = doc.splitTextToSize(
+      "Et, d'autre part, les locataires de la résidence désignés ci-après, " +
+        "chacun pour la chambre qu'il occupe (répartis par étage), ci-après " +
+        "« LE LOCATAIRE » :",
+      R - mg
+    );
+    doc.text(intro, mg, y);
+    y += intro.length * 5 + 8;
+
+    const etagesPresents = new Set(choisis.map((l) => l.etage));
+
+    const tableauEtage = (etage, titre) => {
+      const lignes = choisis.filter((l) => l.etage === etage);
+      if (!lignes.length) return;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.text(`${titre} — loyer mensuel : ${LOYER[etage].toLocaleString()} Ar`, mg, y);
+      y += 4;
+      autoTable(doc, {
+        startY: y,
+        margin: { left: mg, right: mg },
+        theme: "grid",
+        styles: { fontSize: 9.5, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+        headStyles: { fontStyle: "bold", fillColor: [255, 255, 255], textColor: 0, lineColor: 0 },
+        head: [["Chambre", "Nom complet", "CIN", "Signature"]],
+        body: lignes
+          .sort((a, b) => ordreChambre(a.chambre, etage) - ordreChambre(b.chambre, etage))
+          .map((l) => [l.chambre, nomLegalDe(l), cinDe(l) || "à compléter", ""]),
+        columnStyles: { 0: { cellWidth: 20 }, 2: { cellWidth: 34 }, 3: { cellWidth: 32 } },
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    };
+    tableauEtage("RDC", "REZ-DE-CHAUSSÉE");
+    tableauEtage("1ER", "1ER ÉTAGE");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
+    y += 7;
+    doc.setFontSize(10);
+    y = ecrireArticle(doc, y, "Article 1", article1(etagesPresents), mg, R);
+    y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
+    y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+
+    if (y > 240) {
+      doc.addPage();
+      y = 20;
+    }
+    pied(doc, y, mg, R, false);
+
+    doc.save(`Contrat_de_bail_${current.nom.replace(/\s+/g, "_")}.pdf`);
+    toast.success(`Contrat généré — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""}`);
+  }
+
+  // ── Format individuel ────────────────────────────────────────────────
+  function genererIndividuel() {
+    const loc = locataires.find((l) => l.id === individuelId);
+    if (!loc) return toast.warning("Choisissez un locataire");
+
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const mg = 15;
+    const R = doc.internal.pageSize.getWidth() - mg;
+    let y = enTete(doc);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text("Entre les soussignés", mg, y);
+    y += 6;
+
+    y = tableauBailleur(doc, y);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9.5);
+    doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, { align: "right" });
+    y += 10;
+
+    autoTable(doc, {
+      startY: y,
+      theme: "grid",
+      margin: { left: 15, right: 15 },
+      styles: { fontSize: 10, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 28 } },
+      body: [
+        ["Nom :", nomLegalDe(loc)],
+        ["Adresse :", `Villa Kinya, chambre ${loc.chambre} — Andrainjato, ${VILLE}`],
+        ["CIN :", cinDe(loc) || "à compléter"],
+      ],
+    });
+    y = doc.lastAutoTable.finalY + 6;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9.5);
+    doc.text("Ci-après « LE LOCATAIRE », d'autre part", R, y, { align: "right" });
+    y += 12;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
+    y += 7;
+    doc.setFontSize(10);
+    y = ecrireArticle(doc, y, "Article 1", article1(new Set([loc.etage])), mg, R);
+    y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
+    y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+
+    y += 6;
+    pied(doc, y, mg, R, true);
+
+    const nomFichier = nomLegalDe(loc).replace(/\s+/g, "_");
+    doc.save(`Contrat_de_bail_${nomFichier}.pdf`);
+    toast.success(`Contrat généré — ${loc.nom}`);
+  }
+
+  const nbSelectionnes = selection.size;
+
+  return (
+    <Template>
+      <Header />
+      <div className="container-fluid flex-grow-1">
+        <div className="row g-0">
+          <Sidebar />
+          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 main">
+
+            <div className="page-header">
+              <div>
+                <h1 className="page-title">
+                  <BsFileEarmarkText /> Contrat de bail
+                </h1>
+                <p className="text-muted small mb-0">
+                  {current.nom} · génération PDF, individuelle ou groupée
+                </p>
+              </div>
+              <ApartSelect list={apparts} value={bienId} onChange={changeAppart} />
+            </div>
+
+            <div className="bail-onglets mb-3">
+              <button
+                className={mode === "GROUPE" ? "actif" : ""}
+                onClick={() => setMode("GROUPE")}
+              >
+                <BsPeopleFill /> Groupe
+              </button>
+              <button
+                className={mode === "INDIVIDUEL" ? "actif" : ""}
+                onClick={() => setMode("INDIVIDUEL")}
+              >
+                <BsPerson /> Individuel
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="card-pro text-center py-5 text-muted">Chargement…</div>
+            ) : locataires.length === 0 ? (
+              <div className="card-pro text-center py-5 text-muted">
+                Aucun locataire actif pour ce bien.
+              </div>
+            ) : mode === "INDIVIDUEL" ? (
+              <div className="card-pro">
+                <h6 className="fw-bold mb-3">Choisir le locataire</h6>
+                <div className="row g-3 align-items-end">
+                  <div className="col-sm-8">
+                    <select
+                      className="form-select"
+                      value={individuelId ?? ""}
+                      onChange={(e) => setIndividuelId(Number(e.target.value))}
+                    >
+                      {["RDC", "1ER"].map((etage) =>
+                        parEtage[etage].length ? (
+                          <optgroup key={etage} label={etage === "RDC" ? "Rez-de-chaussée" : "1er étage"}>
+                            {parEtage[etage].map((l) => (
+                              <option key={l.id} value={l.id}>
+                                {l.chambre} — {l.nom} {l.prenom}
+                                {!cinDe(l) ? " (CIN à compléter)" : ""}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ) : null
+                      )}
+                    </select>
+                  </div>
+                  <div className="col-sm-4">
+                    <button
+                      className="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                      onClick={genererIndividuel}
+                    >
+                      <BsFileEarmarkPdf /> Générer le PDF
+                    </button>
+                  </div>
+                </div>
+                {individuelId &&
+                  !cinDe(locataires.find((l) => l.id === individuelId)) && (
+                    <div className="bail-alerte mt-3">
+                      <BsExclamationTriangle size={14} />
+                      <span>
+                        Le CIN de ce locataire n'est pas encore renseigné : le
+                        contrat affichera « à compléter ». Complétez sa fiche
+                        depuis Locataires pour l'inclure.
+                      </span>
+                    </div>
+                  )}
+              </div>
+            ) : (
+              <>
+                <div className="card-pro mb-3">
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                    <h6 className="fw-bold mb-0">
+                      {nbSelectionnes} locataire{nbSelectionnes > 1 ? "s" : ""} sélectionné
+                      {nbSelectionnes > 1 ? "s" : ""}
+                    </h6>
+                    <div className="d-flex gap-2">
+                      <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setSelection(new Set(locataires.map((l) => l.id)))}
+                      >
+                        Tout sélectionner
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setSelection(new Set())}
+                      >
+                        Tout désélectionner
+                      </button>
+                      <button
+                        className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
+                        onClick={genererGroupe}
+                        disabled={!nbSelectionnes}
+                      >
+                        <BsFileEarmarkPdf /> Générer le PDF
+                      </button>
+                    </div>
+                  </div>
+                  {nbSansCin > 0 && (
+                    <div className="bail-alerte mt-2">
+                      <BsExclamationTriangle size={14} />
+                      <span>
+                        {nbSansCin} locataire{nbSansCin > 1 ? "s" : ""} sélectionné
+                        {nbSansCin > 1 ? "s" : ""} sans CIN renseigné — le
+                        contrat affichera « à compléter » pour {nbSansCin > 1 ? "eux" : "lui/elle"}.
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="row g-3">
+                  {["RDC", "1ER"].map((etage) =>
+                    parEtage[etage].length ? (
+                      <div className="col-12 col-lg-6" key={etage}>
+                        <div className="card-pro p-0 bail-section">
+                          <div className="bail-section-tete">
+                            <span>
+                              {etage === "RDC" ? "Rez-de-chaussée" : "1er étage"} —{" "}
+                              {LOYER[etage].toLocaleString()} Ar
+                            </span>
+                            <div className="d-flex gap-1">
+                              <button onClick={() => toutEtage(etage, true)}>Tout</button>
+                              <button onClick={() => toutEtage(etage, false)}>Aucun</button>
+                            </div>
+                          </div>
+                          <ul className="bail-liste">
+                            {parEtage[etage].map((l) => {
+                              const coche = selection.has(l.id);
+                              return (
+                                <li key={l.id}>
+                                  <button
+                                    className="bail-item"
+                                    onClick={() => basculer(l.id)}
+                                    aria-pressed={coche}
+                                  >
+                                    {coche ? <BsCheckSquare /> : <BsSquare />}
+                                    <span className={etage === "RDC" ? "badge-rdc" : "badge-1er"}>
+                                      {l.chambre}
+                                    </span>
+                                    <span className="bail-nom">
+                                      {l.nom} {l.prenom}
+                                    </span>
+                                    {!cinDe(l) && <em className="bail-manque">CIN manquant</em>}
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      </div>
+                    ) : null
+                  )}
+                </div>
+              </>
+            )}
+
+          </main>
+        </div>
+      </div>
+    </Template>
+  );
+}

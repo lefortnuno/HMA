@@ -134,6 +134,7 @@ export default function Sidebar() {
         {isAdmin && nav("/loyer/depenses/", BsCashCoin, "Sorties d'argent", true)}
         {isAdmin && nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
         {isAdmin && nav("/loyer/historique/", BsClockHistory, "Historique", true)}
+        {isAdmin && nav("/loyer/bail/", BsFileEarmarkText, "Contrat de bail", true)}
 
         {isAdmin && (
           <>

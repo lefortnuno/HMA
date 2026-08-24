@@ -41,6 +41,8 @@ export default function AddLocataire() {
     jiramaForfait: "",
     jiramaNonSoumis: false,
     messengerId: "",
+    nomComplet: "",
+    cin: "",
   });
   const [saving, setSaving] = useState(false);
   const [locataires, setLocataires] = useState([]);
@@ -219,6 +221,32 @@ export default function AddLocataire() {
                       value={form.prenom}
                       onChange={handleChange}
                       placeholder="Prénom"
+                    />
+                  </div>
+
+                  <div className="col-sm-8">
+                    <label className="form-label">
+                      Nom complet (état civil)
+                      <span className="text-muted" style={{ fontWeight: 400 }}> — pour le contrat de bail</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="nomComplet"
+                      className="form-control"
+                      value={form.nomComplet}
+                      onChange={handleChange}
+                      placeholder="Nom légal tel qu'il figure sur la CIN"
+                    />
+                  </div>
+                  <div className="col-sm-4">
+                    <label className="form-label">CIN</label>
+                    <input
+                      type="text"
+                      name="cin"
+                      className="form-control"
+                      value={form.cin}
+                      onChange={handleChange}
+                      placeholder="ex : 301 072 044 564"
                     />
                   </div>
 

@@ -60,9 +60,13 @@ function execCreateLocataire(data, cb) {
 }
 
 function normaliseLocataire(body) {
-  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId, jourPaiement, modePaiement } = body;
+  const { nom, prenom, chambre, etage, loyer, tel, email, dateEntree, actif, bienId, caution, photo, messengerId, jourPaiement, modePaiement, nomComplet, cin } = body;
   return {
     nom, prenom, chambre, etage, loyer, tel, email,
+    // Nom légal complet et CIN : utilisés par le contrat de bail. Distincts
+    // de `nom`, le nom d'usage employé partout ailleurs dans l'application.
+    nomComplet: nomComplet && String(nomComplet).trim() ? String(nomComplet).trim() : null,
+    cin: cin && String(cin).trim() ? String(cin).trim() : null,
     dateEntree: dateEntree || null,
     actif: actif ? 1 : 0,
     bienId: Number(bienId) || 0,
