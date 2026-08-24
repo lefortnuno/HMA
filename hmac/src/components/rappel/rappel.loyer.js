@@ -9,8 +9,9 @@ import {
   BsArrowCounterclockwise,
 } from "react-icons/bs";
 import {
-  copierEtOuvrirMessenger,
   extraireMessengerId,
+  lienMessenger,
+  lienWhatsApp,
 } from "../../config/contact";
 import { estAvance } from "../../config/echeance";
 import { MOIS_LONG } from "../../config/dates";
@@ -122,22 +123,18 @@ export default function RappelLoyer({
       .replace(/\s+/g, "")
       .replace(/^\+/, "");
 
-  function ouvrirWhatsApp(ligne) {
-    const num = numeroWhatsApp(ligne.loc.tel);
-    if (!num) return;
-    window.open(
-      `https://wa.me/${num}?text=${encodeURIComponent(ligne.texte)}`,
-      "_blank",
-      "noopener",
-    );
-    setEnvoyes((e) => ({ ...e, [ligne.loc.id]: "WhatsApp" }));
-  }
+  // Marque la ligne comme traitee. L'ouverture, elle, est faite par le lien
+  // lui-meme : c'est la seule facon qu'un telephone bascule vers l'appli.
+  const marquer = (ligne, canal) =>
+    setEnvoyes((e) => ({ ...e, [ligne.loc.id]: canal }));
 
-  function ouvrirMessenger(ligne) {
-    // Messenger n'accepte pas de message pré-rempli : on copie le texte et
-    // on ouvre la conversation, il ne reste qu'à coller.
-    copierEtOuvrirMessenger(ligne.texte, ligne.loc.nom, ligne.loc.messengerId);
-    setEnvoyes((e) => ({ ...e, [ligne.loc.id]: "Messenger" }));
+  function copierPourMessenger(ligne) {
+    // Messenger n'accepte pas de message pre-rempli : on copie le texte,
+    // l'ancre ouvre la conversation, il ne reste qu'a coller.
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(ligne.texte).catch(() => {});
+    }
+    marquer(ligne, "Messenger");
   }
 
   return (
@@ -276,30 +273,49 @@ export default function RappelLoyer({
                             <BsCheck2 size={13} /> Ouvert
                           </span>
                         )}
-                        <button
-                          className="btn btn-sm rappel-wa"
-                          onClick={() => ouvrirWhatsApp(ligne)}
-                          disabled={!aTel}
-                          title={
-                            aTel
-                              ? `Ouvrir WhatsApp avec le message prêt (${loc.tel})`
-                              : "Aucun numéro enregistré pour ce locataire"
-                          }
-                        >
-                          <BsWhatsapp /> WhatsApp
-                        </button>
-                        <button
-                          className="btn btn-sm rappel-me"
-                          onClick={() => ouvrirMessenger(ligne)}
-                          disabled={!aMessenger}
-                          title={
-                            aMessenger
-                              ? "Copier le message et ouvrir la conversation Messenger"
-                              : "Aucun lien Messenger enregistré pour ce locataire"
-                          }
-                        >
-                          <BsMessenger /> Messenger
-                        </button>
+                        {/* De vraies ancres, et non des boutons : sur
+                            telephone, seule une navigation issue d'un clic
+                            bascule vers l'application. Une ouverture par
+                            script est bloquee ou reste dans le navigateur. */}
+                        {aTel ? (
+                          <a
+                            className="btn btn-sm rappel-wa"
+                            href={lienWhatsApp(loc.tel, ligne.texte)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => marquer(ligne, "WhatsApp")}
+                            title={`Ouvrir WhatsApp avec le message prêt (${loc.tel})`}
+                          >
+                            <BsWhatsapp /> WhatsApp
+                          </a>
+                        ) : (
+                          <span
+                            className="btn btn-sm rappel-wa desactive"
+                            title="Aucun numéro enregistré pour ce locataire"
+                          >
+                            <BsWhatsapp /> WhatsApp
+                          </span>
+                        )}
+
+                        {aMessenger ? (
+                          <a
+                            className="btn btn-sm rappel-me"
+                            href={lienMessenger(loc.nom, loc.messengerId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => copierPourMessenger(ligne)}
+                            title="Copier le message et ouvrir la conversation Messenger"
+                          >
+                            <BsMessenger /> Messenger
+                          </a>
+                        ) : (
+                          <span
+                            className="btn btn-sm rappel-me desactive"
+                            title="Aucun lien Messenger enregistré pour ce locataire"
+                          >
+                            <BsMessenger /> Messenger
+                          </span>
+                        )}
                       </div>
                     </li>
                   );

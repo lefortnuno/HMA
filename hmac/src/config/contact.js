@@ -29,25 +29,58 @@ export function extraireMessengerId(saisie) {
   return "";
 }
 
+// Telephone ou tablette : le lien doit viser l'application, pas le site.
+export function surMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+}
+
 /**
  * Lien vers la conversation.
- * Avec un identifiant enregistre, on ouvre directement la discussion.
- * Sinon, faute de mieux, on ouvre une recherche Facebook sur le nom.
+ *
+ * Sur mobile on passe par m.me, le lien profond officiel de Messenger :
+ * facebook.com/messages/t/... ouvre l'application Facebook, ou le site, mais
+ * pas la messagerie — c'est ce qui empechait l'application de s'ouvrir.
+ *
+ * Sur ordinateur facebook.com/messages/t/... reste preferable : il affiche
+ * directement la discussion dans le navigateur.
+ *
+ * Sans identifiant enregistre, faute de mieux, on cherche la personne.
  */
 export function lienMessenger(nom, messengerId) {
   const id = extraireMessengerId(messengerId);
-  if (id) return `https://www.facebook.com/messages/t/${id}`;
+  if (id) {
+    return surMobile()
+      ? `https://m.me/${id}`
+      : `https://www.facebook.com/messages/t/${id}`;
+  }
   if (!nom) return "https://www.facebook.com/messages/";
   return `https://www.facebook.com/search/people/?q=${encodeURIComponent(nom)}`;
 }
 
-// Copie un texte puis ouvre la conversation Messenger de la personne.
+/**
+ * Copie un texte et ouvre la conversation Messenger.
+ *
+ * L'ouverture passe EN PREMIER, et la copie ensuite. Attendre la promesse du
+ * presse-papiers avant d'ouvrir faisait perdre le lien avec le clic de
+ * l'utilisateur : le navigateur considerait alors la fenetre comme une
+ * publicite et la bloquait — systematiquement sur mobile.
+ *
+ * La copie reste demandee dans la foulee ; si elle echoue, on n'a perdu que
+ * le collage, pas l'ouverture.
+ */
 export function copierEtOuvrirMessenger(texte, nom, messengerId) {
-  const ouvrir = () =>
-    window.open(lienMessenger(nom, messengerId), "_blank", "noopener");
+  const lien = lienMessenger(nom, messengerId);
+  // Toujours dans le geste de l'utilisateur.
+  window.open(lien, "_blank", "noopener");
   if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(texte).then(ouvrir, ouvrir);
-  } else {
-    ouvrir();
+    navigator.clipboard.writeText(texte).catch(() => {});
   }
+}
+
+/** Lien WhatsApp avec message pre-rempli. Numero au format international. */
+export function lienWhatsApp(tel, texte) {
+  const num = String(tel || "").replace(/\s+/g, "").replace(/^\+/, "");
+  if (!num) return null;
+  const suffixe = texte ? `?text=${encodeURIComponent(texte)}` : "";
+  return `https://wa.me/${num}${suffixe}`;
 }

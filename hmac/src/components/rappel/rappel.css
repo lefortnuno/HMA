@@ -213,3 +213,25 @@
     justify-content: flex-end;
   }
 }
+
+/* Sans numéro ni lien enregistré, on affiche un faux bouton plutôt qu'une
+   ancre morte : un <a> sans href reste focusable et cliquable, ce qui
+   promettrait une action qui n'existe pas. */
+.rappel-wa.desactive,
+.rappel-me.desactive {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #cbd5e1;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+
+/* Les deux liens gardent l'aspect de boutons. */
+.rappel-wa,
+.rappel-me {
+  text-decoration: none;
+}
+.rappel-wa:hover,
+.rappel-me:hover {
+  text-decoration: none;
+}
