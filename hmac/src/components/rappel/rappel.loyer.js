@@ -1,9 +1,17 @@
 import { useState, useMemo } from "react";
 import {
-  BsBellFill, BsXLg, BsWhatsapp, BsMessenger, BsCheck2,
-  BsInfoCircle, BsArrowCounterclockwise,
+  BsBellFill,
+  BsXLg,
+  BsWhatsapp,
+  BsMessenger,
+  BsCheck2,
+  BsInfoCircle,
+  BsArrowCounterclockwise,
 } from "react-icons/bs";
-import { copierEtOuvrirMessenger, extraireMessengerId } from "../../config/contact";
+import {
+  copierEtOuvrirMessenger,
+  extraireMessengerId,
+} from "../../config/contact";
 import { estAvance } from "../../config/echeance";
 import { MOIS_LONG } from "../../config/dates";
 import "./rappel.css";
@@ -26,11 +34,12 @@ const MODELE_DEFAUT = `Bonjour {nom},
 
 J'espère que vous allez bien.
 
-Petit rappel tout simple : la fin du mois approche, et le loyer {deMois} ({montant} Ar) arrivera bientôt à échéance{jour}.
+Petite piqûre de rappel : la fin du mois approche, et le loyer {deMois} ({montant} Ar) arrivera bientôt à échéance{jour}.
 
-Rien à faire dans l'immédiat — c'est juste pour vous laisser le temps de vous organiser tranquillement.
+Ceci n'engage rien, c'est juste pour vous laisser le temps de vous organiser tranquillement.
 
 Merci, et bonne journée !
+
 — Trofel`;
 
 /**
@@ -52,7 +61,13 @@ const JETONS = [
   ["{jour}", "« vers le 15 » si un jour habituel est enregistré"],
 ];
 
-export default function RappelLoyer({ locataires, getCellData, mois, annee, onClose }) {
+export default function RappelLoyer({
+  locataires,
+  getCellData,
+  mois,
+  annee,
+  onClose,
+}) {
   const [modele, setModele] = useState(MODELE_DEFAUT);
   const [masquerPayes, setMasquerPayes] = useState(true);
   const [envoyes, setEnvoyes] = useState({});
@@ -84,10 +99,16 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
         const texte = modele
           .replaceAll("{nom}", `${loc.nom} ${loc.prenom || ""}`.trim())
           .replaceAll("{chambre}", loc.chambre || "")
-          .replaceAll("{montant}", Number(loc.loyer || 0).toLocaleString("fr-FR"))
+          .replaceAll(
+            "{montant}",
+            Number(loc.loyer || 0).toLocaleString("fr-FR"),
+          )
           .replaceAll("{deMois}", deMois(MOIS_LONG[cible.mois - 1]))
           .replaceAll("{mois}", MOIS_LONG[cible.mois - 1])
-          .replaceAll("{jour}", jour ? `, vers le ${jour} comme d'habitude` : "");
+          .replaceAll(
+            "{jour}",
+            jour ? `, vers le ${jour} comme d'habitude` : "",
+          );
         return { loc, paye, texte, moisCible: MOIS_LONG[cible.mois - 1] };
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +118,9 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
   const nbPayes = lignes.filter((l) => l.paye).length;
 
   const numeroWhatsApp = (tel) =>
-    String(tel || "").replace(/\s+/g, "").replace(/^\+/, "");
+    String(tel || "")
+      .replace(/\s+/g, "")
+      .replace(/^\+/, "");
 
   function ouvrirWhatsApp(ligne) {
     const num = numeroWhatsApp(ligne.loc.tel);
@@ -137,7 +160,10 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
           {/* Le message, modifiable avant tout envoi */}
           <div className="rappel-modele">
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-              <label className="fw-semibold mb-0" style={{ fontSize: "0.85rem" }}>
+              <label
+                className="fw-semibold mb-0"
+                style={{ fontSize: "0.85rem" }}
+              >
                 Message envoyé à chacun
               </label>
               {modele !== MODELE_DEFAUT && (
@@ -157,7 +183,9 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
             />
             <div className="rappel-jetons">
               {JETONS.map(([jeton, aide]) => (
-                <span key={jeton} title={aide}>{jeton}</span>
+                <span key={jeton} title={aide}>
+                  {jeton}
+                </span>
               ))}
             </div>
           </div>
@@ -191,7 +219,10 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
             </div>
 
             {visibles.length === 0 ? (
-              <p className="text-muted text-center py-4 mb-0" style={{ fontSize: "0.85rem" }}>
+              <p
+                className="text-muted text-center py-4 mb-0"
+                style={{ fontSize: "0.85rem" }}
+              >
                 Tout le monde a déjà réglé — personne à relancer.
               </p>
             ) : (
@@ -209,16 +240,26 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
                       onFocus={() => setApercu(ligne)}
                     >
                       <div className="rappel-qui">
-                        <span className={loc.etage === "RDC" ? "badge-rdc" : "badge-1er"}>
+                        <span
+                          className={
+                            loc.etage === "RDC" ? "badge-rdc" : "badge-1er"
+                          }
+                        >
                           {loc.chambre}
                         </span>
                         <div>
-                          <div className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+                          <div
+                            className="fw-semibold"
+                            style={{ fontSize: "0.85rem" }}
+                          >
                             {loc.nom} {loc.prenom}
                           </div>
-                          <small className="text-muted" style={{ fontSize: "0.72rem" }}>
-                            {Number(loc.loyer || 0).toLocaleString("fr-FR")} Ar ·{" "}
-                            {ligne.moisCible}
+                          <small
+                            className="text-muted"
+                            style={{ fontSize: "0.72rem" }}
+                          >
+                            {Number(loc.loyer || 0).toLocaleString("fr-FR")} Ar
+                            · {ligne.moisCible}
                             {ligne.paye && " · déjà payé"}
                           </small>
                         </div>
@@ -228,7 +269,10 @@ export default function RappelLoyer({ locataires, getCellData, mois, annee, onCl
                         {envoye && (
                           // Le canal est deja dit par le bouton d'a cote :
                           // repeter "WhatsApp" ici se lisait deux fois.
-                          <span className="rappel-fait" title={`Conversation ouverte sur ${envoye}`}>
+                          <span
+                            className="rappel-fait"
+                            title={`Conversation ouverte sur ${envoye}`}
+                          >
                             <BsCheck2 size={13} /> Ouvert
                           </span>
                         )}
