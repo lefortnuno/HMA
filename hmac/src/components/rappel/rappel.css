@@ -1,0 +1,215 @@
+/* ── Rappel de fin de mois ──────────────────────────────────────────────────
+   Trois zones côte à côte sur grand écran : le message qu'on ajuste, la liste
+   des destinataires, et l'aperçu réel de ce qui partira. On veut pouvoir
+   relire le texte tout en descendant la liste, sans faire d'aller-retour. */
+
+.rappel-modale {
+  max-width: 1080px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+}
+
+.rappel-corps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1.1rem;
+  overflow-y: auto;
+}
+
+@media (min-width: 992px) {
+  .rappel-corps {
+    grid-template-columns: 1fr 1.15fr 0.9fr;
+    align-items: start;
+  }
+}
+
+/* ── Le modèle ─────────────────────────────────────────────────────────── */
+.rappel-zone {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.rappel-jetons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+.rappel-jetons span {
+  font-size: 0.7rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 5px;
+  padding: 1px 6px;
+  cursor: help;
+}
+
+/* ── Les destinataires ─────────────────────────────────────────────────── */
+.rappel-bascule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: #64748b;
+  cursor: pointer;
+  margin: 0;
+}
+
+.rappel-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.7rem;
+}
+.rappel-note svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #94a3b8;
+}
+
+.rappel-destinataires {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.rappel-destinataires li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.15rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.rappel-destinataires li:last-child {
+  border-bottom: none;
+}
+/* Une fois la conversation ouverte, la ligne s'efface : on retrouve d'un
+   coup d'œil où on en est dans la liste. */
+.rappel-destinataires li.envoye {
+  opacity: 0.55;
+}
+
+.rappel-qui {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rappel-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.rappel-fait {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+/* Les couleurs des messageries, pour que le bon bouton saute aux yeux. */
+.rappel-wa,
+.rappel-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 0.2rem 0.55rem;
+  white-space: nowrap;
+}
+.rappel-wa {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+.rappel-wa:hover:not(:disabled) {
+  background: #dcfce7;
+}
+.rappel-me {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.rappel-me:hover:not(:disabled) {
+  background: #dbeafe;
+}
+/* Sans numéro ni lien enregistré, le bouton ne mène nulle part : il le dit
+   plutôt que d'ouvrir une fenêtre inutile. */
+.rappel-wa:disabled,
+.rappel-me:disabled {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* ── L'aperçu ──────────────────────────────────────────────────────────── */
+.rappel-apercu {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+.rappel-texte {
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #334155;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.7rem;
+  margin: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.rappel-pied {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 1.1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+@media (max-width: 576px) {
+  .rappel-corps {
+    padding: 0.8rem;
+  }
+  .rappel-destinataires li {
+    align-items: flex-start;
+  }
+  .rappel-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

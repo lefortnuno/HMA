@@ -18,6 +18,7 @@ import {
   BsWhatsapp,
   BsExclamationTriangleFill,
   BsMessenger,
+  BsBellFill,
   BsXLg,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
@@ -42,6 +43,7 @@ import {
   libelleJour,
 } from "../../config/echeance";
 import { AnneePicker } from "../../components/jour/periode.picker";
+import RappelLoyer from "../../components/rappel/rappel.loyer";
 import "./loyer.css";
 import { dateDuJour, MOIS_COURT as MOIS, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
@@ -356,6 +358,7 @@ export default function Loyer() {
   const [paiements, setPaiements] = useState({});
   const [loading, setLoading] = useState(true);
   const [modalCell, setModalCell] = useState(null);
+  const [rappel, setRappel] = useState(false);
 
   useEffect(() => {
     // Skeleton seulement si le tableau est encore vide (1er chargement).
@@ -700,6 +703,13 @@ export default function Loyer() {
                 >
                   <BsLightningCharge /> JIRAMA
                 </Link>
+                <button
+                  className="btn btn-sm btn-outline-warning d-flex align-items-center gap-1"
+                  onClick={() => setRappel(true)}
+                  title="Prévenir gentiment les locataires que l'échéance approche"
+                >
+                  <BsBellFill /> Rappels
+                </button>
               </div>
             </div>
 
@@ -998,6 +1008,16 @@ export default function Loyer() {
           </main>
         </div>
       </div>
+
+      {rappel && (
+        <RappelLoyer
+          locataires={locataires}
+          getCellData={getCellData}
+          mois={moisCourant}
+          annee={annee}
+          onClose={() => setRappel(false)}
+        />
+      )}
 
       {modalCell && (
         <PaymentModal
