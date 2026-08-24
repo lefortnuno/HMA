@@ -10,6 +10,7 @@ const boutiqueRoute = require("./routes/boutique.route");
 const loyerRoute   = require("./routes/loyer.route");
 const vitrineRoute = require("./routes/vitrine.route");
 const financeRoute = require("./routes/finance.route");
+const verificationRoute = require("./routes/verification.route");
 
 const app = express();
 // Inutile d'annoncer la pile technique a qui interroge le serveur.
@@ -81,6 +82,7 @@ app.use("/api/boutique", boutiqueRoute);
 app.use("/api/loyer", loyerRoute);
 app.use("/api/vitrine", vitrineRoute);
 app.use("/api/finance", financeRoute);
+app.use("/api/verification", verificationRoute);
 app.use("/api/visite", require("./routes/visite.route"));
 // MODULE TEMPORAIRE — budget OTIP, a retirer avec scripts/remove_otip.js
 app.use("/api/otip", require("./routes/otip.route"));

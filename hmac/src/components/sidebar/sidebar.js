@@ -133,7 +133,6 @@ export default function Sidebar() {
         {nav("/loyer/jirama/", BsLightningCharge, "Factures JIRAMA", true)}
         {isAdmin && nav("/loyer/depenses/", BsCashCoin, "Sorties d'argent", true)}
         {isAdmin && nav("/loyer/benefices/", BsClipboardData, "Bénéfices", true)}
-        {isAdmin && nav("/loyer/historique/", BsClockHistory, "Historique", true)}
         {isAdmin && nav("/loyer/bail/", BsFileEarmarkText, "Contrat de bail", true)}
 
         {isAdmin && (
@@ -149,6 +148,7 @@ export default function Sidebar() {
 
             <div className="sidebar-section-label">Vitrine</div>
             {nav("/vitrine/admin/", BsImages, "Mes Biens", true)}
+            {nav("/loyer/historique/", BsClockHistory, "Historique", true)}
 
             <div className="separator" />
 

@@ -72,6 +72,7 @@ import FinanceBilan    from "./pages/finance/bilan";
 
 // ─── Vitrine ──────────────────────────────────────────────────
 import Vitrine from "./pages/vitrine/vitrine";
+import Verification from "./pages/verification/verification";
 import DetailBien from "./pages/vitrine/detail.bien";
 import AdminVitrine from "./pages/vitrine/admin.vitrine";
 import AddBien from "./pages/vitrine/add.bien";
@@ -162,6 +163,7 @@ function App() {
           <Route path="finance/bilan/"    element={<AdminProtection Cmp={FinanceBilan}    />} />
 
           {/* ── Vitrine (public) ── */}
+          <Route path="verification/:code" element={<Verification />} />
           <Route path="vitrine/" element={<Vitrine />} />
           <Route path="vitrine/bien/:id" element={<DetailBien />} />
 

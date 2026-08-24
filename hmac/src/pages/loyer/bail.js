@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { useEffect } from "react";
 import {
   BsFileEarmarkText, BsPerson, BsPeopleFill, BsFileEarmarkPdf,
-  BsCheckSquare, BsSquare, BsExclamationTriangle,
+  BsCheckSquare, BsSquare, BsExclamationTriangle, BsSendFill,
 } from "react-icons/bs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -22,6 +22,7 @@ import {
   BAILLEUR, VILLE, SOUS_TITRE, LOYER,
   article1, ARTICLE_2, ARTICLE_3, nomLegalDe, cinDe,
 } from "../../config/bail";
+import { genererQrVerification } from "../../config/verification";
 import "./loyer.css";
 import "./bail.css";
 
@@ -115,6 +116,22 @@ export default function ContratBail() {
     return 36;
   }
 
+  // QR de vérification, coin haut-droit — ne bloque jamais la génération du
+  // contrat si le serveur est indisponible (repli silencieux, pas de QR).
+  async function ajouterQr(doc, R, params) {
+    const { dataUrl } = await genererQrVerification(u_info.opts, params);
+    if (!dataUrl) return;
+    const taille = 22;
+    const x = R - taille;
+    const y = 8;
+    doc.addImage(dataUrl, "PNG", x, y, taille, taille);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(90);
+    doc.text("Vérifier ce contrat", x + taille / 2, y + taille + 3, { align: "center" });
+    doc.setTextColor(0);
+  }
+
   function tableauBailleur(doc, y) {
     autoTable(doc, {
       startY: y,
@@ -180,14 +197,21 @@ export default function ContratBail() {
   }
 
   // ── Format groupe ────────────────────────────────────────────────────
-  function genererGroupe() {
-    const choisis = locataires.filter((l) => selection.has(l.id));
-    if (!choisis.length) return toast.warning("Sélectionnez au moins un locataire");
-
+  async function construireGroupe(choisis) {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     const mg = 15;
     const R = doc.internal.pageSize.getWidth() - mg;
     let y = enTete(doc);
+
+    await ajouterQr(doc, R, {
+      type: "BAIL",
+      bienId: current.id,
+      titre: `Contrat de bail groupe — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""} — ${current.nom}`,
+      details: {
+        bailleur: BAILLEUR.nom,
+        locataires: choisis.map((l) => ({ chambre: l.chambre, nom: nomLegalDe(l) })),
+      },
+    });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
@@ -252,19 +276,35 @@ export default function ContratBail() {
     }
     pied(doc, y, mg, R, false);
 
-    doc.save(`Contrat_de_bail_${current.nom.replace(/\s+/g, "_")}.pdf`);
+    return { doc, filename: `Contrat_de_bail_${current.nom.replace(/\s+/g, "_")}.pdf` };
+  }
+
+  async function handleGenererGroupe() {
+    const choisis = locataires.filter((l) => selection.has(l.id));
+    if (!choisis.length) return toast.warning("Sélectionnez au moins un locataire");
+    const { doc, filename } = await construireGroupe(choisis);
+    doc.save(filename);
     toast.success(`Contrat généré — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""}`);
   }
 
   // ── Format individuel ────────────────────────────────────────────────
-  function genererIndividuel() {
-    const loc = locataires.find((l) => l.id === individuelId);
-    if (!loc) return toast.warning("Choisissez un locataire");
-
+  async function construireIndividuel(loc) {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     const mg = 15;
     const R = doc.internal.pageSize.getWidth() - mg;
     let y = enTete(doc);
+
+    await ajouterQr(doc, R, {
+      type: "BAIL",
+      bienId: current.id,
+      titre: `Contrat de bail — ${nomLegalDe(loc)} — chambre ${loc.chambre} — ${current.nom}`,
+      details: {
+        bailleur: BAILLEUR.nom,
+        locataire: nomLegalDe(loc),
+        chambre: loc.chambre,
+        cin: cinDe(loc) || undefined,
+      },
+    });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
@@ -308,8 +348,59 @@ export default function ContratBail() {
     pied(doc, y, mg, R, true);
 
     const nomFichier = nomLegalDe(loc).replace(/\s+/g, "_");
-    doc.save(`Contrat_de_bail_${nomFichier}.pdf`);
+    return { doc, filename: `Contrat_de_bail_${nomFichier}.pdf` };
+  }
+
+  async function handleGenererIndividuel(loc) {
+    if (!loc) return toast.warning("Choisissez un locataire");
+    const { doc, filename } = await construireIndividuel(loc);
+    doc.save(filename);
     toast.success(`Contrat généré — ${loc.nom}`);
+  }
+
+  const messageBail = (loc) =>
+    `Bonjour ${loc.nom},\n` +
+    `Voici votre contrat de bail Villa Kinya pour la chambre ${loc.chambre}.\n` +
+    `Merci de le lire, le signer et de nous le retourner.\n— ${BAILLEUR.nom}`;
+
+  /**
+   * Envoi réel du contrat au locataire — pas juste un lien WhatsApp vide.
+   *
+   * Sur mobile, la feuille de partage du système reçoit le PDF en pièce
+   * jointe : WhatsApp/Messenger l'envoient tel quel dans la conversation.
+   * Sur ordinateur, aucune API web ne permet d'attacher un fichier à
+   * WhatsApp Web : le contrat est donc téléchargé et la conversation
+   * s'ouvre avec le message prêt, la pièce jointe restant à glisser.
+   */
+  async function handleEnvoyerIndividuel(loc) {
+    if (!loc) return toast.warning("Choisissez un locataire");
+    let doc, filename;
+    try {
+      ({ doc, filename } = await construireIndividuel(loc));
+    } catch {
+      return toast.error("Erreur génération PDF");
+    }
+
+    const message = messageBail(loc);
+    const fichier = new File([doc.output("blob")], filename, { type: "application/pdf" });
+
+    if (navigator.canShare?.({ files: [fichier] })) {
+      try {
+        await navigator.share({ files: [fichier], title: filename, text: message });
+        return toast.success(`Contrat envoyé — ${loc.nom}`);
+      } catch (err) {
+        if (err?.name === "AbortError") return; // partage annulé, rien à signaler
+      }
+    }
+
+    doc.save(filename);
+    const tel = (loc.tel || "").replace(/\s+/g, "").replace(/^\+/, "");
+    if (tel) {
+      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(message)}`, "whatsapp");
+      toast.info("PDF téléchargé — joignez-le dans la conversation WhatsApp ouverte.");
+    } else {
+      toast.info("PDF téléchargé — aucun téléphone enregistré pour l'envoyer automatiquement.");
+    }
   }
 
   const nbSelectionnes = selection.size;
@@ -359,7 +450,7 @@ export default function ContratBail() {
               <div className="card-pro">
                 <h6 className="fw-bold mb-3">Choisir le locataire</h6>
                 <div className="row g-3 align-items-end">
-                  <div className="col-sm-8">
+                  <div className="col-sm-6">
                     <select
                       className="form-select"
                       value={individuelId ?? ""}
@@ -379,12 +470,20 @@ export default function ContratBail() {
                       )}
                     </select>
                   </div>
-                  <div className="col-sm-4">
+                  <div className="col-sm-3">
+                    <button
+                      className="btn btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                      onClick={() => handleGenererIndividuel(locataires.find((l) => l.id === individuelId))}
+                    >
+                      <BsFileEarmarkPdf /> Télécharger
+                    </button>
+                  </div>
+                  <div className="col-sm-3">
                     <button
                       className="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
-                      onClick={genererIndividuel}
+                      onClick={() => handleEnvoyerIndividuel(locataires.find((l) => l.id === individuelId))}
                     >
-                      <BsFileEarmarkPdf /> Générer le PDF
+                      <BsSendFill /> Envoyer
                     </button>
                   </div>
                 </div>
@@ -423,7 +522,7 @@ export default function ContratBail() {
                       </button>
                       <button
                         className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
-                        onClick={genererGroupe}
+                        onClick={handleGenererGroupe}
                         disabled={!nbSelectionnes}
                       >
                         <BsFileEarmarkPdf /> Générer le PDF
@@ -461,7 +560,7 @@ export default function ContratBail() {
                             {parEtage[etage].map((l) => {
                               const coche = selection.has(l.id);
                               return (
-                                <li key={l.id}>
+                                <li key={l.id} className="bail-item-ligne">
                                   <button
                                     className="bail-item"
                                     onClick={() => basculer(l.id)}
@@ -475,6 +574,13 @@ export default function ContratBail() {
                                       {l.nom} {l.prenom}
                                     </span>
                                     {!cinDe(l) && <em className="bail-manque">CIN manquant</em>}
+                                  </button>
+                                  <button
+                                    className="bail-envoyer"
+                                    title={`Envoyer son contrat individuel à ${l.nom}`}
+                                    onClick={() => handleEnvoyerIndividuel(l)}
+                                  >
+                                    <BsSendFill size={12} />
                                   </button>
                                 </li>
                               );

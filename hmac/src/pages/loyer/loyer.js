@@ -35,6 +35,7 @@ import ApartSelect, {
   KINYA,
 } from "../../components/appart/apart.select";
 import { copierEtOuvrirMessenger, TEL_BAILLEUR } from "../../config/contact";
+import { genererQrVerification } from "../../config/verification";
 import {
   moisExigibles,
   montantDu,
@@ -1235,6 +1236,50 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
       doc.line(mg, y + 0.8, R, y + 0.8);
     };
 
+    // Lignes de tirets calées sur la largeur réelle du texte (Helvetica
+    // n'est pas monospace) : un nombre de tirets fixe dépassait toujours le
+    // bord droit d'une quantité différente selon le libellé, d'où les
+    // petits traits qui débordaient dans la marge.
+    const ligneEntete = (fontSize, label) => {
+      doc.setFontSize(fontSize);
+      const prefix = "|| ";
+      const pad = ` ${label} `;
+      const dashW = doc.getTextWidth("-") || 1;
+      const nb = Math.max(
+        3,
+        Math.floor((R - mg - doc.getTextWidth(prefix) - doc.getTextWidth(pad)) / (2 * dashW))
+      );
+      return `${prefix}${"-".repeat(nb)}${pad}${"-".repeat(nb)}`;
+    };
+    const ligneComplete = (fontSize) => {
+      doc.setFontSize(fontSize);
+      const prefix = "|| ";
+      const dashW = doc.getTextWidth("-") || 1;
+      const nb = Math.max(3, Math.floor((R - mg - doc.getTextWidth(prefix)) / dashW));
+      return `${prefix}${"-".repeat(nb)}`;
+    };
+
+    // QR de vérification — ne doit jamais empêcher l'émission du reçu si le
+    // serveur est indisponible, d'où le repli silencieux sur "pas de QR".
+    const { dataUrl: qrDataUrl } = await genererQrVerification(u_info.opts, {
+      type: "RECU",
+      bienId: cell.loc.bienId,
+      titre: `Quittance de loyer n°${recuId} — ${nomComplet} — ${moisNomFull} ${cell.annee}`,
+      details: {
+        locataire: nomComplet,
+        chambre: cell.loc.chambre,
+        etage: cell.loc.etage,
+        mois: moisNomFull,
+        annee: cell.annee,
+        loyerPaye: loyerRegle,
+        jirama: jiramaRegle,
+        statutLoyer: statutLabel,
+        statutJirama: statutJiramaLabel,
+        datePaiement: datePaiementStr,
+        recuId,
+      },
+    });
+
     // ══════════════ PAGE 1 ══════════════
     let y = 15;
 
@@ -1261,6 +1306,21 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     doc.text(`Quittance de Loyer n°: .${recuId}.`, R, y + 21, {
       align: "right",
     });
+
+    // ── QR de vérification (zone haut-droite, sous le titre) ──
+    if (qrDataUrl) {
+      const qrSize = 28;
+      const qrX = R - qrSize;
+      const qrY = y + 25;
+      doc.addImage(qrDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
+      N();
+      doc.setFontSize(6);
+      doc.setTextColor(90);
+      doc.text("Scanner pour vérifier", qrX + qrSize / 2, qrY + qrSize + 3.5, {
+        align: "center",
+      });
+      K();
+    }
 
     y += 34;
 
@@ -1340,12 +1400,9 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     // une seule ligne rendait la quittance illisible en cas de règlement partiel.
     B();
     K();
-    doc.setFontSize(8);
-    const d86 = "-".repeat(151);
 
     // ── A. Quittance de loyer ──
-    doc.setFontSize(9);
-    doc.text(`|| ${"-".repeat(70)} A. QUITTANCE DE LOYER ${"-".repeat(70)}`, mg, y);
+    doc.text(ligneEntete(9, "A. QUITTANCE DE LOYER"), mg, y);
     y += 8;
 
     doc.setFontSize(10);
@@ -1362,8 +1419,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     y += 9;
 
     // ── B. Facture JIRAMA ──
-    doc.setFontSize(9);
-    doc.text(`|| ${"-".repeat(64)} B. EAU & ÉLECTRICITÉ (JIRAMA) ${"-".repeat(64)}`, mg, y);
+    doc.text(ligneEntete(9, "B. EAU & ÉLECTRICITÉ (JIRAMA)"), mg, y);
     y += 8;
 
     doc.setFontSize(10);
@@ -1383,7 +1439,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     doc.text(`- Reste à payer : ${soldeLoyer.toFixed(2)} Ar`, W / 2 + 5, y);
     y += 7;
 
-    doc.text(`|| ${d86}`, mg, y);
+    doc.text(ligneComplete(10), mg, y);
     y += 7;
 
     // Tirets centre + double ligne
