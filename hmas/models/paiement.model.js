@@ -79,6 +79,13 @@ Paiement.update = (id, data, result) => {
   });
 };
 
+Paiement.delete = (id, result) => {
+  db.query("DELETE FROM paiement_loyer WHERE id=?", [id], (err) => {
+    if (err) result(err, null);
+    else result(null, { success: true });
+  });
+};
+
 Paiement.sumByMoisAnnee = (mois, annee, bienId, result) => {
   let sql = `SELECT
       COALESCE(SUM(CASE WHEN p.statut IN ('PAYE','PARTIEL') THEN p.montantLoyer ELSE 0 END), 0) AS totalLoyers,

@@ -22,6 +22,9 @@ router.post("/paiements",     user.checkUtilisateur, ctrl.createPaiement);
 // Reglement de l'electricite, saisi depuis le tableau JIRAMA.
 router.post("/paiements/jirama", user.checkUtilisateur, ctrl.upsertJirama);
 router.put("/paiements/:id",  user.checkUtilisateur, ctrl.updatePaiement);
+// Suppression reservee a l'admin : correctif d'une erreur de saisie, pas un
+// geste ordinaire du tableau — pas de workflow de validation ici.
+router.delete("/paiements/:id", admin.checkUtilisateur, ctrl.deletePaiement);
 
 // ── Provenance de l'encaisse ──────────────────────────────────
 // Qui a effectivement recu l'argent. Reserve a l'admin, comme la page

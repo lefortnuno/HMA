@@ -20,6 +20,8 @@ import {
   BsMessenger,
   BsBellFill,
   BsXLg,
+  BsFillTrashFill,
+  BsExclamationTriangle,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -1048,6 +1050,34 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
       : dateDuJour(),
   });
   const [saving, setSaving] = useState(false);
+  // Suppression d'un paiement mal saisi : confirmation en deux temps, dans
+  // la meme fenetre plutot qu'une popup empilee par-dessus.
+  const [confirmSuppr, setConfirmSuppr] = useState(false);
+  const [suppression, setSuppression] = useState(false);
+  const estAdmin = String(u_info.u_karazana) === "1";
+
+  useEffect(() => {
+    if (!confirmSuppr) return;
+    const k = (e) => e.key === "Escape" && !suppression && setConfirmSuppr(false);
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [confirmSuppr, suppression]);
+
+  function handleDelete() {
+    if (!cell.existing?.id) return;
+    setSuppression(true);
+    axios
+      .delete(`loyer/paiements/${cell.existing.id}`, u_info.opts)
+      .then(() => {
+        toast.success("Paiement supprimé");
+        onSave();
+        onClose();
+      })
+      .catch((err) =>
+        toast.error(err.response?.data?.message || "Suppression impossible")
+      )
+      .finally(() => setSuppression(false));
+  }
 
   // ── Report de la demi-avance sur le mois suivant ──
   // Un locataire entré en cours de mois règle à cheval : son versement solde
@@ -1473,10 +1503,73 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
       <div className="modal-content-pro" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-pro">
           <h6>
-            Paiement — {cell.loc.nom} / {moisNom} {cell.annee}
+            {confirmSuppr
+              ? "Supprimer ce paiement ?"
+              : `Paiement — ${cell.loc.nom} / ${moisNom} ${cell.annee}`}
           </h6>
-          <button className="btn-close" onClick={onClose} />
+          <button
+            className="btn-close"
+            onClick={() => (confirmSuppr ? setConfirmSuppr(false) : onClose())}
+          />
         </div>
+
+        {confirmSuppr ? (
+          <div className="p-3">
+            <p className="text-muted mb-3" style={{ fontSize: "0.85rem" }}>
+              Cette ligne sera définitivement retirée du tableau de{" "}
+              {moisNomFull} {cell.annee}. L'opération est irréversible.
+            </p>
+            <div
+              className="p-3 rounded-3 mb-3"
+              style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}
+            >
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <span className="fw-bold" style={{ fontSize: "0.9rem" }}>
+                  {cell.loc.nom} — chambre {cell.loc.chambre}
+                </span>
+                <span className="fw-bold text-danger">
+                  {(cell.existing?.montantLoyer || 0).toLocaleString()} Ar
+                </span>
+              </div>
+              <small className="text-muted" style={{ fontSize: "0.76rem" }}>
+                Loyer {moisNomFull} {cell.annee} — statut {cell.existing?.statut}
+                {cell.existing?.montantJIRAMA > 0 &&
+                  ` · JIRAMA ${cell.existing.montantJIRAMA.toLocaleString()} Ar`}
+              </small>
+            </div>
+            <div
+              className="d-flex gap-2 align-items-start p-2 rounded-3 mb-3"
+              style={{ background: "#fffbeb", border: "1px solid #fde68a" }}
+            >
+              <BsExclamationTriangle size={14} style={{ color: "#b45309", flex: "0 0 auto", marginTop: 2 }} />
+              <small style={{ fontSize: "0.76rem", color: "#92400e" }}>
+                Si une demi-avance a été reportée sur le mois suivant à
+                partir de ce versement, elle reste inchangée : vérifiez-la
+                séparément si besoin.
+              </small>
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+                onClick={() => setConfirmSuppr(false)}
+                disabled={suppression}
+                autoFocus
+              >
+                <BsXLg /> Annuler
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm d-inline-flex align-items-center gap-1"
+                onClick={handleDelete}
+                disabled={suppression}
+              >
+                <BsFillTrashFill /> {suppression ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        ) : (
+        <>
         <form onSubmit={handleSubmit} className="p-3">
           <div className="mb-3">
             <label className="form-label">Statut</label>
@@ -1615,9 +1708,24 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
         {hasExisting && (
           <div className="px-3 pb-3 pt-0">
             <div className="border-top pt-3">
-              <p className="text-muted small mb-2 fw-semibold">
-                Envoyer le reçu :
-              </p>
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <p className="text-muted small mb-0 fw-semibold">
+                  Envoyer le reçu :
+                </p>
+                {/* Correctif d'une erreur de saisie, pas un geste ordinaire :
+                    en retrait, discret, admin seul. */}
+                {estAdmin && (
+                  <button
+                    type="button"
+                    className="btn btn-link btn-sm text-danger p-0 d-inline-flex align-items-center gap-1"
+                    style={{ fontSize: "0.78rem", textDecoration: "none" }}
+                    onClick={() => setConfirmSuppr(true)}
+                    title="Supprimer ce paiement — saisi par erreur"
+                  >
+                    <BsFillTrashFill size={12} /> Supprimer ce paiement
+                  </button>
+                )}
+              </div>
               <div className="d-flex gap-2 flex-wrap justify-content-end">
                 <button
                   type="button"
@@ -1637,6 +1745,8 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
               </div>
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>

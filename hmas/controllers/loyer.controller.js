@@ -840,6 +840,54 @@ module.exports.upsertJirama = (req, res) => {
   });
 };
 
+/**
+ * Suppression d'un paiement mal saisi (mauvais locataire, mauvais mois...).
+ *
+ * Reservee a l'admin, sans passer par la validation : c'est un correctif
+ * d'une erreur de saisie de l'admin lui-meme, pas une action qu'un simple
+ * compte doit pouvoir declencher. Tracee comme le reste : un montant qui
+ * disparait du tableau doit rester explicable apres coup.
+ */
+module.exports.deletePaiement = (req, res) => {
+  const { id } = req.params;
+  if (!id || Number.isNaN(Number(id))) return badRequest(res, "Paiement invalide.");
+
+  Paiement.getById(id, (err, existing) => {
+    if (err) return sendErr(res, err);
+    if (!existing)
+      return res.status(404).send({ success: false, message: "Paiement introuvable." });
+
+    Paiement.delete(id, (err2, result) => {
+      if (err2) return sendErr(res, err2);
+
+      Locataire.getById(existing.locataireId, (e, loc) => {
+        PaiementHisto.log({
+          paiementId: existing.id,
+          locataireId: existing.locataireId,
+          locataireNom: loc ? `${loc.nom} ${loc.prenom || ""}`.trim() : null,
+          chambre: loc ? loc.chambre : null,
+          etage: loc ? loc.etage : null,
+          mois: existing.mois,
+          annee: existing.annee,
+          action: "SUPPRESSION",
+          montantLoyer: existing.montantLoyer || 0,
+          montantJIRAMA: existing.montantJIRAMA || 0,
+          statut: existing.statut,
+          avant: {
+            montantLoyer: existing.montantLoyer,
+            montantJIRAMA: existing.montantJIRAMA,
+            statut: existing.statut,
+            statutJIRAMA: existing.statutJIRAMA,
+          },
+          ...auteurDe(req),
+        });
+      });
+
+      res.send(result);
+    });
+  });
+};
+
 module.exports.updatePaiement = (req, res) => {
   const { montantLoyer, montantJIRAMA, statut, datePaiement } = req.body;
   if (!V.isMontantValide(montantLoyer)) return badRequest(res, "Montant loyer invalide.");
