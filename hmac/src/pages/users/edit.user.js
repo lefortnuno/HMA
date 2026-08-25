@@ -42,7 +42,6 @@ export default function EditUser() {
   function handleSubmit(e) {
     e.preventDefault();
     if (!form.nom.trim())    return toast.warning("Nom requis");
-    if (!form.prenom.trim()) return toast.warning("Prénom requis");
     if (!form.idPS.trim())   return toast.warning("Identifiant requis");
     setSaving(true);
     const payload = { nom: form.nom, prenom: form.prenom, idPS: form.idPS, karazana: form.karazana };
@@ -129,7 +128,7 @@ export default function EditUser() {
                       </div>
 
                       <div className="col-sm-6">
-                        <label className="form-label">Prénom *</label>
+                        <label className="form-label">Prénom</label>
                         <input type="text" className="form-control form-control-sm"
                           value={form.prenom}
                           onChange={e => setForm({ ...form, prenom: e.target.value })}

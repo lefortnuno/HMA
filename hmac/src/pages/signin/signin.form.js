@@ -98,7 +98,7 @@ export default function SignInForm() {
       }
     }
     if (name === "prenom") {
-      if (value.length < 2) {
+      if (value.length > 0 && value.length < 2) {
         setErreurs((values) => ({ ...values, [name]: true }));
         setMessages((values) => ({
           ...values,
