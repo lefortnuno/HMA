@@ -155,7 +155,7 @@ export default function EditLocataire() {
                     </div>
 
                     <span className={`apercu-statut ${form.actif ? "actif" : "inactif"}`}>
-                      {form.actif ? "Locataire actif" : "Archivé — chambre libérée"}
+                      {form.actif ? "Locataire actif" : "Archivé, chambre libérée"}
                     </span>
 
                     <dl className="apercu-liste">
@@ -202,7 +202,7 @@ export default function EditLocataire() {
                   <div className="col-sm-8">
                     <label className="form-label">
                       Nom complet (état civil)
-                      <span className="text-muted" style={{ fontWeight: 400 }}> — pour le contrat de bail</span>
+                      <span className="text-muted" style={{ fontWeight: 400 }}> (pour le contrat de bail)</span>
                     </label>
                     <input type="text" name="nomComplet" className="form-control"
                       value={form.nomComplet} onChange={handleChange}
@@ -238,7 +238,7 @@ export default function EditLocataire() {
                         <div className="fw-bold text-primary" style={{ fontSize: "0.875rem" }}>
                           Loyer mensuel : {loyer.toLocaleString()} Ar
                         </div>
-                        <small className="text-muted">Chambre {form.chambre} — {form.etage}</small>
+                        <small className="text-muted">Chambre {form.chambre} ({form.etage})</small>
                       </div>
                     </div>
                   </div>

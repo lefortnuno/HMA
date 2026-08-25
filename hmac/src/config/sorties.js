@@ -52,7 +52,7 @@ export const TYPES = {
     bordure: "#ddd6fe",
     impacte: false,
     beneficiaireRequis: true,
-    aide: "Fonds envoyés aux proches. Ce n'est pas une charge de la maison mais une part du bénéfice qu'on en sort — le résultat de la résidence reste donc inchangé.",
+    aide: "Fonds envoyés aux proches. Ce n'est pas une charge de la maison mais une part du bénéfice qu'on en sort, le résultat de la résidence reste donc inchangé.",
     categories: ["Frère / Sœur", "Parents", "Aide ponctuelle", "Frais de transfert", "Autre"],
   },
   INVESTISSEMENT: {

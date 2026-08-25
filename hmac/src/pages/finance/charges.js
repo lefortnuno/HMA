@@ -12,7 +12,7 @@ import { MoisPicker, AnneePicker } from "../../components/jour/periode.picker";
 import "./finance.css";
 import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
 
-
+
 export default function FinanceCharges() {
   const u_info = GetUserData();
   const now    = new Date();
@@ -72,7 +72,7 @@ export default function FinanceCharges() {
               <div>
                 <h1 className="page-title"><BsGraphDown /> Charges Fixes</h1>
                 <p className="text-muted small mb-0">
-                  {MOIS_LABELS[mois]} {annee} — Total : <span className="fw-bold text-danger">{total.toLocaleString()} Ar</span>
+                  {MOIS_LABELS[mois]} {annee}, Total : <span className="fw-bold text-danger">{total.toLocaleString()} Ar</span>
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -132,7 +132,7 @@ export default function FinanceCharges() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content-pro" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header-pro">
-              <h6><BsGraphDown className="me-2" />{editTarget ? "Modifier la charge" : `Nouvelle charge — ${MOIS_LABELS[mois]} ${annee}`}</h6>
+              <h6><BsGraphDown className="me-2" />{editTarget ? "Modifier la charge" : `Nouvelle charge ${MOIS_LABELS[mois]} ${annee}`}</h6>
               <button className="btn-close" onClick={() => setShowModal(false)} />
             </div>
             <form onSubmit={handleSubmit} className="p-4">

@@ -262,7 +262,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                       {doute && (
                         <span
                           className="d-inline-flex align-items-center gap-1 rounded-pill px-1"
-                          title="Dit avoir payé — en attente de confirmation sur place"
+                          title="Dit avoir payé, en attente de confirmation sur place"
                           style={{ background: "#fef9c3", color: "#854d0e", border: "1px solid #fde047" }}
                         >
                           <span className="pastille-doute">!</span> doute
@@ -294,7 +294,7 @@ function AlerteImpayes({ locataires, getCellData, annee }) {
                       title={`Copier le rappel et ouvrir Messenger pour ${loc.nom}`}
                       onClick={() => {
                         copierEtOuvrirMessenger(texteRelance(loc, reste), loc.nom, loc.messengerId);
-                        toast.info("Rappel copié — collez-le dans la conversation");
+                        toast.info("Rappel copié, collez-le dans la conversation");
                       }}
                     >
                       <BsMessenger size={12} /> Relancer
@@ -524,7 +524,7 @@ export default function Loyer() {
       return (
         <span
           className={cls}
-          title={`${loc.nom} affirme avoir payé — en attente de confirmation`}
+          title={`${loc.nom} affirme avoir payé, en attente de confirmation`}
           onClick={() =>
             setModalCell({ loc, mois: moisIndex + 1, annee, existing: p })
           }
@@ -606,17 +606,23 @@ export default function Loyer() {
     });
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.text(`Tableau des paiements — ${annee}`, 14, 13);
+    doc.text(`Tableau des paiements ${annee}`, 14, 13);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.text(`Généré le ${new Date().toLocaleDateString("fr-FR")}`, 14, 19);
+
+    // toLocaleString() insère l'espace fine insécable (U+202F) de la
+    // locale française, absente de l'encodage standard des polices PDF :
+    // jsPDF l'affiche alors comme un caractère erroné (ex. "150/000").
+    const formatArPdf = (n) =>
+      String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
     const head = [["N°", "Locataire", "Loyer/mois", ...MOIS, "Total"]];
     const body = locataires.map((loc) => {
       const row = [
         loc.chambre,
         `${loc.nom} ${loc.prenom}`,
-        `${(loc.loyer || 0).toLocaleString()} Ar`,
+        `${formatArPdf(loc.loyer)} Ar`,
       ];
       for (let m = 1; m <= 12; m++) {
         const p = getCellData(loc.id, m);
@@ -688,7 +694,7 @@ export default function Loyer() {
                   <BsBuilding /> Gestion des Loyers
                 </h1>
                 <p className="text-muted small mb-0">
-                  {current.nom} · suivi des paiements — {annee}
+                  {current.nom} · suivi des paiements {annee}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -776,7 +782,7 @@ export default function Loyer() {
               <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                   <h6 className="mb-0 fw-bold">
-                    Tableau des paiements — {annee}
+                    Tableau des paiements {annee}
                   </h6>
                   <div className="legende mt-1">
                     <span className="legende-item">
@@ -855,7 +861,7 @@ export default function Loyer() {
                           colSpan={15}
                           className="text-center py-5 text-muted"
                         >
-                          Aucun locataire enregistré —{" "}
+                          Aucun locataire enregistré.{" "}
                           <Link to="/loyer/locataires/">
                             Ajouter un locataire
                           </Link>
@@ -1148,7 +1154,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
         return enregistrerAvance().then(() => {
           toast.success(
             reportPossible && reporter
-              ? `Paiement enregistré — ${demiLoyer.toLocaleString()} Ar avancés sur ${MOIS_FULL[moisSuivant - 1]}.`
+              ? `Paiement enregistré, ${demiLoyer.toLocaleString()} Ar avancés sur ${MOIS_FULL[moisSuivant - 1]}.`
               : "Paiement enregistré !"
           );
           onSave();
@@ -1527,7 +1533,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
       try {
         await navigator.share({
           files: [fichier],
-          title: `Reçu de loyer — ${moisNomFull} ${cell.annee}`,
+          title: `Reçu de loyer ${moisNomFull} ${cell.annee}`,
           text: message,
         });
         return;
@@ -1545,10 +1551,10 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
         "_blank",
         "noopener"
       );
-      toast.info("Reçu téléchargé — joignez-le à la conversation WhatsApp.");
+      toast.info("Reçu téléchargé, joignez-le à la conversation WhatsApp.");
     } else {
       copierEtOuvrirMessenger(message, cell.loc.nom, cell.loc.messengerId);
-      toast.info("Reçu téléchargé et message copié — joignez le PDF dans Messenger.");
+      toast.info("Reçu téléchargé et message copié, joignez le PDF dans Messenger.");
     }
   }
 
@@ -1561,7 +1567,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
           <h6>
             {confirmSuppr
               ? "Supprimer ce paiement ?"
-              : `Paiement — ${cell.loc.nom} / ${moisNom} ${cell.annee}`}
+              : `Paiement ${cell.loc.nom} / ${moisNom} ${cell.annee}`}
           </h6>
           <button
             className="btn-close"
@@ -1581,14 +1587,14 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
             >
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span className="fw-bold" style={{ fontSize: "0.9rem" }}>
-                  {cell.loc.nom} — chambre {cell.loc.chambre}
+                  {cell.loc.nom} (chambre {cell.loc.chambre})
                 </span>
                 <span className="fw-bold text-danger">
                   {(cell.existing?.montantLoyer || 0).toLocaleString()} Ar
                 </span>
               </div>
               <small className="text-muted" style={{ fontSize: "0.76rem" }}>
-                Loyer {moisNomFull} {cell.annee} — statut {cell.existing?.statut}
+                Loyer {moisNomFull} {cell.annee}, statut {cell.existing?.statut}
                 {cell.existing?.montantJIRAMA > 0 &&
                   ` · JIRAMA ${cell.existing.montantJIRAMA.toLocaleString()} Ar`}
               </small>
@@ -1647,7 +1653,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
             >
               <option value="PAYE">Payé</option>
               <option value="PARTIEL">Partiel</option>
-              <option value="DOUTE">Doute — dit avoir payé, à confirmer</option>
+              <option value="DOUTE">Doute (dit avoir payé, à confirmer)</option>
               <option value="IMPAYE">Impayé</option>
             </select>
           </div>
@@ -1686,8 +1692,8 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
           <div className="mb-3">
             <label className="form-label small mb-1">
               {form.statut === "PARTIEL"
-                ? "Montant payé — Loyer (Ar)"
-                : `Loyer fixe — ${(cell.loc.loyer || 0).toLocaleString()} Ar`}
+                ? "Montant payé, Loyer (Ar)"
+                : `Loyer fixe ${(cell.loc.loyer || 0).toLocaleString()} Ar`}
             </label>
             <input
               type="number"
@@ -1704,7 +1710,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
             />
             {/* L électricité se règle à part : elle a son propre tableau. */}
             <small className="text-muted d-block mt-1" style={{ fontSize: "0.72rem" }}>
-              JIRAMA : {(form.montantJIRAMA || 0).toLocaleString()} Ar —{" "}
+              JIRAMA : {(form.montantJIRAMA || 0).toLocaleString()} Ar{" "}
               <a href="/loyer/jirama/" style={{ color: "#2563eb" }}>Tableau JIRAMA</a>
             </small>
           </div>
@@ -1776,7 +1782,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
                     className="btn btn-link btn-sm text-danger p-0 d-inline-flex align-items-center gap-1"
                     style={{ fontSize: "0.78rem", textDecoration: "none" }}
                     onClick={() => setConfirmSuppr(true)}
-                    title="Supprimer ce paiement — saisi par erreur"
+                    title="Supprimer ce paiement, saisi par erreur"
                   >
                     <BsFillTrashFill size={12} /> Supprimer ce paiement
                   </button>

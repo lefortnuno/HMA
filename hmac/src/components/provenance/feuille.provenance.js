@@ -134,7 +134,7 @@ export default function FeuilleProvenance({ mois, annee, bienId, paiements, prov
           attendiez {attendu.toLocaleString()} Ar et n'avez reçu que{" "}
           {recu.toLocaleString()} Ar.{" "}
           {horsMain > 0
-            ? `À vérifier auprès de qui a encaissé sur place — ${horsMain.toLocaleString()} Ar ne sont pas passés par vous ce mois-ci.`
+            ? `À vérifier auprès de qui a encaissé sur place. ${horsMain.toLocaleString()} Ar ne sont pas passés par vous ce mois-ci.`
             : "Tout était pourtant censé vous revenir directement : à confirmer avec les locataires concernés."}
         </>
       );
@@ -156,7 +156,7 @@ export default function FeuilleProvenance({ mois, annee, bienId, paiements, prov
       <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
         <div>
           <h6 className="fw-bold mb-1 d-flex align-items-center gap-2">
-            <BsWallet2 /> Provenance — {MOIS_FULL[mois]} {annee}
+            <BsWallet2 /> Provenance {MOIS_FULL[mois]} {annee}
           </h6>
           <p className="text-muted mb-0" style={{ fontSize: "0.78rem" }}>
             Le logo allumé signale une somme reçue en main propre. Éteint, elle a
@@ -259,7 +259,7 @@ export default function FeuilleProvenance({ mois, annee, bienId, paiements, prov
           {horsMain > 0 && (
             <p className="text-muted mt-2 mb-0" style={{ fontSize: "0.76rem" }}>
               <strong>{horsMain.toLocaleString()} Ar</strong> ont été réglés mais
-              encaissés sur place — comptés dans les recettes du mois, pas dans
+              encaissés sur place, comptés dans les recettes du mois mais pas dans
               votre encaisse.
             </p>
           )}

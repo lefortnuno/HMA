@@ -363,7 +363,7 @@ export default function User() {
                     : "Aucun lien Messenger enregistré pour ce compte"}
                   onClick={() => {
                     copierEtOuvrirMessenger(messageAcces(acces), acces.nom, acces.messengerId);
-                    toast.info("Message copié — collez-le dans la conversation");
+                    toast.info("Message copié, collez-le dans la conversation");
                   }}>
                   <BsMessenger /> Messenger
                 </button>

@@ -29,7 +29,7 @@ import "../loyer/loyer.css";
 import "./finance.css";
 import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
 
-
+
 function fmtK(v) {
   return v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v;
 }
@@ -116,7 +116,7 @@ export default function FinanceBilan() {
                   <BsClipboardData /> Bilan Mensuel
                 </h1>
                 <p className="text-muted small mb-0">
-                  Résultat — {MOIS_LABELS[mois]} {annee}
+                  Résultat {MOIS_LABELS[mois]} {annee}
                 </p>
               </div>
               <div className="d-flex gap-2">
@@ -265,7 +265,7 @@ export default function FinanceBilan() {
                     <div className="p-3 border-bottom d-flex justify-content-between">
                       <h6 className="fw-bold mb-0">
                         <BsCashStack className="me-1" />
-                        Dépenses variables — {MOIS_LABELS[mois]} {annee}
+                        Dépenses variables {MOIS_LABELS[mois]} {annee}
                       </h6>
                       <span className="fw-bold text-danger">
                         {td.toLocaleString()} Ar
@@ -328,7 +328,7 @@ export default function FinanceBilan() {
                 <div className="card-pro mb-4">
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <h6 className="fw-bold mb-0">
-                      Revenus vs Dépenses — {annee}
+                      Revenus vs Dépenses {annee}
                     </h6>
                   </div>
                   {chartLoad ? (

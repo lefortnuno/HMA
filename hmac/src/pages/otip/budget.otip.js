@@ -175,7 +175,7 @@ export default function BudgetOtip() {
     if (!data || !calcul) return;
     const [sA, sB] = calcul.scenarios;
     const l = [];
-    l.push(["BUDGET OTIP — GARANT D'IRUNO"]);
+    l.push(["BUDGET OTIP, GARANT D'IRUNO"]);
     l.push([params.echeance || ""]);
     l.push([]);
     l.push(["Objectif", Number(params.objectif || 0)]);
@@ -250,7 +250,7 @@ export default function BudgetOtip() {
     l.push(["DISPONIBLE AU DÉPART", sA.disponible, sB.disponible]);
     l.push(["Manque pour l'objectif", sA.manque, sB.manque]);
     l.push([]);
-    l.push([`Après le départ (${P2}) — conservé, hors garantie`]);
+    l.push([`Après le départ (${P2}), conservé, hors garantie`]);
     l.push(["Créances à recevoir", calcul.horsFenetre.creances]);
     l.push(["Dépenses ponctuelles", -calcul.horsFenetre.ponctuelles]);
     l.push(["Remboursements de prêts", -calcul.horsFenetre.remboursements]);
@@ -611,8 +611,8 @@ export default function BudgetOtip() {
                                     aria-pressed={!!x.finDeMois}
                                     title={
                                       x.finDeMois
-                                        ? "Versé en fin de mois — perdu si le départ est le 29 août"
-                                        : "Versé en cours de mois — acquis dans les deux cas"
+                                        ? "Versé en fin de mois, perdu si le départ est le 29 août"
+                                        : "Versé en cours de mois, acquis dans les deux cas"
                                     }
                                   >
                                     {x.finDeMois ? "fin de mois" : "en cours"}
@@ -792,7 +792,7 @@ export default function BudgetOtip() {
                       <div className="col-12 col-xl-6">
                         <div className="card-pro otip-hors-fenetre">
                           <h6 className="fw-bold mb-1 d-flex align-items-center gap-2">
-                            <BsCalendarEvent /> Après le départ — {P2}
+                            <BsCalendarEvent /> Après le départ ({P2})
                           </h6>
                           <p className="text-muted mb-3" style={{ fontSize: "0.78rem" }}>
                             Ces lignes restent enregistrées mais ne comptent plus pour la

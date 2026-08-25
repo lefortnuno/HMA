@@ -60,7 +60,7 @@ const JETONS = [
   ["{chambre}", "le numéro de chambre"],
   ["{montant}", "le loyer, en ariary"],
   ["{mois}", "le mois concerné"],
-  ["{deMois}", "« d'Août », « de Juillet » — avec l'élision"],
+  ["{deMois}", "« d'Août », « de Juillet », avec l'élision"],
   ["{jour}", "« vers le 15 » si un jour habituel est enregistré"],
 ];
 
@@ -234,7 +234,7 @@ export default function RappelLoyer({
               <BsInfoCircle size={13} />
               <span>
                 Rien n'est envoyé automatiquement. Chaque bouton ouvre la
-                conversation avec le message prêt — vous appuyez sur envoyer.
+                conversation avec le message prêt, il ne reste qu'à appuyer sur envoyer.
               </span>
             </div>
 
@@ -243,7 +243,7 @@ export default function RappelLoyer({
                 className="text-muted text-center py-4 mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Tout le monde a déjà réglé — personne à relancer.
+                Tout le monde a déjà réglé, personne à relancer.
               </p>
             ) : (
               <ul className="rappel-destinataires">
@@ -349,8 +349,8 @@ export default function RappelLoyer({
           <div className="rappel-apercu">
             <div className="fw-semibold mb-2" style={{ fontSize: "0.8rem" }}>
               {apercu
-                ? `Aperçu — ${apercu.loc.nom}`
-                : "Aperçu — survolez un destinataire"}
+                ? `Aperçu de ${apercu.loc.nom}`
+                : "Aperçu : survolez un destinataire"}
             </div>
             <pre className="rappel-texte">
               {apercu ? apercu.texte : visibles[0]?.texte || modele}

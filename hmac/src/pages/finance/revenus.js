@@ -16,7 +16,7 @@ import "../loyer/loyer.css";
 import "./finance.css";
 import { MOIS_COURT_1 as MOIS_LABELS } from "../../config/dates";
 
-
+
 function getWeekBounds(date) {
   const d   = new Date(date);
   const day = d.getDay();
@@ -208,7 +208,7 @@ export default function FinanceRevenus() {
               <div>
                 <h1 className="page-title"><BsGraphUp /> Revenus &amp; Charges</h1>
                 <p className="text-muted small mb-0">
-                  Revenus fixes et charges mensuelles — {MOIS_LABELS[mois]} {annee}
+                  Revenus fixes et charges mensuelles {MOIS_LABELS[mois]} {annee}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -358,7 +358,7 @@ export default function FinanceRevenus() {
             <div className="modal-header-pro">
               <h6>
                 <BsGraphUp className="me-2" />
-                {editRev ? "Modifier le revenu" : `Nouveau revenu — ${MOIS_LABELS[mois]} ${annee}`}
+                {editRev ? "Modifier le revenu" : `Nouveau revenu ${MOIS_LABELS[mois]} ${annee}`}
               </h6>
               <button className="btn-close" onClick={() => setShowRevModal(false)} />
             </div>
@@ -407,7 +407,7 @@ export default function FinanceRevenus() {
             <div className="modal-header-pro">
               <h6>
                 <BsGraphDown className="me-2" />
-                {editChar ? "Modifier la charge" : `Nouvelle charge — ${MOIS_LABELS[mois]} ${annee}`}
+                {editChar ? "Modifier la charge" : `Nouvelle charge ${MOIS_LABELS[mois]} ${annee}`}
               </h6>
               <button className="btn-close" onClick={() => setShowCharModal(false)} />
             </div>

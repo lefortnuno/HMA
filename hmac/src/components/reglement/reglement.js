@@ -303,7 +303,7 @@ export default function Reglement() {
                     onChange={(e) => setEdition({ ...edition, actif: e.target.checked })}
                   />
                   <span style={{ fontSize: "0.82rem" }}>
-                    Publiée — visible des locataires
+                    Publiée, visible des locataires
                   </span>
                 </label>
               )}

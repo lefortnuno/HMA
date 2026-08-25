@@ -239,7 +239,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
     return (
       <div className="card-pro text-center py-5">
         <BsLightningCharge size={38} color="#f59e0b" className="mb-2" />
-        <h6 className="fw-bold">{current?.nom} — loyer seul</h6>
+        <h6 className="fw-bold">{current?.nom} (loyer seul)</h6>
         <p className="text-muted mb-0">
           Cet appartement ne gère pas la JIRAMA : le locataire paie l'eau &amp;
           l'électricité lui-même (compteur personnel).
@@ -333,13 +333,13 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
           )}
           <div>
             <div className="fw-semibold" style={{ fontSize: "0.875rem" }}>
-              Total calculé : {totalCalcule.toLocaleString()} Ar — Facture JIRAMA :{" "}
+              Total calculé : {totalCalcule.toLocaleString()} Ar, Facture JIRAMA :{" "}
               {montantFacture.toLocaleString()} Ar
             </div>
             <small className={Math.abs(ecart) < 100 ? "text-success" : "text-danger"}>
               {Math.abs(ecart) < 100
                 ? "Totaux concordants ✓"
-                : `Écart de ${Math.abs(ecart).toLocaleString()} Ar — vérifier les index`}
+                : `Écart de ${Math.abs(ecart).toLocaleString()} Ar, vérifier les index`}
             </small>
           </div>
         </div>
@@ -350,7 +350,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
         <div className="card-pro p-0 mb-4">
           <div className="p-3 border-bottom">
             <h6 className="fw-bold mb-0">
-              Consommations — {MOIS_LABELS[mois]} {annee}
+              Consommations {MOIS_LABELS[mois]} {annee}
               {factureId && <span className="badge-paye ms-2">Facture enregistrée</span>}
             </h6>
           </div>
@@ -374,7 +374,7 @@ export default function SaisieReleves({ bienId, mono, current, onSaved }) {
                 {locataires.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center text-muted py-4">
-                      Aucun locataire —{" "}
+                      Aucun locataire.{" "}
                       <Link to="/loyer/locataires/">Ajouter des locataires</Link>
                     </td>
                   </tr>

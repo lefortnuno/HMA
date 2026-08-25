@@ -229,7 +229,7 @@ function AlerteJirama({ locataires, getCell, factureDe, annee }) {
                         loc.nom,
                         loc.messengerId
                       );
-                      toast.info("Message copié — collez-le dans la conversation");
+                      toast.info("Message copié, collez-le dans la conversation");
                     }}
                   >
                     <BsMessenger size={11} /> Relancer
@@ -452,7 +452,7 @@ export default function TableauJirama() {
           title={
             exempt
               ? `${loc.nom} n'était pas concerné ce mois-ci`
-              : "Aucune consommation relevée — cliquer pour saisir un règlement"
+              : "Aucune consommation relevée, cliquer pour saisir un règlement"
           }
           onClick={() => setModalCell({ loc, mois, annee, existing: p, attendu, forfait })}
         >
@@ -540,7 +540,7 @@ export default function TableauJirama() {
                   <BsLightningCharge /> Gestion du JIRAMA
                 </h1>
                 <p className="text-muted small mb-0">
-                  {current.nom} · eau &amp; électricité — {annee}
+                  {current.nom} · eau &amp; électricité {annee}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -650,7 +650,7 @@ export default function TableauJirama() {
             <div className="card-pro p-0 mb-4">
               <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                  <h6 className="mb-0 fw-bold">Tableau JIRAMA — {annee}</h6>
+                  <h6 className="mb-0 fw-bold">Tableau JIRAMA {annee}</h6>
                   <div className="legende mt-1">
                     <span className="legende-item">
                       <span className="cell-paye">12k</span> Réglé
@@ -903,7 +903,7 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
         <div className="modal-header-pro">
           <h6>
             <BsLightningCharge className="me-2" />
-            JIRAMA — {cell.loc.nom} / {MOIS_FULL[cell.mois - 1]} {cell.annee}
+            JIRAMA {cell.loc.nom} / {MOIS_FULL[cell.mois - 1]} {cell.annee}
           </h6>
           <button className="btn-close" onClick={onClose} />
         </div>
@@ -931,7 +931,7 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
 
           {cell.attendu === 0 && (
             <p className="text-muted" style={{ fontSize: "0.76rem" }}>
-              Aucun relevé pour ce mois —{" "}
+              Aucun relevé pour ce mois.{" "}
               <a href="/loyer/factures/" style={{ color: "#2563eb" }}>
                 saisir la facture JIRAMA
               </a>
@@ -959,9 +959,9 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
             >
               <option value="PAYE">Payé</option>
               <option value="PARTIEL">Partiel</option>
-              <option value="DOUTE">Doute — dit avoir payé, à confirmer</option>
+              <option value="DOUTE">Doute (dit avoir payé, à confirmer)</option>
               <option value="IMPAYE">Impayé</option>
-              <option value="ABSENT">Absent — rien à payer ce mois</option>
+              <option value="ABSENT">Absent, rien à payer ce mois</option>
             </select>
           </div>
 
@@ -970,7 +970,7 @@ function ModalJirama({ cell, u_info, onClose, onSave }) {
               Montant réglé (Ar)
               {plancher > 0 && (
                 <span className="text-muted" style={{ fontWeight: 400 }}>
-                  {" "}— minimum {plancher.toLocaleString()} Ar
+                  {" "}(minimum {plancher.toLocaleString()} Ar)
                 </span>
               )}
             </label>

@@ -170,7 +170,7 @@ export default function Visites() {
                   ) : lignes.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="text-center text-muted py-4" style={{ fontSize: "0.85rem" }}>
-                        Aucune entrée pour l'instant — le journal se remplira à
+                        Aucune entrée pour l'instant, le journal se remplira à
                         la prochaine connexion.
                       </td>
                     </tr>

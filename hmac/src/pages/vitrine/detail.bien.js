@@ -51,7 +51,7 @@ export default function DetailBien() {
   useEffect(() => {
     if (!bien) return;
     const ancienTitre = document.title;
-    document.title = `${bien.titre} — ${(bien.prix || 0).toLocaleString()} Ar/mois | Trofel Immobilier`;
+    document.title = `${bien.titre} (${(bien.prix || 0).toLocaleString()} Ar/mois) | Trofel Immobilier`;
 
     let meta = document.querySelector('meta[name="description"]');
     const ancienneDesc = meta ? meta.getAttribute("content") : null;
@@ -62,7 +62,7 @@ export default function DetailBien() {
     }
     meta.setAttribute(
       "content",
-      `${bien.type === "VILLA" ? "Villa" : "Chambre"} à louer${bien.localisation ? " à " + bien.localisation : ""} — ${(bien.prix || 0).toLocaleString()} Ar/mois. ${(bien.description || "").slice(0, 140)}`
+      `${bien.type === "VILLA" ? "Villa" : "Chambre"} à louer${bien.localisation ? " à " + bien.localisation : ""}, ${(bien.prix || 0).toLocaleString()} Ar/mois. ${(bien.description || "").slice(0, 140)}`
     );
 
     return () => {
@@ -303,7 +303,7 @@ export default function DetailBien() {
 
       <footer className="vitrine-footer">
         <span className="vitrine-footer-copy">
-          © {new Date().getFullYear()} <strong>HMA Immobilier</strong> — Madagascar
+          © {new Date().getFullYear()} <strong>HMA Immobilier</strong>, Madagascar
         </span>
         <div className="vitrine-footer-links">
           <a href="https://github.com/lefortnuno" target="_blank" rel="noopener noreferrer" title="GitHub">

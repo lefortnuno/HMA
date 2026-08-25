@@ -206,7 +206,7 @@ export default function Depenses() {
                   <BsCashCoin /> Sorties d'argent
                 </h1>
                 <p className="text-muted small mb-0">
-                  {current.nom} · {MOIS_LABELS[mois]} {annee} — Total :{" "}
+                  {current.nom} · {MOIS_LABELS[mois]} {annee}, Total :{" "}
                   <span className="fw-bold text-danger">
                     {totalMois.toLocaleString()} Ar
                   </span>
@@ -287,7 +287,7 @@ export default function Depenses() {
                       className="text-muted"
                       style={{ fontSize: "0.72rem" }}
                     >
-                      envois famille et placements — sans effet sur le résultat
+                      envois famille et placements, sans effet sur le résultat
                     </small>
                   </div>
                 </div>
@@ -333,7 +333,7 @@ export default function Depenses() {
             <div className="card-pro p-0">
               <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
                 <h6 className="fw-bold mb-0">
-                  {filtre === "TOUS" ? "Sorties" : TYPES[filtre].label} —{" "}
+                  {filtre === "TOUS" ? "Sorties" : TYPES[filtre].label}{" "}
                   {MOIS_LABELS[mois]} {annee}
                 </h6>
                 <span className="fw-bold text-danger">
@@ -637,7 +637,7 @@ export default function Depenses() {
             <div className="modal-header-pro">
               <h6>
                 <BsCashCoin className="me-2" />
-                Nouvelle sortie — {MOIS_LABELS[mois]} {annee}
+                Nouvelle sortie {MOIS_LABELS[mois]} {annee}
               </h6>
               <button
                 className="btn-close"

@@ -270,7 +270,7 @@ export default function Historique() {
                 </h1>
                 <p className="text-muted small mb-0">
                   {vue === "PAIEMENTS"
-                    ? "Tous les paiements enregistrés — pour vérifier une attribution"
+                    ? "Tous les paiements enregistrés, pour vérifier une attribution"
                     : vue === "OCCUPATION"
                       ? "Qui a occupé quelle chambre, et quand"
                       : "Qui s'est connecté, et quelles pages ont été consultées"}
@@ -394,7 +394,7 @@ export default function Historique() {
                   <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-3 border-bottom">
                     <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
                       <BsCashCoin style={{ color: "#2563eb" }} />
-                      Paiements enregistrés — {annee}
+                      Paiements enregistrés {annee}
                     </h6>
                     <span className="fw-bold text-success" style={{ fontSize: "0.9rem" }}>
                       {totalPaye.toLocaleString()} Ar encaissés

@@ -320,7 +320,7 @@ export default function AdminVitrine() {
                         <td colSpan={7} className="text-center py-5 text-muted">
                           {biens.length === 0 ? (
                             <>
-                              Aucun bien publié —{" "}
+                              Aucun bien publié.{" "}
                               {isMobile
                                 ? <Link to="/vitrine/admin/new">Ajouter le premier bien</Link>
                                 : <button className="btn btn-link p-0 btn-success d-inline-flex align-items-center gap-1" onClick={openModal}>

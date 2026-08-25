@@ -21,7 +21,7 @@ const SERVICES = [
   {
     Icon: BsGlobe,
     title: "Développement Full-Stack",
-    desc: "Développement complet web, mobile et desktop — front-end et back-end. Applications réactives, efficaces, sécurisées et évolutives avec les frameworks modernes.",
+    desc: "Développement complet web, mobile et desktop, front-end et back-end. Applications réactives, efficaces, sécurisées et évolutives avec les frameworks modernes.",
     tag: "Disponible",
   },
   {
@@ -55,7 +55,7 @@ const SERVICES = [
 const PROJECTS = [
   {
     title: "MC-Multimedia Agency",
-    desc: "Site moderne pour une agence de production multimédia — clips vidéo, documentaires et services audiovisuels de Madagascar.",
+    desc: "Site moderne pour une agence de production multimédia, clips vidéo, documentaires et services audiovisuels de Madagascar.",
     link: "https://masoandrocapital.com/",
     cats: ["Web"],
     color: "#3b82f6",
@@ -83,7 +83,7 @@ const PROJECTS = [
   },
   {
     title: "LexiAI",
-    desc: "Système de messagerie assisté par IA pour corriger automatiquement le contenu. Architecture microservices — LLM, Keycloak, Kafka, Docker, React, Spring Boot.",
+    desc: "Système de messagerie assisté par IA pour corriger automatiquement le contenu. Architecture microservices : LLM, Keycloak, Kafka, Docker, React, Spring Boot.",
     link: "https://ms.vercel.app/",
     cats: ["Web"],
     color: "#ef4444",
@@ -103,7 +103,7 @@ const PROJECTS = [
     color: "#f97316",
   },
   {
-    title: "BOT — LeRELAIS",
+    title: "BOT LeRELAIS",
     desc: "Application R&D de suivi de l'historique du trafic de véhicules. Frontend Laravel + Python backend + Ubuntu Server.",
     link: "https://github.com/lefortnuno/LeRELAIS_IA_BOT",
     cats: ["Web"],
@@ -198,7 +198,7 @@ export default function About() {
                   <p>
                     Ingénieur logiciel passionné par le développement web, mobile et desktop.
                     Expert en React, Node.js, Python et bases de données relationnelles.
-                    Actuellement en Master Professionnel à la FSR — Rabat, Maroc.
+                    Actuellement en Master Professionnel à la FSR, Rabat, Maroc.
                   </p>
                   <div className="d-flex gap-2 flex-wrap">
                     <a

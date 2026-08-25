@@ -165,7 +165,7 @@ export default function Vitrine() {
       {/* Footer */}
       <footer className="vitrine-footer">
         <span className="vitrine-footer-copy">
-          © {new Date().getFullYear()} <strong>HMA Immobilier</strong> — Madagascar
+          © {new Date().getFullYear()} <strong>HMA Immobilier</strong>, Madagascar
         </span>
         <div className="vitrine-footer-links">
           <a href="https://github.com/lefortnuno" target="_blank" rel="noopener noreferrer" title="GitHub">

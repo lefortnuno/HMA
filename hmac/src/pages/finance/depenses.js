@@ -125,7 +125,7 @@ export default function FinanceDepenses() {
             <div className="card-pro p-0">
               <div className="week-header d-flex justify-content-between align-items-center">
                 <span>
-                  {MOIS_COURT[start.getMonth()+1]} {start.getDate()} — {MOIS_COURT[end.getMonth()+1]} {end.getDate()} {end.getFullYear()}
+                  {MOIS_COURT[start.getMonth()+1]} {start.getDate()} au {MOIS_COURT[end.getMonth()+1]} {end.getDate()} {end.getFullYear()}
                 </span>
                 <span className="fw-bold text-danger">{total.toLocaleString()} Ar · {depenses.length} dépense{depenses.length > 1 ? "s" : ""}</span>
               </div>

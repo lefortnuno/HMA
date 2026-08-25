@@ -212,7 +212,7 @@ export default function FinanceCasuel() {
               <div>
                 <h1 className="page-title"><BsStarFill /> Casuel &amp; Dépenses</h1>
                 <p className="text-muted small mb-0">
-                  Revenus occasionnels et dépenses variables — {MOIS_LABELS[moisC]} {anneeC}
+                  Revenus occasionnels et dépenses variables {MOIS_LABELS[moisC]} {anneeC}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -418,7 +418,7 @@ export default function FinanceCasuel() {
             <div className="modal-header-pro">
               <h6>
                 <BsStarFill className="me-2" />
-                {editCas ? "Modifier le casuel" : `Nouveau casuel — ${MOIS_LABELS[moisC]} ${anneeC}`}
+                {editCas ? "Modifier le casuel" : `Nouveau casuel ${MOIS_LABELS[moisC]} ${anneeC}`}
               </h6>
               <button className="btn-close" onClick={() => setShowCasModal(false)} />
             </div>

@@ -171,7 +171,7 @@ export default function Locataires() {
         if (res.status === 202) {
           toast.info(res.data.message || "Demande envoyée à l'admin pour validation.");
         } else {
-          toast.success(`${loc.nom} archivé — chambre ${loc.chambre} libérée`);
+          toast.success(`${loc.nom} archivé, chambre ${loc.chambre} libérée`);
           // La fiche reste dans la liste, marquee "Inactif".
           setLocataires((prev) =>
             prev.map((l) => (l.id === loc.id ? { ...l, actif: 0 } : l))
@@ -394,7 +394,7 @@ export default function Locataires() {
                 </button>
               </div>
             ) : mono ? (
-              <LocataireTable list={locataires} label={`${current.nom} — Villa entière (${monoLoyer.toLocaleString()} Ar/mois)`} />
+              <LocataireTable list={locataires} label={`${current.nom} (Villa entière, ${monoLoyer.toLocaleString()} Ar/mois)`} />
             ) : (
               <>
                 <LocataireTable
@@ -425,7 +425,7 @@ export default function Locataires() {
             </div>
             <div className="p-4">
               <p className="mb-3" style={{ fontSize: "0.9rem" }}>
-                Chambre <strong>{toDelete.chambre}</strong> — que souhaitez-vous faire ?
+                Chambre <strong>{toDelete.chambre}</strong>, que souhaitez-vous faire ?
               </p>
 
               {/* Option recommandee : on garde la trace du passage du locataire. */}
@@ -445,7 +445,7 @@ export default function Locataires() {
                   style={{ background: "#16a34a", color: "#fff" }}
                   onClick={() => handleArchiver(toDelete)}
                 >
-                  Archiver — libérer la chambre {toDelete.chambre}
+                  Archiver, libérer la chambre {toDelete.chambre}
                 </button>
               </div>
 

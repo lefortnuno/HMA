@@ -16,8 +16,8 @@ export default function LogoCheck({ actif, onToggle, disabled, titre }) {
   const libelle = disabled
     ? "Rien à encaisser"
     : actif
-      ? `${titre} : reçu en main propre — cliquer si remis sur place`
-      : `${titre} : remis sur place — cliquer si reçu en main propre`;
+      ? `${titre} : reçu en main propre. Cliquer si remis sur place`
+      : `${titre} : remis sur place. Cliquer si reçu en main propre`;
 
   return (
     <button

@@ -270,7 +270,7 @@ export default function MesFactures() {
                 )}
 
                 <div className="card-pro">
-                  <h6 className="fw-bold mb-3">Mes factures — {annee}</h6>
+                  <h6 className="fw-bold mb-3">Mes factures {annee}</h6>
                   {loc?.jiramaNonSoumis ? (
                     <div
                       className="rounded-3 p-3 d-flex align-items-start gap-2"
@@ -320,7 +320,7 @@ export default function MesFactures() {
             <div className="modal-header-pro">
               <h6>
                 <BsLightningCharge className="me-2" />
-                JIRAMA — {MOIS_FULL[declaration.mois - 1]} {annee}
+                JIRAMA {MOIS_FULL[declaration.mois - 1]} {annee}
               </h6>
               <button className="btn-close" onClick={() => setDeclaration(null)} />
             </div>

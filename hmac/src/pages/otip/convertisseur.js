@@ -198,7 +198,7 @@ export default function Convertisseur({ onClose }) {
                 <div>
                   {taux?.approximatif ? (
                     <span className="text-warning-emphasis">
-                      Taux de repli approximatifs — le service n'a pas répondu.
+                      Taux de repli approximatifs, le service n'a pas répondu.
                     </span>
                   ) : (
                     <>

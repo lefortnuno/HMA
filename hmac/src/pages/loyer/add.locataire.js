@@ -227,7 +227,7 @@ export default function AddLocataire() {
                   <div className="col-sm-8">
                     <label className="form-label">
                       Nom complet (état civil)
-                      <span className="text-muted" style={{ fontWeight: 400 }}> — pour le contrat de bail</span>
+                      <span className="text-muted" style={{ fontWeight: 400 }}> (pour le contrat de bail)</span>
                     </label>
                     <input
                       type="text"
@@ -295,7 +295,7 @@ export default function AddLocataire() {
                           Loyer mensuel : {loyer.toLocaleString()} Ar
                         </div>
                         <small className="text-muted">
-                          Chambre {form.chambre} — {form.etage}
+                          Chambre {form.chambre} ({form.etage})
                         </small>
                       </div>
                     </div>

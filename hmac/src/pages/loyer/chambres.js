@@ -305,8 +305,8 @@ export default function Chambres() {
               <div className="p-2 rounded-3 mb-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
                 <span className="fw-bold" style={{ color: "#16a34a", fontSize: "0.85rem" }}>
                   {mono
-                    ? `Loyer : ${monoLoyer.toLocaleString()} Ar — ${current.nom} (Villa entière)`
-                    : `Loyer : ${(form.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar — Chambre ${form.chambre}`}
+                    ? `Loyer : ${monoLoyer.toLocaleString()} Ar (${current.nom}, Villa entière)`
+                    : `Loyer : ${(form.etage === "RDC" ? LOYER_RDC : LOYER_1ER).toLocaleString()} Ar (Chambre ${form.chambre})`}
                 </span>
               </div>
               <div className="row g-3">

@@ -102,7 +102,7 @@ export default function Benefices() {
                   <BsClipboardData /> Bénéfices
                 </h1>
                 <p className="text-muted small mb-0">
-                  {current.nom} · résultat mensuel — {MOIS_LABELS[mois]} {annee}
+                  {current.nom} · résultat mensuel {MOIS_LABELS[mois]} {annee}
                 </p>
               </div>
               <div className="d-flex gap-2 flex-wrap align-items-center">
@@ -162,7 +162,7 @@ export default function Benefices() {
 
                 {/* Évolution annuelle */}
                 <div className="card-pro mb-4">
-                  <h6 className="fw-bold mb-1">Évolution {annee} — {current.nom}</h6>
+                  <h6 className="fw-bold mb-1">Évolution {annee} ({current.nom})</h6>
                   <p className="text-muted mb-3" style={{ fontSize: "0.78rem" }}>
                     Recettes et dépenses par mois, avec le bénéfice net en ligne
                   </p>
@@ -196,7 +196,7 @@ export default function Benefices() {
                 <div className="row g-3">
                   <div className="col-lg-6">
                     <div className="card-pro">
-                      <h6 className="fw-bold mb-3">Récapitulatif — {MOIS_LABELS[mois]} {annee}</h6>
+                      <h6 className="fw-bold mb-3">Récapitulatif {MOIS_LABELS[mois]} {annee}</h6>
                       <div className="d-flex flex-column gap-3">
                         <div className="d-flex justify-content-between align-items-center py-2 border-bottom">
                           <span className="text-muted">Loyers perçus</span>

@@ -120,7 +120,7 @@ function libelleBrut(champ) {
 const STATUTS_LISIBLES = {
   PAYE: "Payé",
   PARTIEL: "Partiel",
-  DOUTE: "Doute — à confirmer",
+  DOUTE: "Doute (à confirmer)",
   IMPAYE: "Impayé",
 };
 
@@ -276,7 +276,7 @@ export default function Notifications() {
                 </h1>
                 <p className="text-muted small mb-0">
                   {isAdmin
-                    ? `Demandes des utilisateurs à valider — ${enAttente.length} en attente`
+                    ? `Demandes des utilisateurs à valider (${enAttente.length} en attente)`
                     : "Le suivi de vos demandes envoyées à l'admin"}
                 </p>
               </div>
@@ -352,7 +352,7 @@ export default function Notifications() {
                             className="d-inline-flex align-items-center gap-1 fw-bold"
                             style={{ color: a.color, fontSize: "0.85rem" }}
                           >
-                            <a.Icon size={14} /> {a.label} — {typeLabel} {cible && <strong>{cible}</strong>}
+                            <a.Icon size={14} /> {a.label} {typeLabel} {cible && <strong>{cible}</strong>}
                           </span>
                           <span
                             className="d-inline-flex align-items-center gap-1 rounded-pill px-2 py-0"

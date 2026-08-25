@@ -22,7 +22,7 @@ import { AnneePicker } from "../../components/jour/periode.picker";
 import "../loyer/loyer.css";
 import { dateDuJour, MOIS_COURT as MOIS, MOIS_LONG as MOIS_FULL } from "../../config/dates";
 
-
+
 /**
  * Espace personnel : le locataire ne voit QUE sa fiche et ses paiements.
  * Aucune donnée des autres locataires n'est chargée ici.
@@ -279,7 +279,7 @@ export default function MonEspace() {
                       <strong>
                         {impayes.length} mois en attente :
                       </strong>{" "}
-                      {impayes.map((m) => MOIS_FULL[m - 1]).join(", ")} — soit{" "}
+                      {impayes.map((m) => MOIS_FULL[m - 1]).join(", ")}, soit{" "}
                       <strong>{totalDu.toLocaleString()} Ar</strong>.
                     </span>
                   </div>
@@ -305,7 +305,7 @@ export default function MonEspace() {
 
                 {/* Calendrier des paiements */}
                 <div className="card-pro">
-                  <h6 className="fw-bold mb-3">Mes paiements — {annee}</h6>
+                  <h6 className="fw-bold mb-3">Mes paiements {annee}</h6>
                   <div className="row g-2">
                     {Array.from({ length: 12 }, (_, i) => <Cellule key={i + 1} m={i + 1} />)}
                   </div>
@@ -331,7 +331,7 @@ export default function MonEspace() {
             <div className="modal-header-pro">
               <h6>
                 <BsCashCoin className="me-2" />
-                {declaration.avance ? "Paiement en avance" : "J'ai payé"} —{" "}
+                {declaration.avance ? "Paiement en avance" : "J'ai payé"}{" "}
                 {MOIS_FULL[declaration.mois - 1]} {annee}
               </h6>
               <button className="btn-close" onClick={() => setDeclaration(null)} />
