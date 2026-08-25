@@ -136,20 +136,18 @@ export default function ContratBail() {
 
   // QR de vérification, coin haut-droit — ne bloque jamais la génération du
   // contrat si le serveur est indisponible (repli silencieux, pas de QR).
-  async function ajouterQr(doc, R, params) {
-    const { dataUrl } = await genererQrVerification(u_info.opts, params);
+  // Séparé en deux : la génération interroge le serveur une seule fois,
+  // dessinerQr peut ensuite le reposer sur une page suivante sans reissue.
+  function dessinerQr(doc, R, dataUrl) {
     if (!dataUrl) return;
     const taille = 22;
-    const x = R - taille;
-    const y = 8;
-    doc.addImage(dataUrl, "PNG", x, y, taille, taille);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6);
-    doc.setTextColor(90);
-    doc.text("", x + taille / 2, y + taille + 3, {
-      align: "center",
-    });
-    doc.setTextColor(0);
+    doc.addImage(dataUrl, "PNG", R - taille, 8, taille, taille);
+  }
+
+  async function ajouterQr(doc, R, params) {
+    const { dataUrl } = await genererQrVerification(u_info.opts, params);
+    dessinerQr(doc, R, dataUrl);
+    return dataUrl;
   }
 
   function tableauBailleur(doc, y) {
@@ -201,17 +199,22 @@ export default function ContratBail() {
   // une nouvelle page dès qu'un seuil arbitraire était dépassé.
   const HAUTEUR_PIED = { AVEC_LOCATAIRE: 38, SEUL: 42 };
 
-  function pied(doc, y, mg, R, avecLocataire) {
+  // aere : mise en page plus respirée, pour la page dédiée des grandes
+  // sélections (voir construireGroupe) — largement la place d'y aller.
+  function pied(doc, y, mg, R, avecLocataire, aere = false) {
     const centreX = (mg + R) / 2;
+    const gFait = aere ? 22 : 14;
+    const gSignature = avecLocataire ? (aere ? 22 : 16) : aere ? 18 : 14;
+    const gNote = aere ? 12 : 7;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Fait à ${VILLE}, le ..…/..…/…..….`, R, y, { align: "right" });
-    y += 14;
+    y += gFait;
     if (avecLocataire) {
       doc.setFont("helvetica", "bold");
       doc.text("LE PROPRIÉTAIRE", mg, y);
       doc.text("LE LOCATAIRE", R, y, { align: "right" });
-      y += 16;
+      y += gSignature;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
       doc.text("(signature)", mg, y);
@@ -219,11 +222,11 @@ export default function ContratBail() {
     } else {
       doc.setFont("helvetica", "bold");
       doc.text("LE PROPRIÉTAIRE", R, y, { align: "right" });
-      y += 14;
+      y += gSignature;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
       doc.text("(signature)", R, y, { align: "right" });
-      y += 7;
+      y += gNote;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(9);
       const note = doc.splitTextToSize(
@@ -250,7 +253,7 @@ export default function ContratBail() {
     const R = doc.internal.pageSize.getWidth() - mg;
     let y = enTete(doc);
 
-    await ajouterQr(doc, R, {
+    const qrDataUrl = await ajouterQr(doc, R, {
       type: "BAIL",
       bienId: current.id,
       titre: `Contrat de bail groupe — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""} — ${current.nom}`,
@@ -320,7 +323,7 @@ export default function ContratBail() {
           .map((l) => [
             l.chambre,
             nomLegalDe(l),
-            cinDe(l) || "à compléter",
+            cinDe(l) || "",
             "",
           ]),
         columnStyles: {
@@ -334,17 +337,39 @@ export default function ContratBail() {
     tableauEtage("RDC", "REZ-DE-CHAUSSÉE");
     tableauEtage("1ER", "1ER ÉTAGE");
 
-    y = assurerPlace(doc, y, 7);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
-    y += 7;
-    doc.setFontSize(10);
-    y = ecrireArticle(doc, y, "Article 1", article1(etagesPresents), mg, R);
-    y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
-    y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+    if (choisis.length > 10) {
+      // Grande résidence : les deux tableaux remplissent déjà la première
+      // page. Plutôt que de tasser la suite en bas ou risquer un pied de
+      // page isolé, elle prend sa propre page, largement respirée — la
+      // place ne manque pas une fois les tableaux partis.
+      doc.addPage();
+      dessinerQr(doc, R, qrDataUrl);
+      y = 45;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
+      y += 14;
+      doc.setFontSize(10);
+      y = ecrireArticle(doc, y, "Article 1", article1(etagesPresents), mg, R);
+      y += 8;
+      y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
+      y += 8;
+      y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+      y += 18;
+      pied(doc, y, mg, R, false, true);
+    } else {
+      y = assurerPlace(doc, y, 7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
+      y += 7;
+      doc.setFontSize(10);
+      y = ecrireArticle(doc, y, "Article 1", article1(etagesPresents), mg, R);
+      y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
+      y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
 
-    placerPied(doc, y, mg, R, false);
+      placerPied(doc, y, mg, R, false);
+    }
 
     return {
       doc,
@@ -407,7 +432,7 @@ export default function ContratBail() {
           "Adresse :",
           `Villa Kinya, chambre ${loc.chambre} — Andrainjato, ${VILLE}`,
         ],
-        ["CIN :", cinDe(loc) || "à compléter"],
+        ["CIN :", cinDe(loc) || ""],
       ],
     });
     y = doc.lastAutoTable.finalY + 6;
@@ -614,8 +639,8 @@ export default function ContratBail() {
                     <div className="bail-alerte mt-3">
                       <BsExclamationTriangle size={14} />
                       <span>
-                        Le CIN de ce locataire n'est pas encore renseigné : le
-                        contrat affichera « à compléter ». Complétez sa fiche
+                        Le CIN de ce locataire n'est pas encore renseigné : la
+                        case restera vide sur le contrat. Complétez sa fiche
                         depuis Locataires pour l'inclure.
                       </span>
                     </div>
@@ -660,8 +685,8 @@ export default function ContratBail() {
                       <span>
                         {nbSansCin} locataire{nbSansCin > 1 ? "s" : ""}{" "}
                         sélectionné
-                        {nbSansCin > 1 ? "s" : ""} sans CIN renseigné — le
-                        contrat affichera « à compléter » pour{" "}
+                        {nbSansCin > 1 ? "s" : ""} sans CIN renseigné — la
+                        case restera vide sur le contrat pour{" "}
                         {nbSansCin > 1 ? "eux" : "lui/elle"}.
                       </span>
                     </div>
