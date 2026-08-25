@@ -205,6 +205,15 @@ export default function ContratBail() {
     return y + lignes.length * 5 + 3;
   }
 
+  // Même calcul que ecrireArticle, sans rien dessiner : sert à mesurer un
+  // article à l'avance (voir hauteurBlocArticles).
+  function hauteurArticle(doc, titre, texte, mg, R) {
+    doc.setFont("helvetica", "bold");
+    const largeurTitre = doc.getTextWidth(titre + " : ");
+    const lignes = doc.splitTextToSize(texte, R - mg - largeurTitre);
+    return lignes.length * 5 + 3;
+  }
+
   // Hauteur réellement occupée par le pied — sert à décider s'il tient sur
   // la page en cours plutôt que de le renvoyer systématiquement seul sur
   // une nouvelle page dès qu'un seuil arbitraire était dépassé.
@@ -389,18 +398,41 @@ export default function ContratBail() {
       y += 18;
       pied(doc, y, mg, R, false, true);
     } else {
-      y = assurerPlace(doc, y, 7);
+      // Mesure le bloc entier (titre + 6 articles + pied) avant d'en
+      // dessiner la moindre ligne. Un contrôle article par article aurait
+      // pu laisser "Il a été arrêté" en bas de la première page et la
+      // suite sur la seconde : la règle est que dès que 2 pages sont
+      // nécessaires, la seconde commence toujours par cette phrase, jamais
+      // par la suite d'un article coupé en deux.
+      doc.setFontSize(10);
+      const articles = [
+        ["Article 1", article1(etagesPresents)],
+        ["Article 2", ARTICLE_2],
+        ["Article 3", ARTICLE_3],
+        ["Article 4", ARTICLE_4],
+        ["Article 5", ARTICLE_5],
+        ["Article 6", ARTICLE_6],
+      ];
+      const hauteurBloc =
+        7 +
+        articles.reduce(
+          (h, [titre, texte]) => h + hauteurArticle(doc, titre, texte, mg, R),
+          0,
+        ) +
+        HAUTEUR_PIED.SEUL;
+
+      const yAvant = y;
+      y = assurerPlace(doc, y, hauteurBloc);
+      if (y !== yAvant) dessinerQr(doc, R, qrDataUrl);
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10.5);
       doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
       y += 7;
       doc.setFontSize(10);
-      y = ecrireArticle(doc, y, "Article 1", article1(etagesPresents), mg, R);
-      y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
-      y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
-      y = ecrireArticle(doc, y, "Article 4", ARTICLE_4, mg, R);
-      y = ecrireArticle(doc, y, "Article 5", ARTICLE_5, mg, R);
-      y = ecrireArticle(doc, y, "Article 6", ARTICLE_6, mg, R);
+      for (const [titre, texte] of articles) {
+        y = ecrireArticle(doc, y, titre, texte, mg, R);
+      }
 
       placerPied(doc, y, mg, R, false);
     }
