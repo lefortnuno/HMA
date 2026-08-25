@@ -47,7 +47,7 @@ function DetailsBail({ d }) {
         <div className="verif-ligne verif-ligne-liste">
           <span className="verif-label">Locataires couverts</span>
           <span className="verif-valeur">
-            {d.locataires.map((l) => `${l.chambre} — ${l.nom}`).join(", ")}
+            {d.locataires.map((l) => `${l.chambre} : ${l.nom}`).join(", ")}
           </span>
         </div>
       )}
@@ -122,7 +122,7 @@ export default function Verification() {
         )}
 
         <p className="verif-pied">
-          <Link to="/">Villa Kinya</Link> — vérification officielle des documents
+          <Link to="/">Villa Kinya</Link>, vérification officielle des documents
         </p>
       </div>
     </div>

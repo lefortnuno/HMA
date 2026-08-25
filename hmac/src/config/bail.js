@@ -14,9 +14,19 @@ export const BAILLEUR = {
 };
 
 export const VILLE = "Fianarantsoa";
-export const SOUS_TITRE = "Villa Kinya — Andrainjato, Fianarantsoa";
+export const SOUS_TITRE = "Villa Kinya, Andrainjato, Fianarantsoa";
 
 export const LOYER = { RDC: 150000, "1ER": 200000 };
+
+/**
+ * Formate un montant en ariary avec un espace ASCII normal entre les
+ * milliers. `toLocaleString()` insère l'espace fine insécable (U+202F) de
+ * la locale française, absente de l'encodage standard des polices PDF —
+ * jsPDF l'affiche alors comme un caractère erroné (ex. "150/000").
+ */
+export function formatAr(n) {
+  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
 
 const EN_LETTRES = { RDC: "cent cinquante mille (150 000)", "1ER": "deux cent mille (200 000)" };
 

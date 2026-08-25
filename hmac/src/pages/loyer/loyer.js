@@ -1264,7 +1264,7 @@ function PaymentModal({ cell, onClose, onSave, u_info, paiements }) {
     const { dataUrl: qrDataUrl } = await genererQrVerification(u_info.opts, {
       type: "RECU",
       bienId: cell.loc.bienId,
-      titre: `Quittance de loyer n°${recuId} — ${nomComplet} — ${moisNomFull} ${cell.annee}`,
+      titre: `Quittance de loyer n°${recuId}, ${nomComplet} (${moisNomFull} ${cell.annee})`,
       details: {
         locataire: nomComplet,
         chambre: cell.loc.chambre,

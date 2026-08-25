@@ -34,6 +34,7 @@ import {
   ARTICLE_3,
   nomLegalDe,
   cinDe,
+  formatAr,
 } from "../../config/bail";
 import { genererQrVerification } from "../../config/verification";
 import { SkListeLignes } from "../../components/skeleton/skeleton";
@@ -267,7 +268,7 @@ export default function ContratBail() {
     const qrDataUrl = await ajouterQr(doc, R, {
       type: "BAIL",
       bienId: current.id,
-      titre: `Contrat de bail groupe — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""} — ${current.nom}`,
+      titre: `Contrat de bail groupe, ${current.nom} (${choisis.length} locataire${choisis.length > 1 ? "s" : ""})`,
       details: {
         bailleur: BAILLEUR.nom,
         locataires: choisis.map((l) => ({
@@ -309,7 +310,7 @@ export default function ContratBail() {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10.5);
       doc.text(
-        `${titre} — loyer mensuel : ${LOYER[etage].toLocaleString()} Ar`,
+        `${titre} (loyer mensuel : ${formatAr(LOYER[etage])} Ar)`,
         mg,
         y,
       );
@@ -401,7 +402,7 @@ export default function ContratBail() {
     const { doc, filename } = await construireGroupe(choisis);
     doc.save(filename);
     toast.success(
-      `Contrat généré — ${choisis.length} locataire${choisis.length > 1 ? "s" : ""}`,
+      `Contrat généré pour ${choisis.length} locataire${choisis.length > 1 ? "s" : ""}`,
     );
   }
 
@@ -415,7 +416,7 @@ export default function ContratBail() {
     await ajouterQr(doc, R, {
       type: "BAIL",
       bienId: current.id,
-      titre: `Contrat de bail — ${nomLegalDe(loc)} — chambre ${loc.chambre} — ${current.nom}`,
+      titre: `Contrat de bail, ${current.nom}, chambre ${loc.chambre} (${nomLegalDe(loc)})`,
       details: {
         bailleur: BAILLEUR.nom,
         locataire: nomLegalDe(loc),
@@ -447,7 +448,7 @@ export default function ContratBail() {
         ["Nom :", nomLegalDe(loc)],
         [
           "Adresse :",
-          `Villa Kinya, chambre ${loc.chambre} — Andrainjato, ${VILLE}`,
+          `Villa Kinya, chambre ${loc.chambre}, Andrainjato, ${VILLE}`,
         ],
         ["CIN :", cinDe(loc) || ""],
       ],
@@ -488,7 +489,7 @@ export default function ContratBail() {
     if (!loc) return toast.warning("Choisissez un locataire");
     const { doc, filename } = await construireIndividuel(loc);
     doc.save(filename);
-    toast.success(`Contrat généré — ${loc.nom}`);
+    toast.success(`Contrat généré pour ${loc.nom}`);
   }
 
   const messageBail = (loc) =>
@@ -526,7 +527,7 @@ export default function ContratBail() {
           title: filename,
           text: message,
         });
-        return toast.success(`Contrat envoyé — ${loc.nom}`);
+        return toast.success(`Contrat envoyé à ${loc.nom}`);
       } catch (err) {
         if (err?.name === "AbortError") return; // partage annulé, rien à signaler
       }
@@ -540,11 +541,11 @@ export default function ContratBail() {
         "whatsapp",
       );
       toast.info(
-        "PDF téléchargé — joignez-le dans la conversation WhatsApp ouverte.",
+        "PDF téléchargé : joignez-le dans la conversation WhatsApp ouverte.",
       );
     } else {
       toast.info(
-        "PDF téléchargé — aucun téléphone enregistré pour l'envoyer automatiquement.",
+        "PDF téléchargé : aucun téléphone enregistré pour l'envoyer automatiquement.",
       );
     }
   }
@@ -617,7 +618,7 @@ export default function ContratBail() {
                           >
                             {parEtage[etage].map((l) => (
                               <option key={l.id} value={l.id}>
-                                {l.chambre} — {l.nom} {l.prenom}
+                                {l.chambre} : {l.nom} {l.prenom}
                                 {!cinDe(l) ? " (CIN à compléter)" : ""}
                               </option>
                             ))}
@@ -702,7 +703,7 @@ export default function ContratBail() {
                       <span>
                         {nbSansCin} locataire{nbSansCin > 1 ? "s" : ""}{" "}
                         sélectionné
-                        {nbSansCin > 1 ? "s" : ""} sans CIN renseigné — la
+                        {nbSansCin > 1 ? "s" : ""} sans CIN renseigné : la
                         case restera vide sur le contrat pour{" "}
                         {nbSansCin > 1 ? "eux" : "lui/elle"}.
                       </span>
@@ -720,7 +721,7 @@ export default function ContratBail() {
                               {etage === "RDC"
                                 ? "Rez-de-chaussée"
                                 : "1er étage"}{" "}
-                              — {LOYER[etage].toLocaleString()} Ar
+                              ({formatAr(LOYER[etage])} Ar)
                             </span>
                             <div className="d-flex gap-1">
                               <button onClick={() => toutEtage(etage, true)}>
