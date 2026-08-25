@@ -263,10 +263,14 @@ export default function ContratBail() {
     const mg = 15;
     const R = doc.internal.pageSize.getWidth() - mg;
     let y = enTete(doc);
-    // Au-delà de 10 locataires, les articles et le pied partent sur leur
-    // propre page (plus bas) : la première n'a donc plus qu'à porter les
-    // deux tableaux, avec de la place pour respirer davantage.
-    const grande = choisis.length > 10;
+    // Une seule page seulement pour une petite sélection tenant sur un seul
+    // étage (3 locataires maximum) : le contrat reste alors bref d'un bout
+    // à l'autre. Dès qu'il y a plus de monde, ou que les deux étages sont
+    // mélangés, les articles et le pied partent sur leur propre page, avec
+    // de la place pour respirer davantage.
+    const etagesChoisis = new Set(choisis.map((l) => l.etage));
+    const uneSeulePage = choisis.length <= 3 && etagesChoisis.size === 1;
+    const grande = !uneSeulePage;
 
     const qrDataUrl = await ajouterQr(doc, R, {
       type: "BAIL",
@@ -305,7 +309,7 @@ export default function ContratBail() {
     doc.text(intro, mg, y);
     y += intro.length * 5 + (grande ? 12 : 6);
 
-    const etagesPresents = new Set(choisis.map((l) => l.etage));
+    const etagesPresents = etagesChoisis;
 
     const tableauEtage = (etage, titre) => {
       const lignes = choisis.filter((l) => l.etage === etage);
