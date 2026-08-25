@@ -216,7 +216,7 @@ export default function InComing() {
                   </thead>
                   <tbody>
                     {!details ? (
-                      <LoadingTable />
+                      <LoadingTable cols={6} />
                     ) : (
                       <>
                         {currentHisto.length > 0 ? (

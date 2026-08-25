@@ -5,6 +5,7 @@ import {
   BsCurrencyExchange, BsXLg, BsArrowRepeat, BsInfoCircle, BsExclamationTriangle,
 } from "react-icons/bs";
 import { formatDateHeure } from "../../config/dates";
+import { Sk } from "../../components/skeleton/skeleton";
 
 /**
  * Convertisseur ariary / euro / dirham, plus l'ancien franc malgache.
@@ -133,7 +134,11 @@ export default function Convertisseur({ onClose }) {
           </p>
 
           {chargement ? (
-            <p className="text-center text-muted py-4 mb-0">Chargement des taux…</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[1, 2, 3, 4].map((i) => (
+                <Sk key={i} w="100%" h={42} className="sk-btn" />
+              ))}
+            </div>
           ) : erreur && !t ? (
             <div
               className="p-3 rounded-3 d-flex gap-2 align-items-start"

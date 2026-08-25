@@ -36,6 +36,7 @@ import {
   cinDe,
 } from "../../config/bail";
 import { genererQrVerification } from "../../config/verification";
+import { SkListeLignes } from "../../components/skeleton/skeleton";
 import "./loyer.css";
 import "./bail.css";
 
@@ -589,8 +590,8 @@ export default function ContratBail() {
             </div>
 
             {loading ? (
-              <div className="card-pro text-center py-5 text-muted">
-                Chargement…
+              <div className="card-pro">
+                <SkListeLignes lignes={6} />
               </div>
             ) : locataires.length === 0 ? (
               <div className="card-pro text-center py-5 text-muted">

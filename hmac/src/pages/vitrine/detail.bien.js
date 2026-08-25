@@ -17,6 +17,7 @@ import {
   BsEnvelope,
 } from "react-icons/bs";
 import { WHATSAPP_NUM } from "../../config/contact";
+import { Sk } from "../../components/skeleton/skeleton";
 import "./vitrine.css";
 import hma from "../../assets/images/hma256.png";
 
@@ -74,7 +75,21 @@ export default function DetailBien() {
     return (
       <div className="vitrine-page">
         <VitrineNav />
-        <div className="vitrine-empty">Chargement...</div>
+        <div className="vitrine-detail">
+          <div className="row g-4">
+            <div className="col-lg-8">
+              <Sk w="100%" h={420} style={{ borderRadius: 14 }} />
+            </div>
+            <div className="col-lg-4" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <Sk w={100} h={20} className="sk-badge" />
+              <Sk w="85%" h={26} className="sk-h1" />
+              <Sk w="50%" h={14} className="sk-h3" />
+              <Sk w="40%" h={22} className="sk-h1" />
+              <Sk w="100%" h={90} style={{ borderRadius: 12 }} />
+              <Sk w="100%" h={140} style={{ borderRadius: 12 }} />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

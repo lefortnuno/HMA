@@ -13,8 +13,24 @@ import {
   BsEnvelope,
 } from "react-icons/bs";
 import { WHATSAPP_NUM } from "../../config/contact";
+import { Sk } from "../../components/skeleton/skeleton";
 import "./vitrine.css";
 import hma from "../../assets/images/hma256.png";
+
+function BienCardSkeleton() {
+  return (
+    <div className="bien-card" style={{ cursor: "default" }}>
+      <Sk w="100%" h={195} style={{ borderRadius: 0 }} />
+      <div className="bien-card-body">
+        <Sk w={90} h={20} className="sk-badge mb-2" />
+        <Sk w="80%" h={16} className="sk-h2 mb-2" />
+        <Sk w="55%" h={11} className="sk-h4 mb-2" />
+        <Sk w="65%" h={11} className="sk-h4 mb-2" />
+        <Sk w="40%" h={18} className="sk-h1" />
+      </div>
+    </div>
+  );
+}
 
 const API_ORIGIN =
   (process.env.REACT_APP_OFFLINE_API_HEAD || "") +
@@ -126,8 +142,10 @@ export default function Vitrine() {
       {/* Grid */}
       <div className="vitrine-container">
         {loading ? (
-          <div className="vitrine-empty">
-            <p>Chargement des biens...</p>
+          <div className="vitrine-grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <BienCardSkeleton key={i} />
+            ))}
           </div>
         ) : biensFiltres.length === 0 ? (
           <div className="vitrine-empty">

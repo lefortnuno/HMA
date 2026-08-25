@@ -214,7 +214,7 @@ export default function Service() {
                   </thead>
                   <tbody>
                     {!details ? (
-                      <LoadingTable />
+                      <LoadingTable cols={6} />
                     ) : (
                       <>
                         {currentHisto.length > 0 ? (

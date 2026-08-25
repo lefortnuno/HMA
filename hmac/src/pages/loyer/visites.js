@@ -6,6 +6,7 @@ import {
   BsChevronLeft, BsChevronRight, BsPhone, BsLaptop,
 } from "react-icons/bs";
 import { formatDateHeure } from "../../config/dates";
+import { SkTableRows } from "../../components/skeleton/skeleton";
 
 /**
  * Journal des connexions et des pages consultées.
@@ -165,11 +166,7 @@ export default function Visites() {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr>
-                      <td colSpan={4} className="text-center text-muted py-4" style={{ fontSize: "0.85rem" }}>
-                        Chargement…
-                      </td>
-                    </tr>
+                    <SkTableRows cols={4} rows={6} avatar={false} />
                   ) : lignes.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="text-center text-muted py-4" style={{ fontSize: "0.85rem" }}>

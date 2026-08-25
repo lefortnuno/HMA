@@ -213,7 +213,7 @@ export default function Boutique() {
                   </thead>
                   <tbody>
                     {!details ? (
-                      <LoadingTable />
+                      <LoadingTable cols={5} />
                     ) : (
                       <>
                         {currentHisto.length > 0 ? (

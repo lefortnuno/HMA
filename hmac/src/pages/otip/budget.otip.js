@@ -15,6 +15,7 @@ import * as XLSX from "xlsx";
 import Cellule from "./cellule";
 import Convertisseur from "./convertisseur";
 import { dateDuJour, formatDate } from "../../config/dates";
+import { SkBenefices } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
 import "./otip.css";
 
@@ -351,7 +352,7 @@ export default function BudgetOtip() {
             </div>
 
             {chargement || !calcul ? (
-              <div className="card-pro text-center py-5 text-muted">Chargement…</div>
+              <SkBenefices />
             ) : (
               <>
                 {/* Où en est-on de l'objectif */}
