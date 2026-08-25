@@ -146,7 +146,7 @@ export default function ContratBail() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6);
     doc.setTextColor(90);
-    doc.text("Vérifier ce contrat", x + taille / 2, y + taille + 3, {
+    doc.text("", x + taille / 2, y + taille + 3, {
       align: "center",
     });
     doc.setTextColor(0);
@@ -157,7 +157,7 @@ export default function ContratBail() {
       startY: y,
       theme: "grid",
       margin: { left: 15, right: 15 },
-      styles: { fontSize: 10, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+      styles: { fontSize: 10, textColor: 0, lineColor: 0, lineWidth: 0.2, cellPadding: 1.4 },
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 28 } },
       body: [
         ["Nom :", BAILLEUR.nom],
@@ -165,55 +165,82 @@ export default function ContratBail() {
         ["CIN :", BAILLEUR.cin],
       ],
     });
-    return doc.lastAutoTable.finalY + 6;
+    return doc.lastAutoTable.finalY + 5;
+  }
+
+  // jsPDF n'ajoute jamais de page tout seul : un texte écrit trop bas dans
+  // la page finit hors de la feuille — invisible, pas juste mal placé.
+  // Toute écriture de bloc doit donc passer par ici avant de dessiner.
+  function assurerPlace(doc, y, besoin) {
+    if (y + besoin > 288) {
+      doc.addPage();
+      return 20;
+    }
+    return y;
   }
 
   // Un article : titre en gras suivi du texte, avec retour à la ligne géré
   // à la main — jsPDF ne le fait pas tout seul.
   function ecrireArticle(doc, y, titre, texte, mg, R) {
-    const espace = () => {
-      doc.setFont("helvetica", "bold");
-      const largeurTitre = doc.getTextWidth(titre + " : ");
-      doc.text(titre + " : ", mg, y);
-      doc.setFont("helvetica", "normal");
-      const lignes = doc.splitTextToSize(texte, R - mg - largeurTitre);
-      doc.text(lignes[0], mg + largeurTitre, y);
-      lignes.slice(1).forEach((l, i) => doc.text(l, mg, y + (i + 1) * 5));
-      return y + lignes.length * 5 + 4;
-    };
-    return espace();
+    doc.setFont("helvetica", "bold");
+    const largeurTitre = doc.getTextWidth(titre + " : ");
+    doc.setFont("helvetica", "normal");
+    const lignes = doc.splitTextToSize(texte, R - mg - largeurTitre);
+    y = assurerPlace(doc, y, lignes.length * 5 + 3);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(titre + " : ", mg, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(lignes[0], mg + largeurTitre, y);
+    lignes.slice(1).forEach((l, i) => doc.text(l, mg, y + (i + 1) * 5));
+    return y + lignes.length * 5 + 3;
   }
 
+  // Hauteur réellement occupée par le pied — sert à décider s'il tient sur
+  // la page en cours plutôt que de le renvoyer systématiquement seul sur
+  // une nouvelle page dès qu'un seuil arbitraire était dépassé.
+  const HAUTEUR_PIED = { AVEC_LOCATAIRE: 38, SEUL: 42 };
+
   function pied(doc, y, mg, R, avecLocataire) {
+    const centreX = (mg + R) / 2;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Fait à ${VILLE}, le ..…/..…/…..….`, R, y, { align: "right" });
-    y += 16;
+    y += 14;
     if (avecLocataire) {
       doc.setFont("helvetica", "bold");
       doc.text("LE PROPRIÉTAIRE", mg, y);
       doc.text("LE LOCATAIRE", R, y, { align: "right" });
-      y += 18;
+      y += 16;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
       doc.text("(signature)", mg, y);
       doc.text("(signature)", R, y, { align: "right" });
     } else {
       doc.setFont("helvetica", "bold");
-      doc.text("LE PROPRIÉTAIRE", mg, y);
-      y += 18;
+      doc.text("LE PROPRIÉTAIRE", R, y, { align: "right" });
+      y += 14;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
-      doc.text("(signature)", mg, y);
-      y += 8;
+      doc.text("(signature)", R, y, { align: "right" });
+      y += 7;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(9);
       const note = doc.splitTextToSize(
         "La signature de chaque locataire figure dans la colonne « Signature » du tableau correspondant à sa chambre.",
         R - mg,
       );
-      doc.text(note, mg, y);
+      doc.text(note, centreX, y, { align: "center" });
     }
+  }
+
+  // Ne saute une page que si le pied n'entre vraiment plus, au lieu d'un
+  // seuil fixe qui l'isolait seul sur une page 2 même quand il restait de
+  // la place.
+  function placerPied(doc, y, mg, R, avecLocataire) {
+    const besoin = avecLocataire ? HAUTEUR_PIED.AVEC_LOCATAIRE : HAUTEUR_PIED.SEUL;
+    y = assurerPlace(doc, y, besoin);
+    pied(doc, y, mg, R, avecLocataire);
   }
 
   // ── Format groupe ────────────────────────────────────────────────────
@@ -247,7 +274,7 @@ export default function ContratBail() {
     doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, {
       align: "right",
     });
-    y += 10;
+    y += 8;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -258,7 +285,7 @@ export default function ContratBail() {
       R - mg,
     );
     doc.text(intro, mg, y);
-    y += intro.length * 5 + 8;
+    y += intro.length * 5 + 6;
 
     const etagesPresents = new Set(choisis.map((l) => l.etage));
 
@@ -272,12 +299,12 @@ export default function ContratBail() {
         mg,
         y,
       );
-      y += 4;
+      y += 3;
       autoTable(doc, {
         startY: y,
         margin: { left: mg, right: mg },
         theme: "grid",
-        styles: { fontSize: 9.5, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+        styles: { fontSize: 9.5, textColor: 0, lineColor: 0, lineWidth: 0.2, cellPadding: 1.2 },
         headStyles: {
           fontStyle: "bold",
           fillColor: [255, 255, 255],
@@ -302,11 +329,12 @@ export default function ContratBail() {
           3: { cellWidth: 32 },
         },
       });
-      y = doc.lastAutoTable.finalY + 8;
+      y = doc.lastAutoTable.finalY + 6;
     };
     tableauEtage("RDC", "REZ-DE-CHAUSSÉE");
     tableauEtage("1ER", "1ER ÉTAGE");
 
+    y = assurerPlace(doc, y, 7);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
     doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
@@ -316,11 +344,7 @@ export default function ContratBail() {
     y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
     y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
 
-    if (y > 240) {
-      doc.addPage();
-      y = 20;
-    }
-    pied(doc, y, mg, R, false);
+    placerPied(doc, y, mg, R, false);
 
     return {
       doc,
@@ -394,6 +418,7 @@ export default function ContratBail() {
     });
     y += 12;
 
+    y = assurerPlace(doc, y, 7);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
     doc.text("Il a été arrêté et convenu ce qui suit :", mg, y);
@@ -411,7 +436,7 @@ export default function ContratBail() {
     y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
 
     y += 6;
-    pied(doc, y, mg, R, true);
+    placerPied(doc, y, mg, R, true);
 
     const nomFichier = nomLegalDe(loc).replace(/\s+/g, "_");
     return { doc, filename: `Contrat_de_bail_${nomFichier}.pdf` };
