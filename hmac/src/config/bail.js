@@ -65,7 +65,29 @@ export const ARTICLE_3 =
   "Le défaut d'exécution du présent bail, faisant l'objet d'une sommation " +
   "d'exécution faite selon les règles, restée sans effet dans un délai de " +
   "30 jours, entraînera la résiliation de plein droit dudit bail si bon " +
-  "semble au propriétaire.";
+  "semble au propriétaire. Il en sera de même, sans délai, en cas de " +
+  "troubles de voisinage constatés ou si le nombre d'occupants de la " +
+  "chambre dépasse celui prévu au présent contrat.";
+
+export const ARTICLE_4 =
+  "La chambre louée est destinée exclusivement à l'habitation personnelle " +
+  "du locataire, à l'exclusion de toute activité commerciale ou " +
+  "industrielle. Le locataire s'interdit de la sous-louer, de la céder ou " +
+  "d'en remplacer l'occupant, en tout ou partie, sans l'accord préalable " +
+  "et écrit du propriétaire.";
+
+export const ARTICLE_5 =
+  "Le locataire s'oblige à entretenir la chambre en bon état et à " +
+  "effectuer, à ses frais, les menues réparations d'usage. Il informe " +
+  "sans délai le propriétaire de toute dégradation ou réparation " +
+  "importante à effectuer.";
+
+export const ARTICLE_6 =
+  "Le locataire s'engage à permettre au propriétaire, ou à toute personne " +
+  "mandatée par lui, la visite de la chambre durant le dernier mois du " +
+  "bail en vue d'une nouvelle location, ainsi qu'à tout moment pour des " +
+  "réparations ou vérifications nécessaires, moyennant un préavis " +
+  "raisonnable.";
 
 /** Nom légal si connu, sinon repli sur le nom d'usage — jamais de champ vide. */
 export const nomLegalDe = (loc) =>

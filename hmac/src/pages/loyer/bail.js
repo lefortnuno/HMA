@@ -32,6 +32,9 @@ import {
   article1,
   ARTICLE_2,
   ARTICLE_3,
+  ARTICLE_4,
+  ARTICLE_5,
+  ARTICLE_6,
   nomLegalDe,
   cinDe,
   formatAr,
@@ -373,6 +376,12 @@ export default function ContratBail() {
       y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
       y += 8;
       y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+      y += 8;
+      y = ecrireArticle(doc, y, "Article 4", ARTICLE_4, mg, R);
+      y += 8;
+      y = ecrireArticle(doc, y, "Article 5", ARTICLE_5, mg, R);
+      y += 8;
+      y = ecrireArticle(doc, y, "Article 6", ARTICLE_6, mg, R);
       y += 18;
       pied(doc, y, mg, R, false, true);
     } else {
@@ -385,6 +394,9 @@ export default function ContratBail() {
       y = ecrireArticle(doc, y, "Article 1", article1(etagesPresents), mg, R);
       y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
       y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+      y = ecrireArticle(doc, y, "Article 4", ARTICLE_4, mg, R);
+      y = ecrireArticle(doc, y, "Article 5", ARTICLE_5, mg, R);
+      y = ecrireArticle(doc, y, "Article 6", ARTICLE_6, mg, R);
 
       placerPied(doc, y, mg, R, false);
     }
@@ -477,6 +489,9 @@ export default function ContratBail() {
     );
     y = ecrireArticle(doc, y, "Article 2", ARTICLE_2, mg, R);
     y = ecrireArticle(doc, y, "Article 3", ARTICLE_3, mg, R);
+    y = ecrireArticle(doc, y, "Article 4", ARTICLE_4, mg, R);
+    y = ecrireArticle(doc, y, "Article 5", ARTICLE_5, mg, R);
+    y = ecrireArticle(doc, y, "Article 6", ARTICLE_6, mg, R);
 
     y += 6;
     placerPied(doc, y, mg, R, true);
