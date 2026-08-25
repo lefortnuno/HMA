@@ -150,12 +150,18 @@ export default function ContratBail() {
     return dataUrl;
   }
 
-  function tableauBailleur(doc, y) {
+  function tableauBailleur(doc, y, aere = false) {
     autoTable(doc, {
       startY: y,
       theme: "grid",
       margin: { left: 15, right: 15 },
-      styles: { fontSize: 10, textColor: 0, lineColor: 0, lineWidth: 0.2, cellPadding: 1.4 },
+      styles: {
+        fontSize: 10,
+        textColor: 0,
+        lineColor: 0,
+        lineWidth: 0.2,
+        cellPadding: aere ? 2.2 : 1.4,
+      },
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 28 } },
       body: [
         ["Nom :", BAILLEUR.nom],
@@ -163,7 +169,7 @@ export default function ContratBail() {
         ["CIN :", BAILLEUR.cin],
       ],
     });
-    return doc.lastAutoTable.finalY + 5;
+    return doc.lastAutoTable.finalY + (aere ? 9 : 5);
   }
 
   // jsPDF n'ajoute jamais de page tout seul : un texte écrit trop bas dans
@@ -252,6 +258,10 @@ export default function ContratBail() {
     const mg = 15;
     const R = doc.internal.pageSize.getWidth() - mg;
     let y = enTete(doc);
+    // Au-delà de 10 locataires, les articles et le pied partent sur leur
+    // propre page (plus bas) : la première n'a donc plus qu'à porter les
+    // deux tableaux, avec de la place pour respirer davantage.
+    const grande = choisis.length > 10;
 
     const qrDataUrl = await ajouterQr(doc, R, {
       type: "BAIL",
@@ -269,15 +279,15 @@ export default function ContratBail() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
     doc.text("Entre les soussignés", mg, y);
-    y += 6;
+    y += grande ? 10 : 6;
 
-    y = tableauBailleur(doc, y);
+    y = tableauBailleur(doc, y, grande);
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9.5);
     doc.text("Ci-après « LE PROPRIÉTAIRE », d'une part", R, y, {
       align: "right",
     });
-    y += 8;
+    y += grande ? 14 : 8;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -288,7 +298,7 @@ export default function ContratBail() {
       R - mg,
     );
     doc.text(intro, mg, y);
-    y += intro.length * 5 + 6;
+    y += intro.length * 5 + (grande ? 12 : 6);
 
     const etagesPresents = new Set(choisis.map((l) => l.etage));
 
@@ -302,12 +312,18 @@ export default function ContratBail() {
         mg,
         y,
       );
-      y += 3;
+      y += grande ? 6 : 3;
       autoTable(doc, {
         startY: y,
         margin: { left: mg, right: mg },
         theme: "grid",
-        styles: { fontSize: 9.5, textColor: 0, lineColor: 0, lineWidth: 0.2, cellPadding: 1.2 },
+        styles: {
+          fontSize: 9.5,
+          textColor: 0,
+          lineColor: 0,
+          lineWidth: 0.2,
+          cellPadding: grande ? 2 : 1.2,
+        },
         headStyles: {
           fontStyle: "bold",
           fillColor: [255, 255, 255],
@@ -332,12 +348,12 @@ export default function ContratBail() {
           3: { cellWidth: 32 },
         },
       });
-      y = doc.lastAutoTable.finalY + 6;
+      y = doc.lastAutoTable.finalY + (grande ? 12 : 6);
     };
     tableauEtage("RDC", "REZ-DE-CHAUSSÉE");
     tableauEtage("1ER", "1ER ÉTAGE");
 
-    if (choisis.length > 10) {
+    if (grande) {
       // Grande résidence : les deux tableaux remplissent déjà la première
       // page. Plutôt que de tasser la suite en bas ou risquer un pied de
       // page isolé, elle prend sa propre page, largement respirée — la
@@ -671,7 +687,7 @@ export default function ContratBail() {
                         Tout désélectionner
                       </button>
                       <button
-                        className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
+                        className="btn btn-danger btn-sm d-inline-flex align-items-center gap-2"
                         onClick={handleGenererGroupe}
                         disabled={!nbSelectionnes}
                       >
