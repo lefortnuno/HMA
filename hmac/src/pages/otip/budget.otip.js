@@ -90,6 +90,28 @@ export default function BudgetOtip() {
   const P2 = params.periode2 || "Septembre";
   const MOIS = [P1, P2];
 
+  // ── Règlement de l'agence RSG, en trois virements ────────────────────────
+  // L'agence accepte les 120 000 DH de la garantie en trois fois. Chaque
+  // tranche vit dans un paramètre `rsg_tN`, en JSON. Un JSON abîmé ne doit
+  // pas emporter la page entière : on retombe alors sur une tranche vide.
+  const lireTranche = (cle) => {
+    const vide = { montant: 0, date: "", ref: "", banque: "" };
+    try {
+      const t = JSON.parse(params[cle] || "{}");
+      return {
+        montant: Number(t.montant) || 0,
+        date: t.date || "",
+        ref: t.ref || "",
+        banque: t.banque || "",
+      };
+    } catch {
+      return vide;
+    }
+  };
+  const tranches = ["rsg_t1", "rsg_t2", "rsg_t3"].map(lireTranche);
+  const totalVire = tranches.reduce((s, t) => s + t.montant, 0);
+  const resteAVirer = Math.max((Number(params.objectif) || 0) - totalVire, 0);
+
   const lignesDe = (section) =>
     (data?.lignes || []).filter((l) => l.section === section);
 
@@ -126,6 +148,20 @@ export default function BudgetOtip() {
       .post("otip/params", { cle, valeur: String(valeur) }, u_info.opts)
       .then(() => charger(true))
       .catch(() => toast.error("Enregistrement refusé"));
+  }
+
+  /** Une tranche se réécrit en entier : le paramètre porte tout l'objet. */
+  function majTranche(index, champ, valeur) {
+    const t = { ...tranches[index], [champ]: valeur };
+    majParam(
+      `rsg_t${index + 1}`,
+      JSON.stringify({
+        montant: Number(t.montant) || 0,
+        date: t.date || "",
+        ref: t.ref || "",
+        banque: t.banque || "",
+      }),
+    );
   }
 
   function majDepense(id, champ, valeur) {
@@ -409,6 +445,74 @@ export default function BudgetOtip() {
                           {calcul.resteATrouver > 0 ? "Reste à trouver (DH)" : "Surplus (DH)"}
                           <small className="d-block otip-kpi-note">
                             sur un départ le {calcul.reference.libelle}
+                          </small>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Règlement de l'agence RSG : trois virements, puis ce qui
+                    reste à verser. La première tranche est partie le
+                    27/08/2026 par virement CIH Bank. */}
+                <div className="row g-3 mb-3">
+                  {tranches.map((t, i) => {
+                    const paye = t.montant > 0;
+                    const rang = i === 0 ? "1re" : `${i + 1}e`;
+                    return (
+                      <div className="col-sm-6 col-lg-3" key={i}>
+                        <div
+                          className={`stat-card ${paye ? "otip-reference" : ""}`}
+                          title={
+                            t.ref
+                              ? `Référence ${t.ref}${t.banque ? " · " + t.banque : ""}`
+                              : undefined
+                          }
+                        >
+                          <div className={`stat-icon ${paye ? "green" : "blue"}`}>
+                            {paye ? <BsCheckCircleFill /> : <BsCalendarEvent />}
+                          </div>
+                          <div className="stat-content">
+                            <h3 className="otip-kpi-editable">
+                              <Cellule
+                                valeur={t.montant}
+                                type="nombre"
+                                onSave={(v) => majTranche(i, "montant", v)}
+                                fort
+                              />
+                            </h3>
+                            <p>
+                              {rang} tranche RSG (DH)
+                              <small className="d-block otip-kpi-note">
+                                {paye ? "virée le " : "à virer le "}
+                                <Cellule
+                                  valeur={t.date}
+                                  type="date"
+                                  placeholder="date ?"
+                                  onSave={(v) => majTranche(i, "date", v)}
+                                />
+                                {t.banque ? ` · ${t.banque}` : ""}
+                              </small>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="col-sm-6 col-lg-3">
+                    <div className="stat-card">
+                      <div className={`stat-icon ${resteAVirer > 0 ? "red" : "green"}`}>
+                        {resteAVirer > 0 ? <BsExclamationTriangle /> : <BsCheckCircleFill />}
+                      </div>
+                      <div className="stat-content">
+                        <h3 className={resteAVirer > 0 ? "text-danger" : "text-success"}>
+                          {Math.round(resteAVirer).toLocaleString("fr-FR")}
+                        </h3>
+                        <p>
+                          Reste à virer (DH)
+                          <small className="d-block otip-kpi-note">
+                            {DH(Math.round(totalVire))} versés sur{" "}
+                            {DH(Number(params.objectif) || 0)}
                           </small>
                         </p>
                       </div>

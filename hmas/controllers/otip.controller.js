@@ -12,8 +12,13 @@ const Change = require("../utils/otip.change");
  * comme l'affichage doivent en donner le meme resultat.
  */
 
+// Les trois `rsg_t*` portent chacun une tranche du reglement de l'agence
+// RSG (Study Ready Go), en JSON compact : { montant, date, ref, banque }.
+// Une cle par tranche plutot qu'un seul tableau : `valeur` est limitee a
+// 300 caracteres, et trois objets n'y tiendraient pas confortablement.
 const PARAMS_AUTORISES = [
   "objectif", "periode1", "periode2", "depart1", "depart2", "titre", "echeance",
+  "rsg_t1", "rsg_t2", "rsg_t3",
 ];
 
 /** Etat complet : lignes, depenses, parametres et previsionnel. */
