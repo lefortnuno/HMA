@@ -7,12 +7,15 @@
  *    de facture. « Payé le 15 août » est le 15 août, à Tananarive comme à
  *    Casablanca. Elles ne se convertissent pas : elles se lisent telles quelles.
  *
- *  · Les INSTANTS — journal des saisies, demandes de validation, création de
- *    compte. Ceux-là sont stockés en UTC et s'affichent dans le fuseau du
- *    logement, quel que soit l'endroit d'où l'on consulte.
+ *  · Les INSTANTS — journal des connexions, demandes de validation, création
+ *    de compte. Ceux-là sont stockés en UTC et s'affichent dans le fuseau de
+ *    CELUI QUI REGARDE : une connexion faite à 12 h depuis le Maroc se lit
+ *    12 h au Maroc, et 14 h depuis Madagascar. C'est le même instant.
  *
- * Madagascar est à UTC+3 toute l'année, sans heure d'été : le décalage est
- * fixe et jamais ambigu.
+ * FUSEAU_LOGEMENT ne sert donc qu'à HORODATER une saisie, jamais à
+ * l'afficher : la date d'un règlement ne doit pas changer selon le pays d'où
+ * l'administrateur la saisit. Madagascar est à UTC+3 toute l'année, sans
+ * heure d'été : le décalage est fixe et jamais ambigu.
  */
 
 export const FUSEAU_LOGEMENT = "Indian/Antananarivo";
@@ -134,13 +137,22 @@ export function formatDate(valeur) {
   return `${j} ${MOIS_COURT[m - 1]} ${a}`;
 }
 
-/** Instant lisible dans le fuseau du logement : « 15 Aoû 2026 à 09h30 ». */
+/**
+ * Instant lisible dans le fuseau de celui qui regarde : « 15 Aoû 2026 à 09h30 ».
+ *
+ * Pas de `timeZone` imposé : `Intl` prend alors celui du navigateur. Le
+ * journal affichait auparavant l'heure de Tananarive pour tout le monde —
+ * depuis le Maroc, sa propre connexion de 12 h s'affichait à 14 h.
+ *
+ * La valeur reçue doit porter son fuseau (« ...Z ») pour que `new Date` la
+ * situe correctement. C'est le cas : la base et le driver parlent UTC de
+ * bout en bout (voir hmas/config/db.js).
+ */
 export function formatDateHeure(valeur) {
   if (!valeur) return "—";
   const d = new Date(valeur);
   if (isNaN(d)) return "—";
   const p = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU_LOGEMENT,
     day: "numeric",
     month: "numeric",
     year: "numeric",
