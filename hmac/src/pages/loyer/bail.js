@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
@@ -13,8 +13,13 @@ import {
   BsFileEarmarkPdf,
   BsCheckSquare,
   BsSquare,
-  BsExclamationTriangle, 
+  BsExclamationTriangle,
   BsShare,
+  BsPenFill,
+  BsCheckCircleFill,
+  BsHourglassSplit,
+  BsDownload,
+  BsFillTrashFill,
 } from "react-icons/bs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -41,6 +46,8 @@ import {
 } from "../../config/bail";
 import { genererQrVerification } from "../../config/verification";
 import { SkListeLignes } from "../../components/skeleton/skeleton";
+import SignerBail from "../../components/signature/signer.bail";
+import { formatDate } from "../../config/dates";
 import "./loyer.css";
 import "./bail.css";
 
@@ -72,9 +79,21 @@ export default function ContratBail() {
 
   const [locataires, setLocataires] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState("GROUPE"); // GROUPE | INDIVIDUEL
+  const [mode, setMode] = useState("GROUPE"); // GROUPE | INDIVIDUEL | SIGNATURE
   const [selection, setSelection] = useState(() => new Set());
   const [individuelId, setIndividuelId] = useState(null);
+
+  // Contrats mis à la signature, et celui qu'on est en train de signer.
+  const [contrats, setContrats] = useState([]);
+  const [signerId, setSignerId] = useState(null);
+
+  const chargerContrats = useCallback(() => {
+    axios
+      .get(`bail?bienId=${bienId}`, u_info.opts)
+      .then((r) => setContrats(r.data || []))
+      .catch(() => setContrats([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bienId]);
 
   useEffect(() => {
     setLoading(true);
@@ -88,8 +107,51 @@ export default function ContratBail() {
       })
       .catch(() => setLocataires([]))
       .finally(() => setLoading(false));
+    chargerContrats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bienId]);
+
+  /** Fige les données du locataire dans un contrat prêt à être signé. */
+  function mettreALaSignature(loc) {
+    if (!loc) return toast.warning("Choisissez un locataire");
+    axios
+      .post(
+        "bail",
+        { locataireId: loc.id, bailleurNom: BAILLEUR.nom, bailleurCin: BAILLEUR.cin },
+        u_info.opts,
+      )
+      .then(() => {
+        toast.success(`Contrat créé pour ${loc.nom}, prêt à être signé.`);
+        chargerContrats();
+        setMode("SIGNATURE");
+      })
+      .catch((e) =>
+        toast.error(e?.response?.data?.message || "Création impossible"),
+      );
+  }
+
+  function supprimerContrat(id) {
+    axios
+      .delete(`bail/${id}`, u_info.opts)
+      .then(() => {
+        toast.success("Contrat supprimé");
+        chargerContrats();
+      })
+      .catch(() => toast.error("Suppression impossible"));
+  }
+
+  /** Récupère le PDF figé conservé par le serveur. */
+  function telechargerFige(c) {
+    axios
+      .get(`bail/${c.id}/pdf`, u_info.opts)
+      .then((r) => {
+        const a = document.createElement("a");
+        a.href = `data:application/pdf;base64,${r.data.pdf}`;
+        a.download = `Contrat_de_bail_${String(c.nomLegal || "locataire").replace(/\s+/g, "_")}.pdf`;
+        a.click();
+      })
+      .catch(() => toast.error("PDF indisponible"));
+  }
 
   function changeAppart(id) {
     setBienId(id);
@@ -639,6 +701,15 @@ export default function ContratBail() {
               >
                 <BsPerson /> Individuel
               </button>
+              <button
+                className={mode === "SIGNATURE" ? "actif" : ""}
+                onClick={() => setMode("SIGNATURE")}
+              >
+                <BsPenFill /> À signer
+                {contrats.length > 0 && (
+                  <span className="bail-pastille">{contrats.length}</span>
+                )}
+              </button>
             </div>
 
             {loading ? (
@@ -703,6 +774,25 @@ export default function ContratBail() {
                     </button>
                   </div>
                 </div>
+                <div className="row g-3 mt-0">
+                  <div className="col-12">
+                    <button
+                      className="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                      onClick={() =>
+                        mettreALaSignature(
+                          locataires.find((l) => l.id === individuelId),
+                        )
+                      }
+                    >
+                      <BsPenFill /> Mettre à la signature électronique
+                    </button>
+                    <small className="text-muted d-block mt-1" style={{ fontSize: "0.75rem" }}>
+                      Le contrat est figé tel qu'il est aujourd'hui, puis signé
+                      par le locataire depuis son compte et par vous depuis le
+                      vôtre.
+                    </small>
+                  </div>
+                </div>
                 {individuelId &&
                   !cinDe(locataires.find((l) => l.id === individuelId)) && (
                     <div className="bail-alerte mt-3">
@@ -714,6 +804,76 @@ export default function ContratBail() {
                       </span>
                     </div>
                   )}
+              </div>
+            ) : mode === "SIGNATURE" ? (
+              <div className="card-pro p-0">
+                {contrats.length === 0 ? (
+                  <div className="text-center py-5 text-muted">
+                    Aucun contrat en attente de signature. Créez-en un depuis
+                    l'onglet Individuel.
+                  </div>
+                ) : (
+                  <ul className="bail-liste" style={{ maxHeight: "none" }}>
+                    {contrats.map((c) => {
+                      const clos = c.statut === "SIGNE";
+                      return (
+                        <li key={c.id} className="bail-item-ligne">
+                          <div className="bail-item" style={{ cursor: "default" }}>
+                            {clos ? (
+                              <BsCheckCircleFill style={{ color: "#16a34a" }} />
+                            ) : (
+                              <BsHourglassSplit />
+                            )}
+                            <span
+                              className={c.etage === "RDC" ? "badge-rdc" : "badge-1er"}
+                            >
+                              {c.chambre}
+                            </span>
+                            <span className="bail-nom">
+                              {c.nomLegal}
+                              <small className="d-block text-muted" style={{ fontSize: "0.72rem" }}>
+                                {clos
+                                  ? `signé le ${formatDate(c.pdfLe)}`
+                                  : `${c.sigBailleurLe ? "propriétaire signé" : "propriétaire en attente"} · ${
+                                      c.sigLocataireLe ? "locataire signé" : "locataire en attente"
+                                    }`}
+                              </small>
+                            </span>
+                          </div>
+                          {clos ? (
+                            <button
+                              className="bail-envoyer"
+                              title="Télécharger le contrat signé"
+                              onClick={() => telechargerFige(c)}
+                            >
+                              <BsDownload size={12} />
+                            </button>
+                          ) : (
+                            <button
+                              className="bail-envoyer"
+                              title={
+                                c.sigBailleurLe
+                                  ? "Vous avez déjà signé, en attente du locataire"
+                                  : "Signer en tant que propriétaire"
+                              }
+                              onClick={() => setSignerId(c.id)}
+                              disabled={!!c.sigBailleurLe}
+                            >
+                              <BsPenFill size={12} />
+                            </button>
+                          )}
+                          <button
+                            className="bail-envoyer"
+                            title="Supprimer ce contrat"
+                            onClick={() => supprimerContrat(c.id)}
+                          >
+                            <BsFillTrashFill size={12} />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
             ) : (
               <>
@@ -833,6 +993,15 @@ export default function ContratBail() {
           </main>
         </div>
       </div>
+
+      {signerId && (
+        <SignerBail
+          contratId={signerId}
+          opts={u_info.opts}
+          onFini={chargerContrats}
+          onClose={() => setSignerId(null)}
+        />
+      )}
     </Template>
   );
 }

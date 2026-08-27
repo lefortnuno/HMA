@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../../contexts/api/axios";
 import GetUserData from "../../contexts/api/udata";
 import Template from "../../components/template/template";
@@ -9,8 +9,9 @@ import { toast } from "react-toastify";
 import {
   BsHouseHeart, BsCheckCircleFill, BsXCircleFill, BsDashCircle, BsExclamationTriangleFill,
   BsCashCoin, BsHourglassSplit, BsSendCheck, BsCalendarPlus,
-  BsXLg,
+  BsXLg, BsPenFill, BsFileEarmarkText, BsDownload,
 } from "react-icons/bs";
+import SignerBail from "../../components/signature/signer.bail";
 import { SkLocataires } from "../../components/skeleton/skeleton";
 import {
   moisExigibles as calcMoisExigibles,
@@ -37,6 +38,34 @@ export default function MonEspace() {
   // Déclaration d'un règlement, soumise à la validation du propriétaire.
   const [declaration, setDeclaration] = useState(null); // { mois, montantLoyer, datePaiement }
   const [envoi, setEnvoi] = useState(false);
+
+  // Contrat de bail mis à la signature par le propriétaire, s'il y en a un.
+  const [contrat, setContrat] = useState(null);
+  const [signer, setSigner] = useState(false);
+
+  const chargerContrat = useCallback(() => {
+    axios
+      .get("bail/mien", u_info.opts)
+      .then((r) => setContrat(r.data || null))
+      .catch(() => setContrat(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chargerContrat();
+  }, [chargerContrat]);
+
+  function telechargerContrat() {
+    axios
+      .get(`bail/${contrat.id}/pdf`, u_info.opts)
+      .then((r) => {
+        const a = document.createElement("a");
+        a.href = `data:application/pdf;base64,${r.data.pdf}`;
+        a.download = `Contrat_de_bail_${String(contrat.nomLegal || "moi").replace(/\s+/g, "_")}.pdf`;
+        a.click();
+      })
+      .catch(() => toast.error("PDF indisponible"));
+  }
 
   function charger(silencieux = false) {
     if (!silencieux && !data) setLoading(true);
@@ -303,6 +332,46 @@ export default function MonEspace() {
                   </div>
                 )}
 
+                {/* Contrat de bail : à signer, ou signé et consultable. */}
+                {contrat && (
+                  <div className="card-pro mb-3">
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                      <div className="d-flex align-items-center gap-2">
+                        <BsFileEarmarkText size={18} style={{ color: "#b8860b" }} />
+                        <div>
+                          <h6 className="fw-bold mb-0" style={{ fontSize: "0.92rem" }}>
+                            Contrat de bail
+                          </h6>
+                          <small className="text-muted" style={{ fontSize: "0.76rem" }}>
+                            {contrat.statut === "SIGNE"
+                              ? "Signé par les deux parties"
+                              : contrat.sigLocataireLe
+                                ? "Vous avez signé, en attente du propriétaire"
+                                : "En attente de votre signature"}
+                          </small>
+                        </div>
+                      </div>
+                      {contrat.statut === "SIGNE" ? (
+                        <button
+                          className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+                          onClick={telechargerContrat}
+                        >
+                          <BsDownload /> Télécharger
+                        </button>
+                      ) : (
+                        <button
+                          className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
+                          onClick={() => setSigner(true)}
+                          disabled={!!contrat.sigLocataireLe}
+                        >
+                          <BsPenFill />
+                          {contrat.sigLocataireLe ? "Déjà signé" : "Lire et signer"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Calendrier des paiements */}
                 <div className="card-pro">
                   <h6 className="fw-bold mb-3">Mes paiements {annee}</h6>
@@ -396,6 +465,14 @@ export default function MonEspace() {
         </div>
       )}
 
+      {signer && contrat && (
+        <SignerBail
+          contratId={contrat.id}
+          opts={u_info.opts}
+          onFini={chargerContrat}
+          onClose={() => setSigner(false)}
+        />
+      )}
     </Template>
   );
 }
