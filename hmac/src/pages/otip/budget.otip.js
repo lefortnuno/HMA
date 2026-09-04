@@ -8,13 +8,13 @@ import { toast } from "react-toastify";
 import {
   BsPiggyBank, BsPlus, BsFillTrashFill, BsXLg, BsFileEarmarkExcel,
   BsExclamationTriangle, BsWallet2, BsPeople, BsBank, BsCashCoin,
-  BsReceipt, BsCalendarEvent, BsArrowRepeat, BsJournalText,
+  BsReceipt, BsCalendarEvent, BsArrowRepeat, BsJournalText, BsCheckCircleFill,
   BsCurrencyExchange,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
 import Cellule from "./cellule";
 import Convertisseur from "./convertisseur";
-import { dateDuJour, formatDate } from "../../config/dates";
+import { dateDuJour, formatDate, aujourdhuiLocal, MOIS_LONG } from "../../config/dates";
 import { SkBenefices } from "../../components/skeleton/skeleton";
 import "../loyer/loyer.css";
 import "./otip.css";
@@ -34,6 +34,10 @@ import "./otip.css";
  */
 
 const DH = (v) => `${Number(v || 0).toLocaleString("fr-FR")} DH`;
+const nbSafe = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
 
 const STATUTS = [
   { valeur: "A_NEGOCIER", label: "À négocier" },
@@ -92,6 +96,49 @@ export default function BudgetOtip() {
 
   const lignesDe = (section) =>
     (data?.lignes || []).filter((l) => l.section === section);
+
+  // Année de départ du remboursement : fixe, comme le reste de ce module
+  // temporaire (les échéances RSG et les dates de départ sont elles aussi
+  // écrites en dur pour 2026). La déduire de la date du jour casserait le
+  // calcul dès l'année suivante : "aujourd'hui" en 2027 recalerait le début
+  // du remboursement en 2027, alors qu'il a eu lieu en 2026.
+  const ANNEE_DEBUT_REMBOURSEMENT = 2026;
+
+  /**
+   * Mensualités déjà prélevées depuis le début du remboursement.
+   *
+   * `moisRemb` ne porte qu'un nom de mois ("Septembre"), sans année ni jour :
+   * le premier prélèvement automatique tombe donc le 1er du mois SUIVANT
+   * (le remboursement démarre fin du mois indiqué, pas pendant).
+   */
+  function mensualitesEcoulees(moisDebut) {
+    const idx = MOIS_LONG.indexOf(moisDebut);
+    if (idx < 0) return 0;
+    const aujourdhui = aujourdhuiLocal();
+    const debut = new Date(ANNEE_DEBUT_REMBOURSEMENT, idx + 1, 1);
+    const diff =
+      (aujourdhui.getFullYear() - debut.getFullYear()) * 12 +
+      (aujourdhui.getMonth() - debut.getMonth());
+    return Math.max(diff + 1, 0);
+  }
+
+  // ── Reste à payer, en tenant compte des mensualités déjà prélevées ───────
+  // Ni l'objectif ni la barre de progression ne le font : ils datent de la
+  // collecte de la garantie, où « emprunts reçus » comptait comme argent
+  // acquis, pas comme dette à rembourser (voir l'explication ci-dessous).
+  const resteAPayer = lignesDe("EMPRUNT").reduce(
+    (s, x) =>
+      s + Math.max(nbSafe(x.montant) - nbSafe(x.montant2) * mensualitesEcoulees(x.moisRemb), 0),
+    0,
+  );
+
+  // ── Reste par mois : revenus récurrents moins charges récurrentes ────────
+  // Les dépenses PONCTUELLES en sont exclues à dessein : par définition elles
+  // ne se reproduisent pas chaque mois, les compter fausserait un solde
+  // mensuel censé se répéter à l'identique.
+  const revenusMensuels = lignesDe("REVENU").reduce((s, x) => s + nbSafe(x.montant), 0);
+  const resteParMois =
+    revenusMensuels - (calcul?.totalFixes || 0) - (calcul?.totalRemboursementMensuel || 0);
 
   // ── Écritures ────────────────────────────────────────────────────────────
   // Chaque saisie part au serveur, qui renvoie le prévisionnel recalculé :
@@ -370,6 +417,48 @@ export default function BudgetOtip() {
                           />
                         </h3>
                         <p>Objectif (DH)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Décroît tout seul, mois après mois, une fois les
+                      prélèvements automatiques démarrés (voir CPM/AC2I). */}
+                  <div className="col-sm-6 col-lg-3">
+                    <div className="stat-card">
+                      <div className={`stat-icon ${resteAPayer > 0 ? "red" : "green"}`}>
+                        {resteAPayer > 0 ? <BsCalendarEvent /> : <BsCheckCircleFill />}
+                      </div>
+                      <div className="stat-content">
+                        <h3>{Math.round(resteAPayer).toLocaleString("fr-FR")}</h3>
+                        <p>
+                          Reste à payer (DH)
+                          <small className="d-block otip-kpi-note">
+                            {DH(Math.round(calcul.totalRemboursementMensuel))}/mois, prélevés automatiquement
+                          </small>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Revenus récurrents moins charges récurrentes ; les
+                      dépenses ponctuelles n'y entrent pas, par définition
+                      elles ne se répètent pas chaque mois. */}
+                  <div className="col-sm-6 col-lg-3">
+                    <div className="stat-card">
+                      <div className={`stat-icon ${resteParMois >= 0 ? "green" : "red"}`}>
+                        {resteParMois >= 0 ? <BsCheckCircleFill /> : <BsExclamationTriangle />}
+                      </div>
+                      <div className="stat-content">
+                        <h3 className={resteParMois < 0 ? "text-danger" : ""}>
+                          {resteParMois < 0 ? "− " : ""}
+                          {Math.abs(Math.round(resteParMois)).toLocaleString("fr-FR")}
+                        </h3>
+                        <p>
+                          Reste par mois (DH)
+                          <small className="d-block otip-kpi-note">
+                            revenus − fixes − remboursements
+                          </small>
+                        </p>
                       </div>
                     </div>
                   </div>
