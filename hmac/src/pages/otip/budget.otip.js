@@ -131,6 +131,17 @@ export default function BudgetOtip() {
       s + Math.max(nbSafe(x.montant) - nbSafe(x.montant2) * mensualitesEcoulees(x.moisRemb), 0),
     0,
   );
+  // Même mensualités, lues dans l'autre sens : ce qui est déjà remboursé
+  // plutôt que ce qu'il reste à payer. Sert de base à la barre de
+  // progression — plus les mensualités s'accumulent, plus elle avance.
+  const montantRembourse = lignesDe("EMPRUNT").reduce(
+    (s, x) =>
+      s + Math.min(nbSafe(x.montant2) * mensualitesEcoulees(x.moisRemb), nbSafe(x.montant)),
+    0,
+  );
+  const objectifDette = nbSafe(params.objectif);
+  const progressionRemboursement =
+    objectifDette > 0 ? Math.min((montantRembourse / objectifDette) * 100, 100) : 0;
 
   // ── Reste par mois : revenus récurrents moins charges récurrentes ────────
   // Les dépenses PONCTUELLES en sont exclues à dessein : par définition elles
@@ -470,14 +481,14 @@ export default function BudgetOtip() {
                       Progression vers l'objectif
                     </span>
                     <span className="text-muted" style={{ fontSize: "0.8rem" }}>
-                      {DH(Math.round(calcul.soldeReference))} sur {DH(calcul.objectif)} ·{" "}
-                      <strong>{calcul.progression.toFixed(1)} %</strong>
+                      {DH(Math.round(montantRembourse))} sur {DH(objectifDette)} ·{" "}
+                      <strong>{progressionRemboursement.toFixed(1)} %</strong>
                     </span>
                   </div>
                   <div className="otip-barre">
                     <div
-                      className={`otip-barre-remplie ${calcul.resteATrouver > 0 ? "" : "atteint"}`}
-                      style={{ width: `${Math.max(calcul.progression, 1)}%` }}
+                      className={`otip-barre-remplie ${resteAPayer > 0 ? "" : "atteint"}`}
+                      style={{ width: `${Math.max(progressionRemboursement, 1)}%` }}
                     />
                   </div>
                 </div>
