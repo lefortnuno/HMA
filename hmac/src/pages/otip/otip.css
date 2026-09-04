@@ -451,3 +451,40 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Double flottant du bouton Convertir : le bandeau du haut sort de l'écran
+   dès qu'on scrolle, alors que le convertisseur sert souvent en pleine
+   saisie plus bas sur la page. */
+.otip-convertir-flottant {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 900;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #b8860b;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(184, 134, 11, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.otip-convertir-flottant:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(184, 134, 11, 0.5);
+}
+.otip-convertir-flottant:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 575.98px) {
+  .otip-convertir-flottant {
+    right: 16px;
+    bottom: 16px;
+    width: 48px;
+    height: 48px;
+  }
+}

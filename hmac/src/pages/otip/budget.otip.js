@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import {
   BsPiggyBank, BsPlus, BsFillTrashFill, BsXLg, BsFileEarmarkExcel,
   BsExclamationTriangle, BsWallet2, BsPeople, BsBank, BsCashCoin,
-  BsReceipt, BsCalendarEvent, BsArrowRepeat, BsJournalText, BsCheckCircleFill,
+  BsReceipt, BsCalendarEvent, BsArrowRepeat, BsJournalText,
   BsCurrencyExchange,
 } from "react-icons/bs";
 import * as XLSX from "xlsx";
@@ -20,7 +20,7 @@ import "../loyer/loyer.css";
 import "./otip.css";
 
 /**
- * Budget OTIP — réunir la garantie bancaire du départ d'Iruno.
+ * Budget OTIP — remboursement des prêts qui ont financé le départ d'Iruno.
  *
  * MODULE TEMPORAIRE, à retirer quand le dossier sera clos :
  * voir hmas/scripts/remove_otip.js, qui supprime les tables et liste les
@@ -90,28 +90,6 @@ export default function BudgetOtip() {
   const P2 = params.periode2 || "Septembre";
   const MOIS = [P1, P2];
 
-  // ── Règlement de l'agence RSG, en trois virements ────────────────────────
-  // L'agence accepte les 120 000 DH de la garantie en trois fois. Chaque
-  // tranche vit dans un paramètre `rsg_tN`, en JSON. Un JSON abîmé ne doit
-  // pas emporter la page entière : on retombe alors sur une tranche vide.
-  const lireTranche = (cle) => {
-    const vide = { montant: 0, date: "", ref: "", banque: "" };
-    try {
-      const t = JSON.parse(params[cle] || "{}");
-      return {
-        montant: Number(t.montant) || 0,
-        date: t.date || "",
-        ref: t.ref || "",
-        banque: t.banque || "",
-      };
-    } catch {
-      return vide;
-    }
-  };
-  const tranches = ["rsg_t1", "rsg_t2", "rsg_t3"].map(lireTranche);
-  const totalVire = tranches.reduce((s, t) => s + t.montant, 0);
-  const resteAVirer = Math.max((Number(params.objectif) || 0) - totalVire, 0);
-
   const lignesDe = (section) =>
     (data?.lignes || []).filter((l) => l.section === section);
 
@@ -148,20 +126,6 @@ export default function BudgetOtip() {
       .post("otip/params", { cle, valeur: String(valeur) }, u_info.opts)
       .then(() => charger(true))
       .catch(() => toast.error("Enregistrement refusé"));
-  }
-
-  /** Une tranche se réécrit en entier : le paramètre porte tout l'objet. */
-  function majTranche(index, champ, valeur) {
-    const t = { ...tranches[index], [champ]: valeur };
-    majParam(
-      `rsg_t${index + 1}`,
-      JSON.stringify({
-        montant: Number(t.montant) || 0,
-        date: t.date || "",
-        ref: t.ref || "",
-        banque: t.banque || "",
-      }),
-    );
   }
 
   function majDepense(id, champ, valeur) {
@@ -366,7 +330,7 @@ export default function BudgetOtip() {
                   <BsPiggyBank /> Budget OTIP
                 </h1>
                 <p className="text-muted small mb-0">
-                  {params.echeance || "Garantie bancaire pour le départ d'Iruno"}
+                  {params.echeance || "Remboursement des prêts pour le départ d'Iruno"}
                 </p>
               </div>
               <div className="d-flex gap-2 align-items-center flex-wrap">
@@ -391,7 +355,7 @@ export default function BudgetOtip() {
               <SkBenefices />
             ) : (
               <>
-                {/* Où en est-on de l'objectif */}
+                {/* Objectif : le total à réunir pour rembourser CPM et AC2I. */}
                 <div className="row g-3 mb-3">
                   <div className="col-sm-6 col-lg-3">
                     <div className="stat-card">
@@ -409,115 +373,6 @@ export default function BudgetOtip() {
                       </div>
                     </div>
                   </div>
-                  {/* Les deux départs possibles. Le premier sert de référence :
-                      c'est celui qui laisse le moins d'argent. */}
-                  {calcul.scenarios.map((s, i) => (
-                    <div className="col-sm-6 col-lg-3" key={s.cle}>
-                      <div className={`stat-card ${i === 0 ? "otip-reference" : ""}`}>
-                        <div className={`stat-icon ${i === 0 ? "blue" : "green"}`}>
-                          <BsWallet2 />
-                        </div>
-                        <div className="stat-content">
-                          <h3>{Math.round(s.disponible).toLocaleString("fr-FR")}</h3>
-                          <p>
-                            Départ le {s.libelle} (DH)
-                            <small className="d-block otip-kpi-note">
-                              {s.paieRecue ? "paie de fin de mois reçue" : "avant la paie"}
-                              {i === 0 ? " · référence" : ""}
-                            </small>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="col-sm-6 col-lg-3">
-                    <div className="stat-card">
-                      <div className={`stat-icon ${calcul.resteATrouver > 0 ? "red" : "green"}`}>
-                        {calcul.resteATrouver > 0 ? <BsExclamationTriangle /> : <BsCheckCircleFill />}
-                      </div>
-                      <div className="stat-content">
-                        <h3 className={calcul.resteATrouver > 0 ? "text-danger" : "text-success"}>
-                          {calcul.resteATrouver > 0
-                            ? Math.round(calcul.resteATrouver).toLocaleString("fr-FR")
-                            : `+${Math.round(calcul.surplus).toLocaleString("fr-FR")}`}
-                        </h3>
-                        <p>
-                          {calcul.resteATrouver > 0 ? "Reste à trouver (DH)" : "Surplus (DH)"}
-                          <small className="d-block otip-kpi-note">
-                            sur un départ le {calcul.reference.libelle}
-                          </small>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Règlement de l'agence RSG : trois virements, puis ce qui
-                    reste à verser. La première tranche est partie le
-                    27/08/2026 par virement CIH Bank. */}
-                <div className="row g-3 mb-3">
-                  {tranches.map((t, i) => {
-                    const paye = t.montant > 0;
-                    const rang = i === 0 ? "1re" : `${i + 1}e`;
-                    return (
-                      <div className="col-sm-6 col-lg-3" key={i}>
-                        <div
-                          className={`stat-card ${paye ? "otip-reference" : ""}`}
-                          title={
-                            t.ref
-                              ? `Référence ${t.ref}${t.banque ? " · " + t.banque : ""}`
-                              : undefined
-                          }
-                        >
-                          <div className={`stat-icon ${paye ? "green" : "blue"}`}>
-                            {paye ? <BsCheckCircleFill /> : <BsCalendarEvent />}
-                          </div>
-                          <div className="stat-content">
-                            <h3 className="otip-kpi-editable">
-                              <Cellule
-                                valeur={t.montant}
-                                type="nombre"
-                                onSave={(v) => majTranche(i, "montant", v)}
-                                fort
-                              />
-                            </h3>
-                            <p>
-                              {rang} tranche RSG (DH)
-                              <small className="d-block otip-kpi-note">
-                                {paye ? "virée le " : "à virer le "}
-                                <Cellule
-                                  valeur={t.date}
-                                  type="date"
-                                  placeholder="date ?"
-                                  onSave={(v) => majTranche(i, "date", v)}
-                                />
-                                {t.banque ? ` · ${t.banque}` : ""}
-                              </small>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="col-sm-6 col-lg-3">
-                    <div className="stat-card">
-                      <div className={`stat-icon ${resteAVirer > 0 ? "red" : "green"}`}>
-                        {resteAVirer > 0 ? <BsExclamationTriangle /> : <BsCheckCircleFill />}
-                      </div>
-                      <div className="stat-content">
-                        <h3 className={resteAVirer > 0 ? "text-danger" : "text-success"}>
-                          {Math.round(resteAVirer).toLocaleString("fr-FR")}
-                        </h3>
-                        <p>
-                          Reste à virer (DH)
-                          <small className="d-block otip-kpi-note">
-                            {DH(Math.round(totalVire))} versés sur{" "}
-                            {DH(Number(params.objectif) || 0)}
-                          </small>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="card-pro otip-progression mb-3">
@@ -528,9 +383,6 @@ export default function BudgetOtip() {
                     <span className="text-muted" style={{ fontSize: "0.8rem" }}>
                       {DH(Math.round(calcul.soldeReference))} sur {DH(calcul.objectif)} ·{" "}
                       <strong>{calcul.progression.toFixed(1)} %</strong>
-                      <span className="d-none d-sm-inline">
-                        {" "}· départ le {calcul.reference.libelle}
-                      </span>
                     </span>
                   </div>
                   <div className="otip-barre">
@@ -815,120 +667,6 @@ export default function BudgetOtip() {
                       </Section>
                     </div>
 
-                    {/* 7 · Prévisionnel */}
-                    <div className="col-12 col-xl-6">
-                      <div className="card-pro p-0 otip-section">
-                        <div className="otip-section-tete">
-                          <div className="d-flex align-items-center gap-2">
-                            <span className="otip-num">7</span>
-                            <div>
-                              <h6 className="mb-0 fw-bold d-flex align-items-center gap-2">
-                                <BsJournalText /> Disponible au départ
-                              </h6>
-                              <small className="text-muted otip-aide">
-                                Les deux dates ne diffèrent que par la paie de fin de mois
-                              </small>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="table-responsive">
-                          <table className="table otip-table otip-cashflow mb-0">
-                            <thead>
-                              <tr>
-                                <th>Poste</th>
-                                {calcul.scenarios.map((s, i) => (
-                                  <th key={s.cle} className="text-end">
-                                    {s.libelle}
-                                    {i === 0 && <span className="otip-ref-tag">réf.</span>}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {[
-                                ["Liquidités nettes", "liquidites", false],
-                                ["(+) Revenus", "revenus", false],
-                                ["(+) Créances reçues", "creances", false],
-                                ["(+) Emprunts reçus", "emprunts", false],
-                                ["(–) Dépenses fixes", "fixes", true],
-                                ["(–) Remboursements", "remboursements", true],
-                                ["(–) Dépenses ponctuelles", "ponctuelles", true],
-                              ].map(([lib, cle, negatif]) => (
-                                <tr key={cle}>
-                                  <td>{lib}</td>
-                                  {calcul.scenarios.map((s) => (
-                                    <td
-                                      key={s.cle}
-                                      className={`text-end ${negatif && s[cle] ? "text-danger" : ""}`}
-                                    >
-                                      {negatif && s[cle] ? "− " : ""}
-                                      {DH(s[cle])}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                              <tr className="otip-total">
-                                <td>Disponible</td>
-                                {calcul.scenarios.map((s) => (
-                                  <td key={s.cle} className="text-end">
-                                    {DH(Math.round(s.disponible))}
-                                  </td>
-                                ))}
-                              </tr>
-                              <tr className="otip-ligne-calc">
-                                <td>Manque pour l'objectif</td>
-                                {calcul.scenarios.map((s) => (
-                                  <td key={s.cle} className="text-end">
-                                    {s.manque ? DH(Math.round(s.manque)) : "objectif atteint"}
-                                  </td>
-                                ))}
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ce qui tombe après le départ : conservé, mais hors garantie. */}
-                    {(calcul.horsFenetre.creances > 0 ||
-                      calcul.horsFenetre.ponctuelles > 0 ||
-                      calcul.horsFenetre.remboursements > 0) && (
-                      <div className="col-12 col-xl-6">
-                        <div className="card-pro otip-hors-fenetre">
-                          <h6 className="fw-bold mb-1 d-flex align-items-center gap-2">
-                            <BsCalendarEvent /> Après le départ ({P2})
-                          </h6>
-                          <p className="text-muted mb-3" style={{ fontSize: "0.78rem" }}>
-                            Ces lignes restent enregistrées mais ne comptent plus pour la
-                            garantie : elles tombent une fois Iruno parti.
-                          </p>
-                          <ul className="otip-liste-hors">
-                            {calcul.horsFenetre.creances > 0 && (
-                              <li>
-                                <span>Créances à recevoir</span>
-                                <strong>+ {DH(calcul.horsFenetre.creances)}</strong>
-                              </li>
-                            )}
-                            {calcul.horsFenetre.ponctuelles > 0 && (
-                              <li>
-                                <span>Dépenses ponctuelles</span>
-                                <strong className="text-danger">
-                                  − {DH(calcul.horsFenetre.ponctuelles)}
-                                </strong>
-                              </li>
-                            )}
-                            {calcul.horsFenetre.remboursements > 0 && (
-                              <li>
-                                <span>Remboursements de prêts</span>
-                                <strong className="text-danger">
-                                  − {DH(calcul.horsFenetre.remboursements)}
-                                </strong>
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   /* Dépenses journalières */
@@ -1015,6 +753,18 @@ export default function BudgetOtip() {
           </main>
         </div>
       </div>
+
+      {/* Doublon flottant du bouton Convertir : sur une page longue, le
+          bouton du bandeau sort de l'écran dès qu'on descend, alors qu'on a
+          souvent besoin du convertisseur en pleine saisie. */}
+      <button
+        type="button"
+        className="otip-convertir-flottant"
+        onClick={() => setConvertisseur(true)}
+        title="Convertir entre ariary, franc malgache, euro et dirham"
+      >
+        <BsCurrencyExchange size={20} />
+      </button>
 
       {convertisseur && <Convertisseur onClose={() => setConvertisseur(false)} />}
 
